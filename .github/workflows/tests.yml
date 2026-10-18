@@ -28,7 +28,6 @@ jobs:
               google-chrome --headless=new --no-sandbox --disable-gpu --allow-file-access-from-files \
                 --blink-settings=preferredColorScheme=$scheme --virtual-time-budget=900000 --window-size=$size \
                 --dump-dom "file://$PWD/index.html?test" > page.html 2> chrome.log || true
-              grep -o 'Passed: [a-z]*:* *window: [^<]*' page.html || true
               if grep -q 'data-tests="passed"' page.html; then
                 grep -o 'id="reportStatus"[^>]*>[^<]*' page.html | sed 's/.*>//'
               else

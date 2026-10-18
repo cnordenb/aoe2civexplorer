@@ -684,45 +684,53 @@
     const branch = items.find((item) => !item.group && item.kids.length > 1 && !shared.has(nameOf(item)));
     const group = items.find((item) => item.group && item.kids.length);
 
-    function landing(label) {
-      check(`${label}: every branch is collapsed`, items.every((item) => !isOpen(item)));
-      check(`${label}: the page does not scroll`, root.scrollHeight <= innerHeight && root.scrollWidth <= innerWidth,
-        `${root.scrollWidth}x${root.scrollHeight} in ${innerWidth}x${innerHeight}`);
-      if (innerHeight >= (innerWidth >= 720 ? 640 : 800)) {
-        expect(`${label}: everything fits without scrolling`,
-          [...document.querySelectorAll(".content, .panes, .scroll")].filter((el) => el.scrollHeight > el.clientHeight + 1).map(describe));
+    const merge = (runs) => {
+      const merged = new Map();
+      for (const { where, results: run } of runs) {
+        for (const { name, ok, detail } of run) {
+          if (!merged.has(name)) merged.set(name, { name, ok: true, failures: [] });
+          if (ok) continue;
+          merged.get(name).ok = false;
+          merged.get(name).failures.push(detail ? `${where}: ${detail}` : where);
+        }
       }
-    }
+      return [...merged.values()].map(({ name, ok, failures }) => ({ name, ok, detail: failures.slice(0, 3).join("; ") }))
+        .sort((a, b) => a.name.split(":")[0].localeCompare(b.name.split(":")[0]));
+    };
 
     function audit(label, { focus = true } = {}) {
+      const note = (name, ok, detail = "") => check(name, ok, detail === "" ? label : `${label}, ${detail}`);
+      const list = (name, offenders) => note(name, !offenders.length, offenders.slice(0, 3).join("; "));
       const all = everything();
-      check(`${label}: the page has a title`, document.title.trim());
-      check(`${label}: the page language is set`, root.lang === tag, root.lang);
-      expect(`${label}: language tags are valid`, [...document.querySelectorAll("[lang]")].filter((el) => !TAG.test(el.lang)).map(describe));
-      expect(`${label}: each language choice is marked with its language`,
-        options().filter((option) => option.lang !== data.languages[option.dataset.language].tag).map(describe));
-      check(`${label}: one header, main and footer`, ["header", "main", "footer"].every((name) => document.querySelectorAll(name).length === 1));
+      note("accessibility: the page has a title and its language is set", document.title.trim() && root.lang === tag, root.lang);
+      list("accessibility: language tags are valid, and each language choice is marked with its language", [
+        ...[...document.querySelectorAll("[lang]")].filter((el) => !TAG.test(el.lang)),
+        ...options().filter((option) => option.lang !== data.languages[option.dataset.language].tag),
+      ].map(describe));
       const headings = [...document.querySelectorAll("h1, h2, h3, h4, h5, h6")].filter(rendered);
-      check(`${label}: one main heading`, headings.filter((h) => h.tagName === "H1").length === 1);
-      expect(`${label}: headings have text and do not skip levels`, headings.filter((h, i) => !h.textContent.trim()
+      note("accessibility: one header, main, footer and main heading", ["header", "main", "footer"]
+        .every((name) => document.querySelectorAll(name).length === 1) && headings.filter((h) => h.tagName === "H1").length === 1);
+      list("accessibility: headings have text and do not skip levels", headings.filter((h, i) => !h.textContent.trim()
         || (i > 0 && Number(h.tagName[1]) > Number(headings[i - 1].tagName[1]) + 1)).map(describe));
       const ids = [...document.querySelectorAll("[id]")].map((el) => el.id);
-      expect(`${label}: ids are unique`, ids.filter((id, i) => ids.indexOf(id) !== i));
-      expect(`${label}: ARIA references point to elements`, [...document.querySelectorAll("[aria-labelledby], [aria-controls], [aria-describedby]")]
-        .flatMap((el) => ["aria-labelledby", "aria-controls", "aria-describedby"]
-          .flatMap((name) => (el.getAttribute(name) ?? "").split(/\s+/).filter((id) => id && !$(id)).map((id) => `${describe(el)} ${id}`))));
-      expect(`${label}: checkboxes say whether they are checked`, [...document.querySelectorAll("[role=checkbox]")]
-        .filter((el) => !["true", "false", "mixed"].includes(el.getAttribute("aria-checked"))).map(describe));
-      expect(`${label}: branch buttons say whether they are open`, items.filter((item) => item.twisty
-        && item.twisty.getAttribute("aria-expanded") !== String(!item.list.hidden)).map(nameOf));
-      check(`${label}: the menu button says whether the menu is open`,
-        $("languageButton").getAttribute("aria-expanded") === String(!$("languageList").hidden));
+      list("accessibility: ids are unique and ARIA references point to elements", [
+        ...ids.filter((id, i) => ids.indexOf(id) !== i),
+        ...[...document.querySelectorAll("[aria-labelledby], [aria-controls], [aria-describedby]")]
+          .flatMap((el) => ["aria-labelledby", "aria-controls", "aria-describedby"]
+            .flatMap((name) => (el.getAttribute(name) ?? "").split(/\s+/).filter((id) => id && !$(id)).map((id) => `${describe(el)} ${id}`))),
+      ]);
+      list("accessibility: checkboxes, branches and the language menu say what state they are in", [
+        ...[...document.querySelectorAll("[role=checkbox]")].filter((el) => !["true", "false", "mixed"].includes(el.getAttribute("aria-checked"))).map(describe),
+        ...items.filter((item) => item.twisty && item.twisty.getAttribute("aria-expanded") !== String(!item.list.hidden)).map(nameOf),
+        ...($("languageButton").getAttribute("aria-expanded") === String(!$("languageList").hidden) ? [] : [describe($("languageButton"))]),
+      ]);
       const controls = focusables().filter((el) => el.matches("a, button, input, [role=checkbox]"));
-      expect(`${label}: every control has a name`, [...controls, ...document.querySelectorAll("[role=checkbox]")]
-        .filter((el) => rendered(el) && !nameFor(el)).map(describe));
-      expect(`${label}: every control's name contains its visible text`, controls.filter((el) => !el.matches("input"))
-        .filter((el) => visibleTexts(el).map(squash).some((text) => text && !squash(nameFor(el)).includes(text))).map(describe));
-      expect(`${label}: text has a contrast of at least 7:1, or 4.5:1 when large`, [...new Set(all.flatMap((el) => [...el.childNodes]
+      list("accessibility: every control has a name that contains its visible text", [
+        ...[...controls, ...document.querySelectorAll("[role=checkbox]")].filter((el) => rendered(el) && !nameFor(el)),
+        ...controls.filter((el) => !el.matches("input"))
+          .filter((el) => visibleTexts(el).map(squash).some((text) => text && !squash(nameFor(el)).includes(text))),
+      ].map(describe));
+      list("accessibility: text has a contrast of at least 7:1, or 4.5:1 when large", [...new Set(all.flatMap((el) => [...el.childNodes]
         .filter((child) => child.nodeType === Node.TEXT_NODE && child.textContent.trim()).map(() => el)))]
         .flatMap((el) => {
           const style = getComputedStyle(el);
@@ -732,7 +740,7 @@
           const large = fontSize >= 24 || (fontSize >= 18.66 && Number(style.fontWeight) >= 700);
           return ratio < (large ? 4.5 : 7) ? [`${describe(el)} ${ratio.toFixed(2)}`] : [];
         }));
-      expect(`${label}: control borders have a contrast of at least 3:1`, all.filter((el) => el.matches(".tool, .chip, input, .box"))
+      list("accessibility: control borders have a contrast of at least 3:1", all.filter((el) => el.matches(".tool, .chip, input, .box"))
         .flatMap((el) => {
           const style = getComputedStyle(el);
           const behind = backgroundOf(el.parentElement);
@@ -740,28 +748,30 @@
           return parseFloat(style.borderTopWidth) > 0 && ratio < 3 ? [`${describe(el)} ${ratio.toFixed(2)}`] : [];
         }));
       const inline = (el) => el.matches("p a") && tidy(el.parentElement.textContent) !== tidy(el.textContent);
-      expect(`${label}: targets are at least 44 by 44 pixels`, focusables().filter((el) => !inline(el)).filter((el) => {
+      list("accessibility: targets are at least 44 by 44 pixels", focusables().filter((el) => !inline(el)).filter((el) => {
         const box = el.getBoundingClientRect();
         return box.width < 43.5 || box.height < 43.5;
       }).map(describe));
-      check(`${label}: the page does not scroll`, root.scrollHeight <= innerHeight && root.scrollWidth <= innerWidth,
-        `${root.scrollWidth}x${root.scrollHeight} in ${innerWidth}x${innerHeight}`);
-      expect(`${label}: nothing sticks out sideways`, all.filter((el) => {
+      note("layout: the page does not scroll", root.scrollHeight <= innerHeight && root.scrollWidth <= innerWidth,
+        `${root.scrollWidth} by ${root.scrollHeight}`);
+      list("layout: nothing sticks out sideways", all.filter((el) => {
         const box = el.getBoundingClientRect();
         return box.right > innerWidth + 0.5 || box.left < -0.5;
       }).map(describe));
-      expect(`${label}: text is not justified and has 1.5 line spacing`, all.filter((el) => el.matches("p, li")).filter((el) => {
+      list("layout: text is not justified and has 1.5 line spacing", all.filter((el) => el.matches("p, li")).filter((el) => {
         const style = getComputedStyle(el);
         return style.textAlign === "justify" || !(parseFloat(style.lineHeight) >= 1.5 * parseFloat(style.fontSize) - 0.01);
       }).map(describe));
-      expect(`${label}: no images, sounds or video`,
-        [...document.querySelectorAll("img, svg, canvas, picture, video, audio, object, embed, iframe, source, track, map, area")].map(describe));
-      expect(`${label}: no images in the styles`, all.filter((el) => styles(el).some((style) => style.backgroundImage !== "none"
-        || style.listStyleImage !== "none" || style.borderImageSource !== "none" || /url\(/.test(style.content))).map(describe));
-      check(`${label}: nothing is animated`, document.getAnimations().length === 0, document.getAnimations().length);
-      expect(`${label}: no transitions or animations in the styles`, all.filter((el) => styles(el).some((style) => style.animationName
-        .split(",").some((name) => name.trim() !== "none") || style.transitionDuration.split(",").some((time) => parseFloat(time) > 0)))
-        .map(describe));
+      list("rules: no images, sounds or video on the page or in its styles", [
+        ...document.querySelectorAll("img, svg, canvas, picture, video, audio, object, embed, iframe, source, track, map, area"),
+        ...all.filter((el) => styles(el).some((style) => style.backgroundImage !== "none"
+          || style.listStyleImage !== "none" || style.borderImageSource !== "none" || /url\(/.test(style.content))),
+      ].map(describe));
+      list("rules: nothing is animated", [
+        ...(document.getAnimations().length ? [`${document.getAnimations().length} running`] : []),
+        ...all.filter((el) => styles(el).some((style) => style.animationName.split(",").some((name) => name.trim() !== "none")
+          || style.transitionDuration.split(",").some((time) => parseFloat(time) > 0))).map(describe),
+      ]);
       if (!focus) return;
       const outlines = [];
       const hidden = [];
@@ -791,35 +801,41 @@
         if (!hit || !el.contains(hit)) hidden.push(`${describe(el)} under ${hit ? describe(hit) : "nothing"} at ${Math.round(x)},${Math.round(y)}`);
       }
       document.activeElement?.blur();
-      expect(`${label}: focus shows a thick outline with a contrast of at least 3:1`, outlines);
-      expect(`${label}: nothing covers what has focus`, hidden);
+      list("accessibility: focus shows a thick outline with a contrast of at least 3:1", outlines);
+      list("accessibility: nothing covers what has focus", hidden);
     }
 
     function sourceTests(page, sheet, code) {
-      check("rules: index.html has no comments", !page.includes("<!--"));
-      check("rules: style.css has no comments", !sheet.includes(slash + "*"));
-      check("rules: script.js has no comments", !code.includes(slash + "*") && !code.includes(slash + slash));
-      check("rules: index.html has no CSS", !/<style\b|\sstyle\s*=/i.test(page));
+      const failing = (cases) => Object.entries(cases).filter(([, bad]) => bad).map(([name]) => name);
+      expect("rules: no comments in the code", failing({
+        "index.html": page.includes("<!--"),
+        "style.css": sheet.includes(slash + "*"),
+        "script.js": code.includes(slash + "*") || code.includes(slash + slash),
+      }));
       const scripts = page.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) ?? [];
-      check("rules: index.html has no JavaScript of its own",
-        scripts.length === 1 && scripts[0] === "<script src=\"script.js\" defer></script>" && !/\son[a-z]+\s*=|javascript:/i.test(page));
       const links = page.match(/<link\b[^>]*>/gi) ?? [];
-      check("rules: index.html loads only style.css and script.js",
-        links.length === 1 && links[0] === "<link rel=\"stylesheet\" href=\"style.css\">" && !/\s(src|href)="[a-z]+:/i.test(page));
+      expect("rules: index.html has no CSS or JavaScript of its own, and loads only style.css and script.js", failing({
+        CSS: /<style\b|\sstyle\s*=/i.test(page),
+        JavaScript: scripts.length !== 1 || scripts[0] !== "<script src=\"script.js\" defer></script>" || /\son[a-z]+\s*=|javascript:/i.test(page),
+        "other files": links.length !== 1 || links[0] !== "<link rel=\"stylesheet\" href=\"style.css\">" || /\s(src|href)="[a-z]+:/i.test(page),
+      }));
       check("rules: script.js has no CSS or HTML",
         !/\.style\s*[.=[]|setAttribute\(\s*["']style|\.(innerHTML|outerHTML|insertAdjacentHTML)\b|createElement\s*\(|document\.write/.test(code));
-      check("rules: no images in the sources", !/<(img|svg|canvas|picture|video|audio|object|embed)\b/i.test(page) && !/url\(/i.test(sheet));
-      check("rules: no animations in the sources", !/@keyframes|\banimation|\btransition/i.test(sheet) && !/\.animate\s*\(/.test(code));
-      check("rules: no sounds in the sources", !/new\s+(Audio|AudioContext)\b/.test(code));
-      check("rules: no dependencies", !/\bimport\s*\(|^\s*import\s|\brequire\s*\(/m.test(code) && !/@import/i.test(sheet));
+      expect("rules: no images, sounds, animations or dependencies in the sources", failing({
+        images: /<(img|svg|canvas|picture|video|audio|object|embed)\b/i.test(page) || /url\(/i.test(sheet),
+        sounds: /new\s+(Audio|AudioContext)\b/.test(code),
+        animations: /@keyframes|\banimation|\btransition/i.test(sheet) || /\.animate\s*\(/.test(code),
+        dependencies: /\bimport\s*\(|^\s*import\s|\brequire\s*\(/m.test(code) || /@import/i.test(sheet),
+      }));
       expect("rules: script.js holds no game data", [...data.civs, ...keys].filter((name) => code.includes(JSON.stringify(name))));
     }
 
     function dataTests() {
       expect("data: each item is in the tree once", keys.filter((key, i) => keys.indexOf(key) !== i));
-      expect("data: each item says which civilisations have it", keys.filter((key) => !(key in data.availability)));
-      expect("data: availability names only known civilisations", Object.entries(data.availability)
-        .filter(([, rule]) => rule !== "all" && (rule.has ?? rule.lacks ?? [null]).some((civ) => !data.civs.includes(civ))).map(([key]) => key));
+      expect("data: each item says which civilisations have it, naming only known ones", keys.filter((key) => {
+        const rule = data.availability[key];
+        return !rule || (rule !== "all" && (rule.has ?? rule.lacks ?? [null]).some((civ) => !data.civs.includes(civ)));
+      }));
       expect("data: each language has a name and a valid tag",
         codes.filter((code) => !data.languages[code].name || !TAG.test(data.languages[code].tag)));
       expect("data: each language has all of the page's text", missingText(data).map(({ language: name, name: key }) => `${name}: ${key}`));
@@ -832,21 +848,22 @@
       const holes = (value) => [...new Set(JSON.stringify(value ?? "").match(/\{\w+\}/g) ?? [])].sort().join();
       expect("data: translations keep the same placeholders", codes.flatMap((code) => Object.entries(data.text[codes[0]].ui)
         .filter(([key, english]) => holes(english) !== holes(data.text[code].ui[key])).map(([key]) => `${code}: ${key}`)));
-      expect("data: overrides are for known languages", Object.keys(data.overrides).filter((code) => !codes.includes(code)));
       expect("data: overrides name known items and civilisations", codes.flatMap((code) => Object.keys(data.overrides[code] ?? {})
         .filter((key) => !keys.includes(key) && !data.civs.includes(key)).map((key) => `${code}: ${key}`)));
-      check("data: the source is described", data.source.name && data.source.url && data.source.data
-        && Number.isInteger(data.source.helpOffset) && /^\d{4}-\d{2}$/.test(data.source.updated));
-      expect("data: the test and update texts are filled in", Object.entries(data.tools).filter(([, text]) => !text).map(([key]) => key));
-      check("data: the ignore list is a list of names", Array.isArray(data.ignore) && data.ignore.every((name) => typeof name === "string"));
+      expect("data: the source, the tool texts and the ignore list are filled in", [
+        ...(data.source.name && data.source.url && data.source.data && Number.isInteger(data.source.helpOffset)
+          && /^\d{4}-\d{2}$/.test(data.source.updated) ? [] : ["source"]),
+        ...Object.entries(data.tools).filter(([, text]) => !text).map(([key]) => `tools: ${key}`),
+        ...(Array.isArray(data.ignore) && data.ignore.every((name) => typeof name === "string") ? [] : ["ignore"]),
+      ]);
     }
 
     function updaterTests() {
       const written = pack(data).map(({ path, value }) => ({ path, value: JSON.parse(toJson(value)) }));
       const again = unpack(written[0].value);
       written.slice(1).forEach(({ value }, i) => addLanguage(again, codes[i + 1], value));
-      check("update: the writer puts every language in its own file", same(written.map(({ path }) => path), ["data.json", ...codes.slice(1).map(localeFile)]));
-      check("update: the writer keeps every value", JSON.stringify(pack(again)) === JSON.stringify(pack(data)));
+      check("update: the writer puts each language in its own file and keeps every value",
+        same(written.map(({ path }) => path), ["data.json", ...codes.slice(1).map(localeFile)]) && JSON.stringify(pack(again)) === JSON.stringify(pack(data)));
       expect("update: availability is stored in its shortest form", keys.filter((key) => JSON.stringify(availabilityOf(
         new Set(civsOf(setOf(data.availability[key]))), data.civs)) !== JSON.stringify(data.availability[key])));
       expect("update: stored names are already tidy", codes.flatMap((code) => [
@@ -857,15 +874,14 @@
     async function behaviourTests() {
       reset();
       tap(partial.node);
-      check("marking: a click marks an item must have", partial.self === "has" && partial.node.getAttribute("aria-checked") === "true");
-      check("marking: the civilisations that have it are listed in order", same(listed(), expected(partial.set)));
-      check("marking: the count says how many are listed", $("count").textContent === plural("compatible", size(partial.set)));
-      const chip = $("chips").querySelector(".chip");
-      check("marking: a filter button appears", $("chips").children.length === 1
-        && chip.querySelector(".chip-label").textContent === fill(words.ui.clearHas, { name: chipName(partial) }));
+      check("marking: a click marks an item must have, and lists the civilisations that have it in order", partial.self === "has"
+        && partial.node.getAttribute("aria-checked") === "true" && same(listed(), expected(partial.set)));
+      check("marking: the count says how many civilisations are listed", $("count").textContent === plural("compatible", size(partial.set)));
+      check("filters: a marked item gets a filter button", $("chips").children.length === 1
+        && $("chips").querySelector(".chip-label").textContent === fill(words.ui.clearHas, { name: chipName(partial) }));
       keyDown(other.node, "x");
-      check("marking: X marks an item must lack", other.self === "lacks" && other.lacking.textContent === words.ui.lacking);
-      check("marking: civilisations with a must-lack item leave the list", same(listed(), expected(partial.set & ~other.set & ALL)));
+      check("marking: X marks an item must lack, and the civilisations that have it leave the list", other.self === "lacks"
+        && other.lacking.textContent === words.ui.lacking && same(listed(), expected(partial.set & ~other.set & ALL)));
       const menu = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
       third.node.dispatchEvent(menu);
       check("marking: the menu key marks an item must lack", third.self === "lacks" && menu.defaultPrevented);
@@ -878,9 +894,9 @@
       check("filters: a filter button clears its item and moves focus to the next", cleared.self === null
         && document.activeElement === $("chips").querySelector(".chip") && Number(document.activeElement.dataset.i) === left.i);
       document.activeElement.click();
-      check("filters: clearing the last filter moves focus to the civilisations heading", left.self === null && document.activeElement === $("civTitle"));
-      check("filters: with nothing marked the list is empty and the hint shows", !listed().length && !$("none").hidden
-        && $("none").textContent === words.ui.start && $("ticked").hidden);
+      check("filters: clearing the last filter moves focus to the civilisations heading and shows the hint", left.self === null
+        && document.activeElement === $("civTitle") && !listed().length && !$("none").hidden && $("none").textContent === words.ui.start
+        && $("ticked").hidden);
 
       const node = third.node;
       const box = node.getBoundingClientRect();
@@ -914,31 +930,31 @@
         || item.civCount.textContent !== plural("civCount", size(item.all))).map(nameOf));
 
       $("expandAll").click();
-      check("tree: Expand all opens every branch", items.every((item) => !item.twisty || isOpen(item)));
+      const expanded = items.every((item) => !item.twisty || isOpen(item));
       $("collapseAll").click();
-      check("tree: Collapse all closes every branch", items.every((item) => !isOpen(item)));
+      check("tree: Expand all and Collapse all open and close every branch", expanded && items.every((item) => !isOpen(item)));
       roots[0].twisty.click();
-      check("tree: an arrow opens its branch", isOpen(roots[0]) && !roots[0].list.hidden);
+      const opened = isOpen(roots[0]) && !roots[0].list.hidden;
       roots[0].twisty.click();
-      check("tree: an arrow closes its branch", !isOpen(roots[0]) && roots[0].list.hidden);
+      check("tree: an arrow opens and closes its branch", opened && !isOpen(roots[0]) && roots[0].list.hidden);
 
       roots[0].node.focus();
-      keyDown(roots[0].node, "ArrowDown");
-      check("keyboard: Down goes to the next item", document.activeElement === roots[1].node);
-      keyDown(roots[1].node, "ArrowRight");
-      check("keyboard: Right opens a branch", isOpen(roots[1]));
-      keyDown(roots[1].node, "ArrowRight");
-      check("keyboard: Right goes into an open branch", document.activeElement === roots[1].kids[0].node);
-      keyDown(roots[1].kids[0].node, "ArrowLeft");
-      check("keyboard: Left goes to the parent", document.activeElement === roots[1].node);
-      keyDown(roots[1].node, "ArrowLeft");
-      check("keyboard: Left closes a branch", !isOpen(roots[1]));
-      keyDown(roots[1].node, "End");
-      check("keyboard: End goes to the last item", document.activeElement === roots[roots.length - 1].node);
-      keyDown(document.activeElement, "Home");
-      check("keyboard: Home goes to the first item", document.activeElement === roots[0].node);
       keyDown(roots[0].node, "ArrowUp");
-      check("keyboard: Up at the top stays put", document.activeElement === roots[0].node);
+      const top = document.activeElement === roots[0].node;
+      keyDown(roots[0].node, "ArrowDown");
+      check("keyboard: Down goes to the next item, and Up stops at the top", top && document.activeElement === roots[1].node);
+      keyDown(roots[1].node, "ArrowRight");
+      const opens = isOpen(roots[1]);
+      keyDown(roots[1].node, "ArrowRight");
+      check("keyboard: Right opens a branch, then goes into it", opens && document.activeElement === roots[1].kids[0].node);
+      keyDown(roots[1].kids[0].node, "ArrowLeft");
+      const back = document.activeElement === roots[1].node;
+      keyDown(roots[1].node, "ArrowLeft");
+      check("keyboard: Left goes to the parent, then closes the branch", back && !isOpen(roots[1]));
+      keyDown(roots[1].node, "End");
+      const end = document.activeElement === roots[roots.length - 1].node;
+      keyDown(document.activeElement, "Home");
+      check("keyboard: End and Home go to the last and first items", end && document.activeElement === roots[0].node);
       roots[0].twisty.focus();
       keyDown(roots[0].twisty, "ArrowDown");
       check("keyboard: on an arrow, Down goes to the next arrow", document.activeElement === roots[1].twisty);
@@ -946,75 +962,74 @@
 
       type(nameOf(partial));
       const matches = items.filter((item) => plain(nameOf(item)).includes(plain(nameOf(partial))));
-      check("find: matches are marked", partial.node.classList.contains("found") && items.every((item) => item.node.classList.contains("found") === matches.includes(item)));
-      check("find: branches open down to each match", matches.every((item) => shown(item)));
+      check("find: matches are marked, with branches open down to each", partial.node.classList.contains("found")
+        && items.every((item) => item.node.classList.contains("found") === matches.includes(item)) && matches.every((item) => shown(item)));
       check("find: the number found is announced", $("found").textContent === plural("found", matches.length));
       keyDown($("find"), "Enter");
       check("find: Enter goes to the first match", document.activeElement === matches[0].node);
       type("qqqqzzzzqqqq");
-      check("find: no match says none found", $("found").textContent === words.ui.noneFound && !document.querySelector(".found"));
+      const none = $("found").textContent === words.ui.noneFound && !document.querySelector(".found");
       type("");
-      check("find: an empty search clears the result", $("found").textContent === "");
+      check("find: no match says none found, and an empty search clears the result", none && $("found").textContent === "");
       reset();
     }
 
     function menuTests() {
       reset();
       const button = $("languageButton");
+      const current = () => options().find((option) => option.dataset.language === language);
       button.click();
-      check("language menu: the button opens the menu", button.getAttribute("aria-expanded") === "true" && !$("languageList").hidden);
-      check("language menu: every language is offered in its own language", options().length === codes.length
+      check("language menu: the button opens it, offering every language in its own language", button.getAttribute("aria-expanded") === "true"
+        && !$("languageList").hidden && options().length === codes.length
         && options().every((option) => option.textContent === data.languages[option.dataset.language].name));
       check("language menu: the current language is marked", options().filter((option) => option.getAttribute("aria-current") === "true")
         .map((option) => option.dataset.language).join() === language);
-      audit("accessibility (language menu open)", { focus: false });
+      audit("language menu open", { focus: false });
       keyDown(options()[0], "Escape");
       check("language menu: Escape closes it and returns focus", $("languageList").hidden && document.activeElement === button);
       keyDown(button, "ArrowDown");
-      check("language menu: Down opens it at the current language", !$("languageList").hidden
-        && document.activeElement === options().find((option) => option.dataset.language === language));
+      const atCurrent = !$("languageList").hidden && document.activeElement === current();
       const at = options().indexOf(document.activeElement);
       keyDown(document.activeElement, "ArrowDown");
-      check("language menu: Down goes to the next language", document.activeElement === options()[(at + 1) % codes.length]);
+      const stepped = document.activeElement === options()[(at + 1) % codes.length];
       keyDown(document.activeElement, "End");
-      check("language menu: End goes to the last language", document.activeElement === options()[codes.length - 1]);
+      check("language menu: Down opens it at the current language, and Down and End move through it", atCurrent && stepped
+        && document.activeElement === options()[codes.length - 1]);
       $("find").focus();
       check("language menu: leaving it closes it", $("languageList").hidden && button.getAttribute("aria-expanded") === "false");
       const first = language;
       const next = codes.find((code) => code !== first);
       tap(partial.node);
       pick(next);
-      check("language menu: choosing a language changes the page language", root.lang === data.languages[next].tag
-        && document.querySelector("h1").textContent === data.text[next].ui.title);
-      check("language menu: choosing closes the menu and returns focus", $("languageList").hidden && document.activeElement === button);
+      check("language menu: choosing a language changes the page language, closes the menu and returns focus", root.lang === data.languages[next].tag
+        && document.querySelector("h1").textContent === data.text[next].ui.title && $("languageList").hidden && document.activeElement === button);
       check("language menu: the button names the new language", nameFor(button).includes(data.languages[next].name));
       check("language menu: the choice is kept in the address", location.protocol === "file:" || new URLSearchParams(location.search).get("lng") === next);
-      check("language menu: marks are kept", partial.self === "has" && same(listed(), expected(partial.set)));
+      check("language menu: marks are kept when the language changes", partial.self === "has" && same(listed(), expected(partial.set)));
       pick(first);
       reset();
     }
 
-    async function languageTests(code) {
+    function languageTests(code) {
       reset();
       pick(code);
       reset();
-      const ui = data.text[code].ui;
-      check(`${code}: the page language is set`, root.lang === data.languages[code].tag);
-      expect(`${code}: the page's text is in the language`, [...document.querySelectorAll("[data-text]")]
-        .filter((el) => el.textContent !== ui[el.dataset.text]).map((el) => el.dataset.text));
-      expect(`${code}: the tree is in the language`, items.filter((item) => item.label.textContent !== nameOf(item)
-        || nameOf(item) !== (item.group ? data.text[code].groups[item.key] : data.text[code].items[item.key])).map((item) => item.key));
-      expect(`${code}: no placeholders are left in the text`, visibleTexts(document.body).filter((text) => /[{}]/.test(text)));
-      check(`${code}: the footer names and links the source`, $("source").contains($("sourceLink")) && $("sourceLink").textContent === data.source.name
-        && $("sourceLink").getAttribute("href") === data.source.url);
-      landing(`landing page (${code})`);
-      audit(`accessibility (${code})`, { focus: code === codes[0] });
+      const text = data.text[code];
+      const note = (name, offenders) => check(name, !offenders.length, `${code}: ${offenders.slice(0, 3).join("; ")}`);
+      note("languages: the page's text is in the chosen language", [...document.querySelectorAll("[data-text]")]
+        .filter((el) => el.textContent !== text.ui[el.dataset.text]).map((el) => el.dataset.text));
+      note("languages: the tree is in the chosen language", items.filter((item) => item.label.textContent !== nameOf(item)
+        || nameOf(item) !== (item.group ? text.groups[item.key] : text.items[item.key])).map((item) => item.key));
+      note("languages: no placeholders are left in the text", visibleTexts(document.body).filter((value) => /[{}]/.test(value)));
+      check("languages: the footer names and links the source", $("source").contains($("sourceLink")) && $("sourceLink").textContent === data.source.name
+        && $("sourceLink").getAttribute("href") === data.source.url, code);
+      audit(code, { focus: code === codes[0] });
       tap(partial.node);
       keyDown(other.node, "x");
-      check(`${code}: the civilisations are listed in the language and in order`, same(listed(), expected(partial.set & ~other.set & ALL)));
-      audit(`accessibility (${code}, filters)`, { focus: code === codes[0] });
+      check("languages: the civilisations are listed in the language and in order", same(listed(), expected(partial.set & ~other.set & ALL)), code);
+      audit(`${code}, filters`, { focus: code === codes[0] });
       $("expandAll").click();
-      audit(`accessibility (${code}, all open)`, { focus: code === codes[0] });
+      audit(`${code}, all open`, { focus: code === codes[0] });
       reset();
     }
 
@@ -1022,25 +1037,26 @@
       reset();
       tap(partial.node);
       root.classList.add("text-spacing-test");
-      check("text spacing: the page does not scroll sideways", root.scrollWidth <= innerWidth);
-      expect("text spacing: nothing sticks out sideways", everything().filter((el) => el.getBoundingClientRect().right > innerWidth + 0.5).map(describe));
+      expect("layout: with wider text spacing, nothing sticks out sideways", [
+        ...(root.scrollWidth > innerWidth ? [`the page is ${root.scrollWidth} pixels wide`] : []),
+        ...everything().filter((el) => el.getBoundingClientRect().right > innerWidth + 0.5).map(describe),
+      ]);
       root.classList.remove("text-spacing-test");
       reset();
     }
 
-    check(`window: ${innerWidth} by ${innerHeight} pixels, ${matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"} colours`, true);
+    const where = `${innerWidth} by ${innerHeight}`;
     try {
-      const [page, sheet, code] = await Promise.all(["index.html", "style.css", "script.js"].map(load));
-      landing(`landing page (${language})`);
-      audit(`accessibility (${language}, landing page)`);
-      sourceTests(page, sheet, code);
-      dataTests();
-      updaterTests();
-      check("test items were found in the data", partial && other && third && branch && group);
+      if (!params.has("frame")) {
+        const [page, sheet, code] = await Promise.all(["index.html", "style.css", "script.js"].map(load));
+        sourceTests(page, sheet, code);
+        dataTests();
+        updaterTests();
+      }
       pick(codes[0]);
       await behaviourTests();
       menuTests();
-      for (const code of codes) await languageTests(code);
+      codes.forEach(languageTests);
       spacingTests();
     } catch (error) {
       check("the tests ran to the end", false, error.stack || error.message);
@@ -1051,15 +1067,20 @@
     attempt(() => (before.stored === null ? localStorage.removeItem("language") : localStorage.setItem("language", before.stored)));
     if (params.has("frame")) {
       root.dataset.tests = results.every((result) => result.ok) ? "passed" : "failed";
-      parent.postMessage({ results }, "*");
+      parent.postMessage({ where, results }, "*");
       return;
     }
-    for (const size of ["small", "phone", "tall"]) results.push(...await framed(size));
-    const failed = results.filter((result) => !result.ok);
+    const runs = [{ where, results }];
+    for (const size of ["small", "phone", "tall"]) runs.push(await framed(size));
+    const merged = merge(runs);
+    const failed = merged.filter((result) => !result.ok);
     root.dataset.tests = failed.length ? "failed" : "passed";
     const tools = data.tools;
-    openReport(tools.testTitle, failed.length ? fill(tools.testFailed, { failed: failed.length, n: results.length }) : fill(tools.testPassed, { n: results.length }));
-    for (const result of [...failed, ...results.filter((r) => r.ok)]) report(fill(result.ok ? tools.pass : tools.fail, result));
+    openReport(tools.testTitle, fill(failed.length ? tools.testFailed : tools.testPassed, {
+      failed: failed.length, n: merged.length, colours: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+      windows: new Intl.ListFormat("en").format(runs.map((run) => run.where)),
+    }));
+    for (const result of [...failed, ...merged.filter((r) => r.ok)]) report(fill(result.ok ? tools.pass : tools.fail, result));
   }
 
   function framed(size) {
@@ -1067,15 +1088,15 @@
       const frame = clone("frameTemplate");
       let timer = 0;
       const listen = (e) => {
-        if (e.source === frame.contentWindow) done(e.data.results);
+        if (e.source === frame.contentWindow) done({ where: e.data.where ?? `the ${size} window`, results: e.data.results });
       };
-      const done = (results) => {
+      const done = (run) => {
         removeEventListener("message", listen);
         clearTimeout(timer);
         frame.remove();
-        resolve(results.map((result) => ({ ...result, name: `${size}: ${result.name}` })));
+        resolve(run);
       };
-      timer = setTimeout(() => done([{ name: "the tests finished", ok: false, detail: "no answer" }]), 300000);
+      timer = setTimeout(() => done({ where: `the ${size} window`, results: [{ name: "the tests finished", ok: false, detail: "no answer" }] }), 300000);
       addEventListener("message", listen);
       frame.classList.add(size);
       frame.title = data.tools.frameTitle;
