@@ -839,10 +839,11 @@
       }));
       const scripts = page.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) ?? [];
       const links = page.match(/<link\b[^>]*>/gi) ?? [];
-      expect("rules: index.html has no CSS or JavaScript of its own, and loads only style.css and script.js", failing({
+      const allowed = ["<link rel=\"stylesheet\" href=\"style.css\">", "<link rel=\"icon\" href=\"favicon.ico\">"];
+      expect("rules: index.html has no CSS or JavaScript of its own, and loads only style.css, script.js and favicon.ico", failing({
         CSS: /<style\b|\sstyle\s*=/i.test(page),
         JavaScript: scripts.length !== 1 || scripts[0] !== "<script src=\"script.js\" defer></script>" || /\son[a-z]+\s*=|javascript:/i.test(page),
-        "other files": links.length !== 1 || links[0] !== "<link rel=\"stylesheet\" href=\"style.css\">" || /\s(src|href)="[a-z]+:/i.test(page),
+        "other files": !same(links, allowed) || /\s(src|href)="[a-z]+:/i.test(page),
       }));
       check("rules: script.js has no CSS or HTML",
         !/\.style\s*[.=[]|setAttribute\(\s*["']style|\.(innerHTML|outerHTML|insertAdjacentHTML)\b|createElement\s*\(|document\.write/.test(code));

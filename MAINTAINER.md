@@ -17,6 +17,7 @@ see are exactly the files a visitor's browser downloads.
 | `style.css` | How the page looks: colours, sizes, the layout for big and small screens. |
 | `script.js` | How the page behaves. It also holds two tools for you: the data updater and the tests. |
 | `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in English, the default language. |
+| `favicon.ico` | The small icon browsers show in the tab and in bookmarks. |
 | `locales/` | One file per other language, such as `locales/de.json` for German, with every piece of text in that language. |
 
 Three more files help you: this guide, `README.md`, and `.github/workflows/tests.yml`, which tells GitHub to run the
@@ -203,7 +204,8 @@ check most of them.
 - All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
   `index.html`, all looks in `style.css`, all behaviour in `script.js`.
 - No comments in the code. Explanations belong in this guide.
-- No images, sounds or animations, and no extra libraries, build steps or other programming languages.
+- No images, sounds or animations, apart from the tab icon `favicon.ico`, and no extra libraries, build steps or other
+  programming languages.
 - The page must meet WCAG 2.2 at level AAA, the strictest level of the web's accessibility guidelines. Among other
   things, that means text contrast of at least 7 to 1, every control at least 44 by 44 pixels, everything usable by
   keyboard alone, and a page that still works when zoomed to 400%.
