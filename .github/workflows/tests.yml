@@ -1,0 +1,41 @@
+name: Tests
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Get the code
+        run: |
+          git init --quiet .
+          git fetch --quiet --depth=1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "${{ github.sha }}"
+          git checkout --quiet FETCH_HEAD
+      - name: Check that the repository holds only the allowed files
+        run: |
+          extra="$(git ls-files | grep -vxE 'index\.html|style\.css|script\.js|data\.json|README\.md|MAINTAINER\.md|LICENSE|\.gitignore|\.github/workflows/tests\.yml' || true)"
+          if [ -n "$extra" ]; then
+            echo "These files are not allowed by the project's rules:"
+            echo "$extra"
+            exit 1
+          fi
+      - name: Run the tests in Chrome, in light and dark colours and at several window sizes
+        run: |
+          status=0
+          for scheme in 1 0; do
+            for size in 1920,1080 1280,800 800,1100 500,900; do
+              google-chrome --headless=new --no-sandbox --disable-gpu --allow-file-access-from-files \
+                --blink-settings=preferredColorScheme=$scheme --virtual-time-budget=900000 --window-size=$size \
+                --dump-dom "file://$PWD/index.html?test" > page.html 2> chrome.log || true
+              grep -o 'Passed: [a-z]*:* *window: [^<]*' page.html || true
+              if grep -q 'data-tests="passed"' page.html; then
+                grep -o 'id="reportStatus"[^>]*>[^<]*' page.html | sed 's/.*>//'
+              else
+                echo "Failed with window size $size:"
+                grep -o 'Failed: [^<]*' page.html || echo "The tests did not finish."
+                status=1
+              fi
+            done
+          done
+          exit $status
