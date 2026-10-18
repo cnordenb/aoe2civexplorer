@@ -12,7 +12,7 @@ Filter Age of Empires II civilisations by toggling technologies, units, or build
 
 ## Contributing
 
-Anyone is welcome to open an issue to submit a bug report or suggest a new feature.
+Anyone is welcome to open an issue to submit a bug report or suggest a new feature. Alternatively, you may fork or copy the repository and take it in any direction you wish.
 
 ## Maintaining
 
