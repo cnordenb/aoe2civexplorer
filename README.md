@@ -6,6 +6,10 @@ Explore Age of Empires II civilisations by technology availability: mark the bui
 civilisation must have or must lack, and see which civilisations fit. The page is available in the same 17 languages
 as [aoe2techtree.net](https://aoe2techtree.net/), where its data comes from.
 
+## Installation
+
+aoe2civexplorer requires a server to run and cannot run locally from file due to using .json for data.
+
 ## Usage
 
 Filter Age of Empires II civilisations by toggling technologies, units, or buildings. Exempli gratia, find out which civilisations have Arbalester with full upgrades, or which civilisations are missing a certain set of units or technologies. You can find units, technologies, and buildings by either searching for them or browsing the checkbox node tree.
