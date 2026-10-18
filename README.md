@@ -9,6 +9,7 @@ as [aoe2techtree.net](https://aoe2techtree.net/), where its data comes from.
 ## Installation
 
 aoe2civexplorer requires a server to run and cannot run locally from file due to using .json for data.
+However, it is runnable offline (English only) with the html file aoe2civexplorer.html available in [releases](https://github.com/cnordenb/aoe2civexplorer/releases).
 
 ## Usage
 
