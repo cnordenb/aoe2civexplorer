@@ -1195,7 +1195,7 @@
       "find": "Find",
       "found": {"one": "{n} found", "other": "{n} found"},
       "noneFound": "None found",
-      "mustHave": "Must have: click or Space.",
+      "mustHave": "Must have: left-click or Space.",
       "mustLack": "Must lack: right-click, long press or X.",
       "civs": "Civilisations",
       "compatible": {"one": "{n} compatible civilisation", "other": "{n} compatible civilisations"},
