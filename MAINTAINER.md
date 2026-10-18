@@ -8,22 +8,25 @@ If you are in a hurry, jump to [After a game update](#after-a-game-update).
 
 ## How the page is put together
 
-The page is four files. There is nothing to install and nothing to build: the files you see are exactly the files a
-visitor's browser downloads.
+The page is four files and a folder of language files. There is nothing to install and nothing to build: the files you
+see are exactly the files a visitor's browser downloads.
 
 | File | What it holds |
 | --- | --- |
 | `index.html` | The structure of the page: the header, the two panes, the language menu. It holds no text of its own. |
 | `style.css` | How the page looks: colours, sizes, the layout for big and small screens. |
 | `script.js` | How the page behaves. It also holds two tools for you: the data updater and the tests. |
-| `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in all 17 languages. |
+| `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in English, the default language. |
+| `locales/` | One file per other language, such as `locales/de.json` for German, with every piece of text in that language. |
 
 Three more files help you: this guide, `README.md`, and `.github/workflows/tests.yml`, which tells GitHub to run the
 tests every time someone pushes a change.
 
-The most important idea is that **all the facts live in `data.json`**. The other files never mention a unit, a
-civilisation or a sentence. So a game update only ever changes `data.json`, and you rarely need to open the other
-files at all.
+The most important idea is that **all the facts live in `data.json` and the language files**. The other files never
+mention a unit, a civilisation or a sentence. So a game update only ever changes `data.json` and the language files,
+and you rarely need to open the other files at all.
+
+A visitor's browser downloads `data.json` and the file of the language it shows, not all 17.
 
 ### Where the facts come from
 
@@ -35,23 +38,29 @@ The page never contacts aoe2techtree.net while a visitor uses it. Instead, you c
 per patch, with the updater described below. That keeps the page fast and keeps it working even if that site is
 down.
 
-### What is in `data.json`
+### What is in `data.json` and the language files
 
 `data.json` is a text file in a format called JSON. You can open it in any text editor. Its main parts are:
 
 - `source`: where the data comes from, and `updated`, the month it was last fetched. The footer of the page shows it.
-- `languages`: the 17 languages. Each has a `name` (as it is written in that language), a `tag` (the standard code
-  that tells browsers and screen readers which language the text is in), and two settings the updater uses when it
-  tidies the game's names: `spaces` (does the language put spaces between words?) and `mergeHyphens` (does a hyphen
-  at the end of a line in the game's text split a single word, as in German?).
+- `languages`: the 17 languages. The first, English, is the default: its text is in `data.json` itself, and every
+  other language has its own file in `locales`, named after its code. Each language has a `name` (as it is written
+  in that language), a `tag` (the standard code that tells browsers and screen readers which language the text is
+  in), and two settings the updater uses when it tidies the game's names: `spaces` (does the language put spaces
+  between words?) and `mergeHyphens` (does a hyphen at the end of a line in the game's text split a single word, as
+  in German?).
 - `civs`: the civilisations, by their English names.
 - `tree`: what the left pane shows, in order. **You edit this by hand.**
 - `availability`: for each item in the tree, which civilisations have it. The updater writes this; never edit it.
 - `ignore`: names from the game that you have decided not to show. **You edit this by hand.**
-- `overrides`: corrections to names from the game. **You edit this by hand.**
+- `overrides`: corrections to English names from the game. **You edit this by hand.**
 - `tools`: the English text of the updater and the tests.
-- `text`: for each language, `ui` (the page's own sentences), `groups` (the headings in the tree, such as Economy),
-  and `civs` and `items` (the names of civilisations and items, which the updater writes).
+- `text`: the English text, in four parts: `ui` (the page's own sentences), `groups` (the headings in the tree, such
+  as Economy), and `civs` and `items` (the names of civilisations and items, which the updater writes).
+
+Each file in `locales` holds the same two parts, `overrides` and `text`, for one other language. For example,
+`locales/de.json` holds the corrections to German names and all the German text. Everything else is shared by all
+languages, so it is only in `data.json`.
 
 ## Opening the page on your own computer
 
@@ -73,7 +82,7 @@ Wait until that matches the new patch.
 
 Open the page with `?update` added to the address, for example `http://127.0.0.1:5501/index.html?update`.
 
-A window called **Update data.json** opens. It fetches the newest data from aoe2techtree.net, which takes a few
+A window called **Update the data files** opens. It fetches the newest data from aoe2techtree.net, which takes a few
 seconds, and then lists what it found. It does not change anything yet.
 
 ### Step 3: read the report
@@ -121,10 +130,11 @@ the last one. Visual Studio Code underlines mistakes in red.
 
 When you have changed the tree, reload the `?update` page. The report should no longer mention those items.
 
-### Step 5: download the new data.json
+### Step 5: download the new files
 
-Click **Download data.json** at the bottom of the report and save the file. Put it in the project folder in place of
-the old `data.json`, with the same name.
+At the bottom of the report is one download link per file that changed: always **Download data.json**, and, for each
+language whose text changed, a link such as **Download locales/de.json**. Save each file in place of the old one with
+the same name: `data.json` in the project folder, and the language files in its `locales` folder.
 
 ### Step 6: run the tests
 
@@ -137,7 +147,7 @@ where, for example which text has too little contrast in which language.
 
 ### Step 7: publish
 
-Commit the new `data.json` and push it, for example with GitHub Desktop or `git commit` and `git push`. GitHub runs
+Commit the new files and push them, for example with GitHub Desktop or `git commit` and `git push`. GitHub runs
 the same tests again, in Chrome, in light and dark colours and at several window sizes. You can watch them in the
 **Actions** tab of the repository: a green tick means everything passed.
 
@@ -147,20 +157,22 @@ The names in all languages come from the game's own text. Usually they are right
 name to fit its tech tree (such as "E." for "Elite") or uses a form that fits a sentence rather than a list. The
 updater already copes with most of this, and `overrides` holds the corrections it cannot work out on its own.
 
-To correct a name, add it to `overrides`, under the language's code, with the item's English name on the left:
+To correct a name, add it to `overrides` in the language's file, with the item's English name on the left. For
+example, in `locales/de.json`:
 
 ```json
 "overrides": {
-  "de": {"Heavy Mounted Crossbowman": "Schwerer berittener Armbrustschütze"},
+  "Heavy Mounted Crossbowman": "Schwerer berittener Armbrustschütze"
+},
 ```
 
-Then run the updater again (step 2) and download the new file (step 5). An override wins over the game's name until
-you remove it.
+English corrections go in `overrides` in `data.json`. Then run the updater again (step 2) and download the new files
+(step 5). An override wins over the game's name until you remove it.
 
 ## Changing the page's own text
 
-The page's sentences, such as the button labels and the hints, are in `data.json` under `text`, then the language
-code, then `ui`. You can change them in any editor.
+The page's sentences, such as the button labels and the hints, are under `text`, then `ui`: in `data.json` for
+English, and in the language's file in `locales` for the others. You can change them in any editor.
 
 - Words in braces, such as `{n}`, `{name}`, `{parent}`, `{source}` and `{date}`, are filled in by the page. Keep them,
   though you may move them. The tests check that every language uses the same ones as English.
@@ -176,9 +188,11 @@ code, then `ui`. You can change them in any editor.
 A new language works only if aoe2techtree.net has it, because the names come from there. Its code is the name of the
 language's folder there, such as `de` for German.
 
-1. Add the language to `languages` with its `name`, its `tag` (for example `pt-BR`), and `spaces` and
+1. Add the language to `languages` in `data.json` with its `name`, its `tag` (for example `pt-BR`), and `spaces` and
    `mergeHyphens` (copy these from a similar language).
-2. Copy the English `ui` and `groups` from `text` into a new entry for the language, and translate them.
+2. Make the language's file in `locales`, named after its code, such as `locales/pt.json`. Start it as
+   `{"overrides": {}, "text": {"ui": …, "groups": …}}`, with the English `ui` and `groups` copied from `text` in
+   `data.json`, and translate them.
 3. Run the updater, download, and run the tests. The updater fills in the names of every item and civilisation.
 
 ## Keeping to the project's rules
@@ -186,8 +200,8 @@ language's folder there, such as `de` for German.
 The project follows a few rules that keep it simple to look after. If you change the code, keep to them; the tests
 check most of them.
 
-- All facts and all text live in `data.json`. All structure lives in `index.html`, all looks in `style.css`, all
-  behaviour in `script.js`.
+- All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
+  `index.html`, all looks in `style.css`, all behaviour in `script.js`.
 - No comments in the code. Explanations belong in this guide.
 - No images, sounds or animations, and no extra libraries, build steps or other programming languages.
 - The page must meet WCAG 2.2 at level AAA, the strictest level of the web's accessibility guidelines. Among other

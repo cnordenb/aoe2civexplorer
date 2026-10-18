@@ -287,6 +287,29 @@
     });
   }
 
+  const localeFile = (code) => `locales/${code}.json`;
+  const unpack = (file) => {
+    const first = Object.keys(file.languages)[0];
+    return { ...file, overrides: { [first]: file.overrides }, text: { [first]: file.text } };
+  };
+  const addLanguage = (set, code, file) => {
+    set.overrides[code] = file.overrides;
+    set.text[code] = file.text;
+  };
+  const loadLanguage = (code) => (data.text[code]
+    ? Promise.resolve()
+    : load(localeFile(code)).then((raw) => addLanguage(data, code, JSON.parse(raw))));
+  const loadLanguages = () => Promise.all(Object.keys(data.languages).map(loadLanguage));
+  function pack(set) {
+    const [first, ...others] = Object.keys(set.languages);
+    const own = (key, code) => set[key][code] ?? {};
+    return [
+      { path: "data.json", value: Object.fromEntries(Object.entries(set)
+        .map(([key, value]) => [key, ["overrides", "text"].includes(key) ? own(key, first) : value])) },
+      ...others.map((code) => ({ path: localeFile(code), value: { overrides: own("overrides", code), text: own("text", code) } })),
+    ];
+  }
+
   const options = () => [...$("languageList").querySelectorAll("[data-language]")];
   function setMenu(open, focus) {
     $("languageButton").setAttribute("aria-expanded", String(open));
@@ -343,7 +366,18 @@
     update();
     if ($("find").value) find();
   }
+  let chosen = null;
   function choose(code) {
+    chosen = code;
+    if (!data.text[code]) {
+      loadLanguage(code).then(() => {
+        if (chosen === code) choose(code);
+      }, () => {
+        $("loadError").hidden = false;
+      });
+      return;
+    }
+    $("loadError").hidden = true;
     setLanguage(code);
     attempt(() => localStorage.setItem("language", code));
     const search = new URLSearchParams(location.search);
@@ -392,7 +426,8 @@
     $("reportTitle").textContent = title;
     $("reportStatus").textContent = status;
     $("reportList").replaceChildren();
-    $("reportDownload").hidden = true;
+    $("reportDownloads").replaceChildren();
+    $("reportDownloads").hidden = true;
     if (!$("report").open) $("report").showModal();
   }
   function report(line) {
@@ -538,14 +573,24 @@
       $("reportStatus").textContent = fill(tools.updateReady, {
         civs: fresh.civs.length, items: Object.keys(fresh.availability).length, languages: Object.keys(fresh.languages).length,
       });
-      $("reportDownload").href = URL.createObjectURL(new Blob([`${toJson(fresh)}\n`], { type: "application/json" }));
-      $("reportDownload").hidden = false;
+      const before = new Map(pack(data).map(({ path, value }) => [path, toJson(value)]));
+      const files = pack(fresh).map(({ path, value }) => ({ path, json: toJson(value) }))
+        .filter(({ path, json }) => path === "data.json" || json !== before.get(path));
+      $("reportDownloads").replaceChildren(...files.map(({ path, json }) => {
+        const li = clone("downloadTemplate");
+        const link = li.querySelector("a");
+        link.href = URL.createObjectURL(new Blob([`${json}\n`], { type: "application/json" }));
+        link.download = path.split("/").pop();
+        link.textContent = fill(tools.download, { file: path });
+        return li;
+      }));
+      $("reportDownloads").hidden = false;
     } catch (error) {
       $("reportStatus").textContent = fill(tools.updateFailed, { error: error.message });
     }
   }
 
-  async function runTests(raw) {
+  async function runTests() {
     const results = [];
     const check = (name, ok, detail = "") => results.push({ name, ok: Boolean(ok), detail: String(detail) });
     const expect = (name, offenders) => check(name, !offenders.length, offenders.slice(0, 5).join("; "));
@@ -797,7 +842,11 @@
     }
 
     function updaterTests() {
-      check("update: the data.json writer keeps every value", JSON.stringify(JSON.parse(toJson(data))) === JSON.stringify(data));
+      const written = pack(data).map(({ path, value }) => ({ path, value: JSON.parse(toJson(value)) }));
+      const again = unpack(written[0].value);
+      written.slice(1).forEach(({ value }, i) => addLanguage(again, codes[i + 1], value));
+      check("update: the writer puts every language in its own file", same(written.map(({ path }) => path), ["data.json", ...codes.slice(1).map(localeFile)]));
+      check("update: the writer keeps every value", JSON.stringify(pack(again)) === JSON.stringify(pack(data)));
       expect("update: availability is stored in its shortest form", keys.filter((key) => JSON.stringify(availabilityOf(
         new Set(civsOf(setOf(data.availability[key]))), data.civs)) !== JSON.stringify(data.availability[key])));
       expect("update: stored names are already tidy", codes.flatMap((code) => [
@@ -1035,8 +1084,7 @@
     });
   }
 
-  function start(loaded) {
-    data = loaded;
+  function start() {
     civBit = new Map(data.civs.map((civ, i) => [civ, 1n << BigInt(i)]));
     ALL = (1n << BigInt(data.civs.length)) - 1n;
     collect(data.tree, null);
@@ -1046,14 +1094,18 @@
     for (const node of document.querySelectorAll("[data-tool]")) node.textContent = data.tools[node.dataset.tool];
     wireTree();
     wireLanguages();
-    setLanguage(preferredLanguage());
+    const code = preferredLanguage();
+    setLanguage(data.text[code] ? code : Object.keys(data.languages)[0]);
     $("top").hidden = false;
     $("content").hidden = false;
   }
 
   load("data.json").then((raw) => {
-    start(JSON.parse(raw));
-    if (params.has("test")) return runTests(raw);
+    data = unpack(JSON.parse(raw));
+    return params.has("test") || params.has("update") ? loadLanguages() : loadLanguage(preferredLanguage()).catch(() => null);
+  }).then(() => {
+    start();
+    if (params.has("test")) return runTests();
     if (params.has("update")) return runUpdate();
     return null;
   }).catch((error) => {

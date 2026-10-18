@@ -62,7 +62,7 @@
   <h2 id="reportTitle"></h2>
   <p id="reportStatus" role="status"></p>
   <ul class="report-list" id="reportList" role="list"></ul>
-  <p><a id="reportDownload" download="data.json" hidden data-tool="download"></a></p>
+  <ul class="report-list downloads" id="reportDownloads" role="list" hidden></ul>
   <form method="dialog"><button class="tool" data-tool="close"></button></form>
 </dialog>
 <template id="itemTemplate"><li><div class="row"><button type="button" class="twisty" aria-expanded="false"></button><span class="gap"></span><div class="node" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span class="name"></span><span class="sr-only lacking"></span><span class="n"><span class="count" aria-hidden="true"></span><span class="sr-only civ-count"></span></span></div></div><ul role="list" hidden></ul></li></template>
@@ -70,6 +70,7 @@
 <template id="civTemplate"><li></li></template>
 <template id="languageTemplate"><li><button type="button" class="tool language-option"></button></li></template>
 <template id="reportTemplate"><li></li></template>
+<template id="downloadTemplate"><li><a download></a></li></template>
 <template id="frameTemplate"><iframe class="test-frame"></iframe></template>
 </body>
 </html>
