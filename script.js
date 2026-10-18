@@ -139,9 +139,30 @@
     }
   }
   const markOf = (item) => (["has", "lacks"].includes(state(item)) ? state(item) : item.self);
-  function chipName(item) {
-    const name = shared.has(nameOf(item)) && item.parent ? fill(words.ui.inParent, { name: nameOf(item), parent: nameOf(item.parent) }) : nameOf(item);
-    return item.kids.length && state(item) === "has" ? fill(words.ui.full, { name }) : name;
+  const lineEnd = (item) => {
+    let end = item;
+    while (end.kids.length === 1 && !end.kids[0].group) end = end.kids[0];
+    return item.group || end.kids.length ? null : end;
+  };
+  function lineOf(item) {
+    let root = item;
+    while (root.parent && !root.parent.group && root.parent.kids.length === 1) root = root.parent;
+    if (!lineEnd(root)) return [item];
+    const line = [root];
+    while (line.at(-1).kids.length) line.push(line.at(-1).kids[0]);
+    return line;
+  }
+  function filtersOf() {
+    const marked = items.filter((item) => markOf(item) && !(item.parent && state(item.parent) === markOf(item)))
+      .map((item) => ({ item, mark: markOf(item), line: lineOf(item) }));
+    const depth = ({ item, line }) => line.indexOf(item);
+    return marked.filter((filter) => !marked.some((other) => other !== filter && other.mark === filter.mark && other.line[0] === filter.line[0]
+      && (filter.mark === "has" ? depth(other) > depth(filter) : depth(other) < depth(filter))));
+  }
+  function chipName(item, mark) {
+    const named = (mark === "has" && lineOf(item).findLast((each) => each.self === "has")) || item;
+    const name = shared.has(nameOf(named)) && named.parent ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) }) : nameOf(named);
+    return named.kids.length && state(item) === "has" ? fill(words.ui.full, { name }) : name;
   }
 
   function update() {
@@ -162,15 +183,16 @@
       item.count.textContent = numbers.format(n);
       item.civCount.textContent = plural("civCount", n);
     }
-    const filters = items.filter((item) => markOf(item) && !(item.parent && state(item.parent) === markOf(item)));
+    const filters = filtersOf();
     $("ticked").hidden = !filters.length;
-    $("chips").replaceChildren(...filters.map((item) => {
+    $("chips").replaceChildren(...filters.map(({ item, mark }) => {
       const li = clone("chipTemplate");
       const chip = li.querySelector(".chip");
+      const name = chipName(item, mark);
       chip.dataset.i = item.i;
-      chip.dataset.state = markOf(item);
-      li.querySelector(".chip-label").textContent = fill(words.ui[markOf(item) === "has" ? "clearHas" : "clearLacks"], { name: chipName(item) });
-      li.querySelector(".chip-name").textContent = chipName(item);
+      chip.dataset.state = mark;
+      li.querySelector(".chip-label").textContent = fill(words.ui[mark === "has" ? "clearHas" : "clearLacks"], { name });
+      li.querySelector(".chip-name").textContent = name;
       return li;
     }));
   }
@@ -280,7 +302,9 @@
       const chip = e.target.closest(".chip");
       if (!chip) return;
       const at = [...$("chips").querySelectorAll(".chip")].indexOf(chip);
-      setMark(items[chip.dataset.i], null);
+      const line = lineOf(items[chip.dataset.i]);
+      if (line.length > 1) line.filter((item) => item.self === chip.dataset.state).forEach((item) => { item.self = null; });
+      else setMark(items[chip.dataset.i], null);
       update();
       const chips = $("chips").querySelectorAll(".chip");
       (chips[at] || chips[at - 1] || $("civTitle")).focus();
@@ -683,6 +707,7 @@
     const third = leaves.find((item) => ![partial, other].includes(item) && size(partial.set & ~other.set & ~item.set & ALL) > 0);
     const branch = items.find((item) => !item.group && item.kids.length > 1 && !shared.has(nameOf(item)));
     const group = items.find((item) => item.group && item.kids.length);
+    const line = items.find((item) => lineOf(item)[0] === item && lineOf(item).length > 2 && lineOf(item).every((each) => !shared.has(nameOf(each))));
 
     const merge = (runs) => {
       const merged = new Map();
@@ -878,7 +903,7 @@
         && partial.node.getAttribute("aria-checked") === "true" && same(listed(), expected(partial.set)));
       check("marking: the count says how many civilisations are listed", $("count").textContent === plural("compatible", size(partial.set)));
       check("filters: a marked item gets a filter button", $("chips").children.length === 1
-        && $("chips").querySelector(".chip-label").textContent === fill(words.ui.clearHas, { name: chipName(partial) }));
+        && $("chips").querySelector(".chip-label").textContent === fill(words.ui.clearHas, { name: chipName(partial, "has") }));
       keyDown(other.node, "x");
       check("marking: X marks an item must lack, and the civilisations that have it leave the list", other.self === "lacks"
         && other.lacking.textContent === words.ui.lacking && same(listed(), expected(partial.set & ~other.set & ALL)));
@@ -921,6 +946,17 @@
         && $("chips").querySelector(".chip-name").textContent === fill(words.ui.full, { name: nameOf(branch) }));
       tap(branch.kids[0].node);
       check("marking: a partly marked branch is mixed", state(branch) === "mixed" && branch.node.getAttribute("aria-checked") === "mixed");
+      $("clear").click();
+      tap(line.node);
+      check("filters: a whole line is named after its last upgrade", $("chips").children.length === 1
+        && $("chips").querySelector(".chip-name").textContent === nameOf(lineEnd(line)));
+      tap(lineEnd(line).node);
+      check("filters: a line shows only its deepest must-have item", $("chips").children.length === 1
+        && $("chips").querySelector(".chip-name").textContent === nameOf(lineOf(line).at(-2)));
+      keyDown(lineEnd(line).node, "x");
+      $("chips").querySelector("[data-state=has]").click();
+      check("filters: a line's filter button clears only its own kind of mark", lineOf(line)
+        .every((item) => item.self === (item === lineEnd(line) ? "lacks" : null)));
       $("clear").click();
       tap(group.node);
       check("marking: marking a group marks what is in it", state(group) === "has" && group.self === null);

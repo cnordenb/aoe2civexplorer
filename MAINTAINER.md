@@ -1,4 +1,4 @@
-# Looking after AoE2 Civ Explorer
+1# Looking after AoE2 Civ Explorer
 
 This guide is for whoever keeps the page up to date. You do not need to be a programmer for the usual job, which is
 updating the page after Age of Empires II gets a patch. That takes a browser, a text editor and about ten minutes.
