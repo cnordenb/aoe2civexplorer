@@ -16,6 +16,14 @@ Explore Age of Empires II civilisations by technology availability: mark the bui
 civilisation must have or must lack, and see which civilisations fit. The page is available in the same 17 languages
 as [aoe2techtree.net](https://aoe2techtree.net/), where its data comes from.
 
+### But why?
+
+The in-game tech tree and all existing third party tools I know of let you do one or both of two things:  
+- browse tech availability by civilisations, one civilisation at a time.  
+- browse civ availability by technologies, one technology at a time.  
+
+aoe2civexplorer lets you explore tech availabilty to civilisations, with all technologies and all civilisations at the same time.
+
 ## Installation
 
 aoe2civexplorer requires a server to run and cannot run locally from file due to using .json for data.
