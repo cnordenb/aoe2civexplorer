@@ -1,6 +1,6 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/cnordenb/aoe2civexplorer)](#)
 [![language](https://img.shields.io/badge/language-JavaScript-FFFF00)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![accessibility](https://img.shields.io/badge/accessibility-WCAG_2.2_AAA-00FFDD)](https://www.w3.org/TR/WCAG22/)
+[![accessibility](https://img.shields.io/badge/accessibility-WCAG_2.2_AAA-A5FFCA)](https://www.w3.org/TR/WCAG22/)
 [![license](https://img.shields.io/badge/license-MIT-007FFF)](https://github.com/cnordenb/aoe2civexplorer/blob/main/LICENSE)
 [![testing](https://img.shields.io/badge/testing-yes-C3FF00)](https://github.com/cnordenb/aoe2civexplorer/blob/main/TESTS.md)
 [![maintainable](https://img.shields.io/badge/maintainable-yes-00FF72)](https://github.com/cnordenb/aoe2civexplorer/blob/main/MAINTAINER.md)
