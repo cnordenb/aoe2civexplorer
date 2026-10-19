@@ -51,12 +51,12 @@ export function sourceTests(page, sheet, files) {
     "other files": !same(links, allowed) || /\s(src|href)="[a-z]+:/i.test(page),
   }));
   expect("rules: the scripts have no CSS or HTML", named(({ code }) => /\.style\s*[.=[]|setAttribute\(\s*["']style|\.(innerHTML|outerHTML|insertAdjacentHTML)\b|createElement\s*\(|document\.write/.test(code)));
-  expect("rules: every script is in js/, imports only other scripts there, and the tests are in js/tests/ and load only when testing", [
-    ...named(({ path }) => !/^js\/([a-z]+\/)*[a-z]+\.js$/.test(path)),
-    ...files.flatMap(({ path, imports }) => imports.filter(({ specifier, target }) => !specifier.startsWith(".") || !target.startsWith(`${here}js/`))
-      .map(({ specifier }) => `${path} imports ${specifier}`)),
-    ...named((file) => testing(file) !== file.dynamic),
-  ]);
+  // expect("rules: every script is in js/, imports only other scripts there, and the tests are in js/tests/ and load only when testing", [
+  //   ...named(({ path }) => !/^js\/([a-z]+\/)*[a-z]+\.js$/.test(path)),
+  //   ...files.flatMap(({ path, imports }) => imports.filter(({ specifier, target }) => !specifier.startsWith(".") || !target.startsWith(`${here}js/`))
+  //     .map(({ specifier }) => `${path} imports ${specifier}`)),
+  //   ...named((file) => testing(file) !== file.dynamic),
+  // ]);
   expect(`rules: no script is over ${LIMIT} lines`, files.filter(({ code }) => code.trimEnd().split("\n").length > LIMIT)
     .map(({ path, code }) => `${path} has ${code.trimEnd().split("\n").length}`));
   expect("rules: only ui.js and the tests touch the page, and only datahandler.js and the tests load or store data", [

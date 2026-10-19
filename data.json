@@ -86,58 +86,6 @@
         {"item": "Guilds"}
       ]},
       {"item": "Caravanserai"},
-      {"item": "Dock", "kids": [
-        {"item": "Fishing Ship", "kids": [
-          {"item": "Fish Trap"}
-        ]},
-        {"item": "Transport Ship"},
-        {"item": "Fire Galley", "kids": [
-          {"item": "Fire Ship", "kids": [
-            {"item": "Fast Fire Ship"}
-          ]}
-        ]},
-        {"item": "Galley", "kids": [
-          {"item": "War Galley", "kids": [
-            {"item": "Galleon"}
-          ]}
-        ]},
-        {"item": "Hulk", "kids": [
-          {"item": "War Hulk", "kids": [
-            {"item": "Carrack"}
-          ]}
-        ]},
-        {"item": "Demolition Raft", "kids": [
-          {"item": "Demolition Ship", "kids": [
-            {"item": "Heavy Demolition Ship"}
-          ]}
-        ]},
-        {"item": "Trade Cog"},
-        {"item": "Longship", "kids": [
-          {"item": "Elite Longship"}
-        ]},
-        {"item": "Cannon Galleon", "kids": [
-          {"item": "Elite Cannon Galleon"}
-        ]},
-        {"item": "Dromon"},
-        {"item": "Catapult Galleon"},
-        {"item": "Lou Chuan"},
-        {"group": "uniqueUnits", "unique": true, "kids": [
-          {"item": "Caravel", "kids": [
-            {"item": "Elite Caravel"}
-          ]},
-          {"item": "Dragon Ship"},
-          {"item": "Thirisadai"},
-          {"item": "Turtle Ship", "kids": [
-            {"item": "Elite Turtle Ship"}
-          ]}
-        ]},
-        {"item": "Fishing Lines", "kids": [
-          {"item": "Gillnets"}
-        ]},
-        {"item": "Warships", "kids": [
-          {"item": "Heavy Warships"}
-        ]}
-      ]},
       {"item": "Monastery", "optional": true, "kids": [
         {"item": "Monk"},
         {"group": "uniqueUnits", "unique": true, "kids": [
@@ -619,6 +567,58 @@
       {"group": "uniqueBuildings", "unique": true, "kids": [
         {"item": "Donjon"},
         {"item": "Krepost"}
+      ]}
+    ]},
+    {"item": "Dock", "kids": [
+      {"item": "Fishing Ship", "kids": [
+        {"item": "Fish Trap"}
+      ]},
+      {"item": "Transport Ship"},
+      {"item": "Fire Galley", "kids": [
+        {"item": "Fire Ship", "kids": [
+          {"item": "Fast Fire Ship"}
+        ]}
+      ]},
+      {"item": "Galley", "kids": [
+        {"item": "War Galley", "kids": [
+          {"item": "Galleon"}
+        ]}
+      ]},
+      {"item": "Hulk", "kids": [
+        {"item": "War Hulk", "kids": [
+          {"item": "Carrack"}
+        ]}
+      ]},
+      {"item": "Demolition Raft", "kids": [
+        {"item": "Demolition Ship", "kids": [
+          {"item": "Heavy Demolition Ship"}
+        ]}
+      ]},
+      {"item": "Trade Cog"},
+      {"item": "Longship", "kids": [
+        {"item": "Elite Longship"}
+      ]},
+      {"item": "Cannon Galleon", "kids": [
+        {"item": "Elite Cannon Galleon"}
+      ]},
+      {"item": "Dromon"},
+      {"item": "Catapult Galleon"},
+      {"item": "Lou Chuan"},
+      {"group": "uniqueUnits", "unique": true, "kids": [
+        {"item": "Caravel", "kids": [
+          {"item": "Elite Caravel"}
+        ]},
+        {"item": "Dragon Ship"},
+        {"item": "Thirisadai"},
+        {"item": "Turtle Ship", "kids": [
+          {"item": "Elite Turtle Ship"}
+        ]}
+      ]},
+      {"item": "Fishing Lines", "kids": [
+        {"item": "Gillnets"}
+      ]},
+      {"item": "Warships", "kids": [
+        {"item": "Heavy Warships"}
       ]}
     ]},
     {"item": "Blacksmith", "kids": [
