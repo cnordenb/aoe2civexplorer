@@ -22,7 +22,7 @@ The in-game tech tree and all existing third party tools I know of let you do on
 - browse tech availability by civilisations, one civilisation at a time.  
 - browse civ availability by technologies, one technology at a time.  
 
-aoe2civexplorer lets you explore tech availabilty to civilisations, with all technologies and all civilisations at the same time.
+aoe2civexplorer lets you explore civ availabilty by technologies, with all technologies and all civilisations simulateously. Find out easily which civs have a specific set of available and unavailable technologies, units, and buildings.
 
 ## Installation
 
