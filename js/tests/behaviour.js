@@ -1,9 +1,15 @@
 import { ALL, fill, size, words, numbers, nameOf, plural, plain } from "../datahandler.js";
 import { items, roots, state, lineOf, lineEnd, chipName } from "../model.js";
-import { $, isOpen, shown } from "../ui.js";
+import { $, isOpen, setOpen, shown } from "../ui.js";
 import { check, expect, wait, same, keyDown, tap, type, reset, listed, expected, below } from "./helpers.js";
 
-function marking({ partial, other, third, branch, line, group }) {
+const chainOf = (item) => {
+  const chain = [item];
+  while (chain.at(-1).kids.length === 1) chain.push(chain.at(-1).kids[0]);
+  return chain.filter((each) => each.twisty);
+};
+
+function marking({ partial, other, third, branch, line, group, headed, tower }) {
   reset();
   tap(partial.node);
   check("marking: a click marks an item must have, and lists and counts the civilisations that have it, in order", partial.self === "has"
@@ -19,6 +25,50 @@ function marking({ partial, other, third, branch, line, group }) {
   check("marking: the menu key marks an item must lack", third.self === "lacks" && menu.defaultPrevented);
   keyDown(partial.node, " ");
   check("marking: Space on a marked item clears it", partial.self === null);
+  $("clear").click();
+  for (let p = branch.parent; p; p = p.parent) setOpen(p, true);
+  const inBranch = items.filter((item) => below(item, branch));
+  const branchHidden = inBranch.every((item) => !shown(item));
+  tap(branch.node);
+  check("marking: marking a building marks and shows everything in it", branchHidden && state(branch) === "has"
+    && inBranch.every((item) => (item.group || item.self === "has") && shown(item)));
+  check("filters: a whole branch has one filter button", $("chips").children.length === 1
+    && $("chips").querySelector(".chip-name").textContent === fill(words.ui.full, { name: nameOf(branch) }));
+  tap(branch.kids[0].node);
+  check("marking: a partly marked branch is mixed", state(branch) === "mixed" && branch.node.getAttribute("aria-checked") === "mixed");
+  $("clear").click();
+  tap(line.node);
+  const partLine = $("chips").children.length === 1
+    && $("chips").querySelector(".chip-name").textContent === nameOf(lineOf(line).findLast((item) => item.self === "has"));
+  tap(lineEnd(line).node);
+  check("filters: a line has one filter button, named after its deepest must-have item", partLine && $("chips").children.length === 1
+    && $("chips").querySelector(".chip-name").textContent === nameOf(lineEnd(line)));
+  keyDown(lineEnd(line).node, "x");
+  $("chips").querySelector("[data-state=has]").click();
+  check("filters: a line's filter button clears only its own kind of mark", lineOf(line)
+    .every((item) => item.self === (item === lineEnd(line) ? "lacks" : null)));
+  $("clear").click();
+  tap(headed.node);
+  const fullName = $("chips").children.length === 1
+    && $("chips").querySelector(".chip-name").textContent === fill(words.ui.full, { name: nameOf(headed) });
+  $("clear").click();
+  tap(tower.node);
+  check("filters: a fully marked building at the top of a line is named Full, unless the line holds its upgrades", fullName
+    && $("chips").children.length === 1 && $("chips").querySelector(".chip-name").textContent === nameOf(lineEnd(tower)));
+  $("clear").click();
+  const inGroup = items.filter((item) => below(item, group));
+  const groupHidden = inGroup.every((item) => !shown(item));
+  tap(group.node);
+  check("marking: marking a top-level group marks and shows everything in it", groupHidden && state(group) === "has" && group.self === null
+    && inGroup.every(shown));
+  $("clear").click();
+  check("marking: Clear clears everything", items.every((item) => item.self === null));
+}
+
+function filterFocus({ other, third }) {
+  reset();
+  keyDown(other.node, "x");
+  keyDown(third.node, "x");
   const firstChip = $("chips").querySelector(".chip");
   const cleared = items[firstChip.dataset.i];
   const left = cleared === other ? third : other;
@@ -29,28 +79,7 @@ function marking({ partial, other, third, branch, line, group }) {
   check("filters: clearing the last filter moves focus to the civilisations heading and shows the hint", left.self === null
     && document.activeElement === $("civTitle") && !listed().length && !$("none").hidden && $("none").textContent === words.ui.start
     && $("ticked").hidden);
-  tap(branch.node);
-  check("marking: marking a branch marks everything in it", state(branch) === "has"
-    && items.filter((item) => below(item, branch)).every((item) => item.group || item.self === "has"));
-  check("filters: a whole branch has one filter button", $("chips").children.length === 1
-    && $("chips").querySelector(".chip-name").textContent === fill(words.ui.full, { name: nameOf(branch) }));
-  tap(branch.kids[0].node);
-  check("marking: a partly marked branch is mixed", state(branch) === "mixed" && branch.node.getAttribute("aria-checked") === "mixed");
-  $("clear").click();
-  tap(line.node);
-  const wholeLine = $("chips").children.length === 1 && $("chips").querySelector(".chip-name").textContent === nameOf(lineEnd(line));
-  tap(lineEnd(line).node);
-  check("filters: a line has one filter button, named after its deepest must-have item", wholeLine && $("chips").children.length === 1
-    && $("chips").querySelector(".chip-name").textContent === nameOf(lineOf(line).at(-2)));
-  keyDown(lineEnd(line).node, "x");
-  $("chips").querySelector("[data-state=has]").click();
-  check("filters: a line's filter button clears only its own kind of mark", lineOf(line)
-    .every((item) => item.self === (item === lineEnd(line) ? "lacks" : null)));
-  $("clear").click();
-  tap(group.node);
-  check("marking: marking a group marks what is in it", state(group) === "has" && group.self === null);
-  $("clear").click();
-  check("marking: Clear clears everything", items.every((item) => item.self === null));
+  reset();
 }
 
 async function gestures({ third }) {
@@ -107,6 +136,24 @@ function parents({ leaves, branch, line, loose, underAll, without }) {
   $("clear").click();
 }
 
+function lines({ uneven }) {
+  reset();
+  for (let p = uneven.parent; p; p = p.parent) setOpen(p, true);
+  const rest = lineOf(uneven).slice(lineOf(uneven).indexOf(uneven));
+  const run = rest.splice(0, rest.findIndex((item) => size(item.set) !== size(uneven.set)));
+  const closed = !isOpen(uneven);
+  tap(uneven.node);
+  check("marking: marking a unit or technology opens it to its first fork or its end, showing all marked with it", closed
+    && [...run, ...rest].every((item) => shown(item) && (!item.twisty || isOpen(item))));
+  const passed = run.every((item) => item.self === "has") && rest.every((item) => item.self === null)
+    && uneven.node.getAttribute("aria-checked") === "true" && same(listed(), expected(uneven.set));
+  tap(lineEnd(uneven).node);
+  keyDown(uneven.node, "x");
+  check("marking: a unit or technology passes its mark down its line only to items with as many civilisations", passed
+    && run.every((item) => item.self === "lacks") && rest.every((item) => item.self === null) && same(listed(), expected(ALL & ~uneven.set)));
+  $("clear").click();
+}
+
 function counts({ partial, other, upgraded }) {
   reset();
   const fits = () => items.filter((item) => item.self).reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
@@ -135,7 +182,7 @@ function counts({ partial, other, upgraded }) {
   $("clear").click();
 }
 
-function tree({ line }) {
+function tree() {
   reset();
   $("expandAll").click();
   const expanded = items.every((item) => !item.twisty || isOpen(item));
@@ -146,11 +193,6 @@ function tree({ line }) {
   roots[0].twisty.click();
   check("tree: Expand all, Collapse all and each branch's arrow open and close branches", expanded && collapsed && opened
     && !isOpen(roots[0]) && roots[0].list.hidden);
-  const chainOf = (item) => {
-    const chain = [item];
-    while (chain.at(-1).kids.length === 1) chain.push(chain.at(-1).kids[0]);
-    return chain.filter((each) => each.twisty);
-  };
   expect("tree: opening a branch also opens each only child below it, down to the first fork or the end", items
     .filter((item) => item.twisty).filter((item) => {
       $("collapseAll").click();
@@ -158,14 +200,14 @@ function tree({ line }) {
       return items.some((each) => isOpen(each) !== chainOf(item).includes(each));
     }).map(nameOf));
   $("collapseAll").click();
+}
+
+function keyboard({ line }) {
+  reset();
   keyDown(line.node, "ArrowRight");
   check("keyboard: Right opens a line all the way down", chainOf(line).length > 1
     && items.every((each) => isOpen(each) === chainOf(line).includes(each)));
   $("collapseAll").click();
-}
-
-function keyboard() {
-  reset();
   roots[0].node.focus();
   keyDown(roots[0].node, "ArrowUp");
   const top = document.activeElement === roots[0].node;
@@ -197,8 +239,6 @@ function finding({ partial }) {
   check("find: matches are marked and their number announced, with branches open down to each", partial.node.classList.contains("found")
     && items.every((item) => item.node.classList.contains("found") === matches.includes(item)) && matches.every((item) => shown(item))
     && $("found").textContent === plural("found", matches.length));
-  keyDown($("find"), "Enter");
-  check("find: Enter goes to the first match", document.activeElement === matches[0].node);
   type("qqqqzzzzqqqq");
   const none = $("found").textContent === words.ui.noneFound && !document.querySelector(".found");
   type("");
@@ -206,12 +246,27 @@ function finding({ partial }) {
   reset();
 }
 
+function findKey({ partial }) {
+  reset();
+  type(nameOf(partial));
+  keyDown($("find"), "Enter");
+  check("find: Enter goes to the first match", document.activeElement
+    === items.find((item) => plain(nameOf(item)).includes(plain(nameOf(partial)))).node);
+  reset();
+}
+
 export async function behaviourTests(sample) {
   marking(sample);
   await gestures(sample);
   parents(sample);
+  lines(sample);
   counts(sample);
-  tree(sample);
-  keyboard();
+  tree();
   finding(sample);
+}
+
+export function keyboardTests(sample) {
+  filterFocus(sample);
+  keyboard(sample);
+  findKey(sample);
 }

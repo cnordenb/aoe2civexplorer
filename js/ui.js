@@ -3,7 +3,7 @@ import {
   words, tag, collator, numbers, useLanguage, nameOf, civName, plural, plain,
 } from "./datahandler.js";
 import {
-  items, roots, include, matching, setIncluded, rebuild, setMark, state, mark, fit, filtersOf, unmarkLine, share, chipName, chainOf,
+  items, roots, include, matching, setIncluded, rebuild, setMark, boxState, mark, fit, filtersOf, unmarkLine, share, chipName, chainOf,
 } from "./model.js";
 
 export const $ = (id) => document.getElementById(id);
@@ -72,12 +72,12 @@ const expand = (item) => chainOf(item).forEach((each) => setOpen(each, true));
 export const shown = (item) => !item.parent || (isOpen(item.parent) && shown(item.parent));
 
 function toggle(item, kind) {
-  mark(item, kind);
+  for (const each of mark(item, kind)) for (let p = each.parent; p !== item.parent; p = p.parent) setOpen(p, true);
   update();
 }
 function paint() {
   for (const item of items) {
-    const s = state(item);
+    const s = boxState(item);
     item.node.dataset.state = s || "";
     item.node.setAttribute("aria-checked", s === "has" ? "true" : s === "mixed" ? "mixed" : "false");
     item.lacking.textContent = s === "lacks" ? words.ui.lacking : "";

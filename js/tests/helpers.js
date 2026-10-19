@@ -68,6 +68,10 @@ export const below = (item, top) => {
   for (let p = item.parent; p; p = p.parent) if (p === top) return true;
   return false;
 };
+export const itemAbove = (item) => {
+  for (let p = item.parent; p; p = p.parent) if (!p.group) return true;
+  return false;
+};
 
 export function fixtures() {
   const leaves = items.filter((item) => !item.group && !item.kids.length);
@@ -78,11 +82,15 @@ export function fixtures() {
   const without = (item) => underAll(item) & ~item.set & ALL;
   return {
     leaves, partial, other, third, underAll, without,
-    branch: items.find((item) => !item.group && !item.optional && item.kids.length > 1 && !shared.has(nameOf(item))),
-    group: items.find((item) => item.group && item.kids.length),
+    branch: items.find((item) => !item.group && !item.optional && item.kids.length > 1 && !shared.has(nameOf(item)) && !itemAbove(item)),
+    group: items.find((item) => item.group && !item.parent && item.kids.length),
     line: items.find((item) => lineOf(item)[0] === item && lineOf(item).length > 2
       && lineOf(item).every((each) => !shared.has(nameOf(each)) && !each.optional)),
     upgraded: items.find((item) => lineOf(item)[0] === item && lineEnd(item) && size(item.set) > size(item.all) && item.all === lineEnd(item).set),
     loose: items.find((item) => item.optional && size(without(item)) > 0),
+    headed: items.find((item) => !item.group && !itemAbove(item) && !item.upgrades && item.kids.length === 1 && lineEnd(item)),
+    tower: items.find((item) => item.upgrades && lineEnd(item)),
+    uneven: items.find((item) => !item.group && itemAbove(item) && item.kids.length === 1 && size(item.kids[0].set) === size(item.set)
+      && lineEnd(item) && size(lineEnd(item).set) !== size(item.set)),
   };
 }

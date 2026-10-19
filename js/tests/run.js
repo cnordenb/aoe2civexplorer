@@ -2,9 +2,9 @@ import { data, params, load, fill, attempt, recall, remember, language } from ".
 import { include } from "../model.js";
 import { clone, setLanguage, setInclude, openReport, report } from "../ui.js";
 import { root, results, check, codes, pick, reset, fixtures } from "./helpers.js";
-import { scripts, sourceTests, dataTests, updaterTests } from "./static.js";
-import { behaviourTests } from "./behaviour.js";
-import { menuTests, languageTests, optionTests, spacingTests } from "./interface.js";
+import { scripts, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static.js";
+import { behaviourTests, keyboardTests } from "./behaviour.js";
+import { menuTests, languageTests, optionTests, accessibilityTests } from "./interface.js";
 
 const LIMIT = 100;
 const merge = (runs) => {
@@ -53,19 +53,25 @@ export async function runTests() {
   if (include) setInclude(false);
   const where = `${innerWidth} by ${innerHeight}`;
   try {
-    if (!params.has("frame")) {
-      const [page, sheet, files] = await Promise.all([load("index.html"), load("style.css"), scripts()]);
-      sourceTests(page, sheet, files);
-      dataTests();
-      updaterTests();
-    }
+    const main = !params.has("frame");
+    const sources = main && await Promise.all([load("index.html"), load("style.css"), scripts()]);
+    if (main) textTests();
     pick(codes()[0]);
     const sample = fixtures();
     await behaviourTests(sample);
     menuTests(sample);
     codes().forEach((code) => languageTests(code, sample));
-    spacingTests(sample);
     optionTests();
+    if (main) tagTests();
+    pick(codes()[0]);
+    const fresh = fixtures();
+    keyboardTests(fresh);
+    accessibilityTests(fresh);
+    if (main) {
+      sourceTests(...sources);
+      dataTests();
+      updaterTests();
+    }
   } catch (error) {
     check("the tests ran to the end", false, error.stack || error.message);
   }

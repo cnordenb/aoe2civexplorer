@@ -144,10 +144,18 @@ So to add a new unique unit to the Castle, find the Castle's Unique Units group 
 `{"item": "New Unit"},` in alphabetical order. Mind the commas: every entry in a list is followed by a comma, except
 the last one. Visual Studio Code underlines mistakes in red.
 
-Where you put an item matters, because the tree works in both directions. Marking an item marks everything under
-it. And when everything under an item is marked, the item is marked too: marking Champion marks Militia,
-Man-at-Arms, Long Swordsman and Two-Handed Swordsman as well. So put an item under another only if needing
-everything below means needing the one above.
+Where you put an item matters, because marking works along the tree:
+
+- An item with no other item above it, only groups or nothing, counts as a building, such as the Barracks or the
+  Watch Tower. Marking a building marks everything in it, and opens it all, so every marked row shows.
+- An item under another item counts as a unit or technology. Marking one opens its line, and passes the mark down
+  only to items that as many civilisations have: marking Militia (52 civilisations) also marks Man-at-Arms (52),
+  but not Long Swordsman (51).
+- When everything under an item is marked, the item is marked too: marking Champion marks Militia, Man-at-Arms,
+  Long Swordsman and Two-Handed Swordsman as well.
+
+So put buildings at the top or straight into a group, and their units and technologies under them. Put an item
+under another only if needing everything below means needing the one above.
 
 A few items are exceptions, and say so with `"optional": true`:
 
@@ -164,6 +172,16 @@ visitor can ask, for example, for civilisations that have Two-Man Saw but no Lum
 You do not have to find these cases yourself. If a game update creates a new one, the tests fail with "an item is
 optional if some civilisation has everything under it without having the item", and name the item. Add
 `"optional": true` to it, as above, and run the tests again.
+
+A building whose rows are its own upgrades says so with `"upgrades": true`, as the Stone Wall and the Watch Tower do:
+
+```json
+{"item": "Watch Tower", "upgrades": true, "kids": [
+```
+
+This only changes the building's name under **Filters** once it is fully marked. A building is normally listed as,
+for example, "Full Market". A building with upgrades is listed by its last upgrade instead, as a unit is: marking the
+Watch Tower lists Keep. If a game update adds a building like this, add the flag to it.
 
 The tree also leaves some items out, unless a visitor ticks **Include Unique and Universal** in the page's
 **Options** window, which the cogwheel button at the top right opens:
@@ -269,6 +287,11 @@ check most of them.
   into it, and Left goes back out and closes it"; it may check several things at once. To add a test when there are
   already 100, fold it into a related test, or replace a test that matters less. The tests check this limit too.
 - Record what you change, and why, in `DEVLOG.md`.
+- Every test is listed in `TESTS.md`, with its purpose and its file. When you add, change or remove a test, update
+  that list.
+- The tests run in three rounds, in the order `TESTS.md` lists them: functional tests, then accessibility tests, then
+  maintainability tests. `runTests()` in `js/tests/run.js` runs the rounds. Put a new test in its own round, so
+  that the order stays the same.
 
 Automated tests cannot prove everything about accessibility. After bigger changes, try the page with only a
 keyboard, at 400% zoom, and with a screen reader, such as NVDA on Windows or VoiceOver on a Mac or iPhone.

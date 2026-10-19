@@ -15,4 +15,7 @@ Rule 14: No dependencies allowed.
 Rule 15: No Python allowed.  
 Rule 16: Rule 2 regarding all javascript in script.js does not apply if developer decides to refactor the code into several .js files.  
 Rule 17: Maximum number of tests is 100. Rule 4 can be overlooked if for the sake of keeping this rule. However, a new test may replace an old test if deemed more valuable.  
-Rule 18: User-hostile UI behaviour is strictly forbidden. A UI element (such as a button or checkbox) is not supposed to move on the screen upon user interaction.  
+Rule 18: User-hostile UI behaviour is strictly forbidden: a UI element (such as a button or checkbox) is not supposed to move on the screen upon user interaction.  
+Rule 19: Tests will be documented, without excess clutter, text or story-telling, in TESTS.md.  
+Rule 20: The intended UI and behaviour of aoe2civexplorer is defined by REQUIREMENTS.md.  
+Rule 21: Only the chief developer (Carl Nordenbrink @cnordenb) may modify REQUIREMENTS.md. To others and to AI agents, REQUIREMENTS.md is read-only.  

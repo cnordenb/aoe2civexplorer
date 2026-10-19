@@ -15,7 +15,8 @@ function collect(nodes, parent) {
     const key = node.item ?? node.group;
     const item = {
       i: items.length, key, path: parent ? `${parent.path}|${key}` : key, group: !node.item,
-      set: node.item ? setOf(data.availability[node.item]) : ALL, optional: node.optional === true, self: null, chosen: null, kids: [], parent,
+      set: node.item ? setOf(data.availability[node.item]) : ALL, optional: node.optional === true, upgrades: node.upgrades === true,
+      self: null, chosen: null, kids: [], parent,
     };
     (parent ? parent.kids : roots).push(item);
     items.push(item);
@@ -59,10 +60,30 @@ export function state(item) {
   if (!item.group) parts.push(item.self);
   return parts.every((part) => part === parts[0]) ? parts[0] : "mixed";
 }
+export const isUnitOrTech = (item) => {
+  for (let p = item.parent; p; p = p.parent) if (!p.group) return !item.group;
+  return false;
+};
+const descendants = (item) => item.kids.flatMap((kid) => [kid, ...descendants(kid)]);
+function sameCount(item) {
+  const line = [item];
+  while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group && size(line.at(-1).kids[0].set) === size(item.set)) line.push(line.at(-1).kids[0]);
+  return line;
+}
 export function mark(item, kind) {
-  setMark(item, state(item) === kind ? null : kind);
+  const unit = isUnitOrTech(item);
+  const next = (unit ? item.self : state(item)) === kind ? null : kind;
+  if (unit && next) {
+    if (next === "lacks") descendants(item).filter((each) => each.chosen === "has").forEach((each) => { each.chosen = null; });
+    sameCount(item).forEach((each) => { each.chosen = next; });
+  } else setMark(item, next);
   settle();
   for (let p = item.parent; p; p = p.parent) if (p.self === "has" && p.chosen === "lacks") p.chosen = null;
+  return next ? [...chainOf(item), ...(unit ? sameCount(item) : descendants(item))] : [];
+}
+export function boxState(item) {
+  if (!isUnitOrTech(item) || !item.self) return state(item);
+  return descendants(item).every((each) => !each.self || each.self === item.self) ? item.self : "mixed";
 }
 export function fit() {
   settle();
@@ -102,7 +123,7 @@ export function share() {
   shared = new Set([...seen].filter(([, n]) => n > 1).map(([name]) => name));
 }
 export function chipName(item, kind) {
-  const named = (kind === "has" && lineOf(item).findLast((each) => each.self === "has")) || item;
+  const named = (kind === "has" && (isUnitOrTech(item) || item.upgrades) && lineOf(item).findLast((each) => each.self === "has")) || item;
   const name = shared.has(nameOf(named)) && named.parent ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) }) : nameOf(named);
   return named.kids.length && state(item) === "has" ? fill(words.ui.full, { name }) : name;
 }

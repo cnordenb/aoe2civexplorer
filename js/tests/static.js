@@ -64,13 +64,27 @@ export function sourceTests(page, sheet, files) {
     .filter((name) => files.some(({ code }) => code.includes(JSON.stringify(name)))));
 }
 
+export function textTests() {
+  const all = keys();
+  expect("data: each language has all of the page's text", missingText(data).map(({ language, name }) => `${language}: ${name}`));
+  expect("data: each language names every item and civilisation", codes().flatMap((code) => [
+    ...all.filter((key) => !data.text[code].items?.[key]),
+    ...data.civs.filter((civ) => !data.text[code].civs?.[civ]),
+  ].map((key) => `${code}: ${key}`)));
+}
+
+export function tagTests() {
+  expect("data: each language has a name and a valid tag",
+    codes().filter((code) => !data.languages[code].name || !TAG.test(data.languages[code].tag)));
+}
+
 export function dataTests() {
   const all = keys();
   const languages = codes();
   expect("data: each item is in the tree once", all.filter((key, i) => all.indexOf(key) !== i));
   const flagged = (nodes, flag) => nodes.flatMap((node) => [...(flag in node ? [node] : []), ...flagged(node.kids ?? [], flag)]);
-  expect("data: only items with something under them are optional, and only groups are unique, both marked with true", [
-    ...flagged(data.tree, "optional").filter((node) => node.optional !== true || !node.item || !node.kids?.length),
+  expect("data: only items with something under them are optional or have upgrades, and only groups are unique, all marked with true", [
+    ...["optional", "upgrades"].flatMap((flag) => flagged(data.tree, flag).filter((node) => node[flag] !== true || !node.item || !node.kids?.length)),
     ...flagged(data.tree, "unique").filter((node) => node.unique !== true || !node.group),
   ].map((node) => node.item ?? node.group));
   const wholeOf = (node) => (node.kids ?? []).reduce((s, kid) => s & wholeOf(kid), node.item ? setOf(data.availability[node.item]) : ALL);
@@ -85,13 +99,6 @@ export function dataTests() {
     const rule = data.availability[key];
     return !rule || (rule !== "all" && (rule.has ?? rule.lacks ?? [null]).some((civ) => !data.civs.includes(civ)));
   }));
-  expect("data: each language has a name and a valid tag",
-    languages.filter((code) => !data.languages[code].name || !TAG.test(data.languages[code].tag)));
-  expect("data: each language has all of the page's text", missingText(data).map(({ language, name }) => `${language}: ${name}`));
-  expect("data: each language names every item and civilisation", languages.flatMap((code) => [
-    ...all.filter((key) => !data.text[code].items?.[key]),
-    ...data.civs.filter((civ) => !data.text[code].civs?.[civ]),
-  ].map((key) => `${code}: ${key}`)));
   expect("data: counted texts have an 'other' form", languages.flatMap((code) => Object.entries(data.text[code].ui)
     .filter(([, value]) => typeof value === "object" && !value.other).map(([key]) => `${code}: ${key}`)));
   const holes = (value) => [...new Set(JSON.stringify(value ?? "").match(/\{\w+\}/g) ?? [])].sort().join();

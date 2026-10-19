@@ -470,3 +470,109 @@
 
 - Tests reduced from 91 to 90
   - Check for javascript in index.html was removed because a local live server injection was causing false positive.
+
+## 2026-10-19: the Dock is a top-level row
+
+### What changed
+
+- **The Dock and its whole branch moved.** They left the Economy group and are now a top-level row between Military
+  and Blacksmith, a change made in the tree in `data.json`.
+- **How.** The JSON writer in `js/datahandler.js` made the move, after confirming it reproduces `data.json` exactly,
+  so nothing else in the file changed.
+- **Tests.** All tests pass in light and dark colours, in all four window sizes.
+
+## 2026-10-19: TESTS.md filled in (rule 19)
+
+### What changed
+
+- **`TESTS.md`** now lists all 90 tests as Test 1 to Test 90, in the order they first run, in the format stated at
+  the top of the file. Each test has three fields: File residence (file and line numbers), Purpose and Assertion
+  expectation.
+- **At most 120 characters per field.** Purposes name the rule, WCAG criterion or requirement number a test protects,
+  where there is one. Known false positives are noted in the assertion expectation, as in Tests 75 and 87.
+- **Checked.** A script confirmed 90 tests, no field over 120 characters, and that each listed line holds the test it
+  names.
+- **CI.** The workflow's list of allowed files now includes `TESTS.md` and `REQUIREMENTS.md`, so committing them does
+  not fail the "only allowed files" check.
+- **`MAINTAINER.md`** asks for `TESTS.md` to be updated whenever a test is added, changed or removed.
+
+## 2026-10-19: marking opens what it marks (requirements 28 to 31)
+
+### What changed
+
+- **Marking opens what it marks (Req. 28, 31).** Marking an item, by click, Space, X, right-click or long press, now
+  opens it down to its first fork or the end of its line, and opens the way to every item the mark was passed to.
+  So marking a building, a top-level row or a group opens everything in it. Before, marking opened nothing.
+  Clearing a mark still opens nothing.
+- **Marks pass down a line only at the same count (Req. 29, 30).** Marking a unit or technology marks the items
+  below it in its line only while they have as many civilisations, counted from the data without filters. Before,
+  it marked everything below: marking Militia (52 civilisations) also marked Champion (39), so the list shrank to
+  39. Now it marks Man-at-Arms (52) and stops at Long Swordsman (51), and the list keeps all 52.
+- **Unchanged.** Marking the end of a line still marks the whole line (Req. 27), as you decided. A civilisation with
+  a line's last item always has the items above it, so the list does not change. Buildings, top-level rows and
+  groups still pass their mark to everything in them.
+- **Which items are units and technologies.** `data.json` has no type field. An item with no other item above it,
+  only groups or nothing, counts as a building. All 34 such items are buildings. Any item under another item counts
+  as a unit or technology. `isUnitOrTech()` in `js/model.js` works this out.
+- **Follow-on fixes.**
+  - Clicking a marked unit or technology again clears it. The toggle now looks at the item's own mark. Before, a line
+    only partly marked below it read as mixed, and a second click marked it again.
+  - A marked unit or technology shows its own mark, and a dash only when items below it carry a different mark
+    (Req. 26). Unmarked items below it no longer turn its box into a dash. `boxState()` in `js/model.js` decides.
+  - Marking a unit or technology must lack clears must-have marks below it, which can no longer hold. Otherwise, X on
+    a fully marked line did nothing.
+- **Tests.** There are now 92.
+  - New: marking a unit or technology opens its line and shows everything marked with it; a mark passes down a line
+    only to items with as many civilisations, for both must have and must lack.
+  - "Marking a branch marks everything in it" is now "marking a building marks and shows everything in it", and
+    "marking a group marks what is in it" is now "marking a top-level group marks and shows everything in it".
+  - The line filter test now expects the filter to be named after the deepest item the mark reached.
+  - Each new or changed check fails when the behaviour it covers is taken out.
+  - All 92 tests pass in light and dark colours, in all four window sizes.
+- **`TESTS.md`.** The new tests are Tests 44 and 45, and the tests after them are renumbered. The table of contents
+  lists every test once, under its category.
+- **`MAINTAINER.md`.** Step 4 explains how an item's place in the tree makes it a building or a unit or technology,
+  and how marks pass down a line.
+
+## 2026-10-19: a building at the top of a line is named Full
+
+### What changed
+
+- **The names.** In the default tree, some buildings head a single line, because what else sat under them is left
+  out. Fully marked, they were listed under Filters by the line's last item: Market read "Guilds", Mill "Crop
+  Rotation" and Lumber Camp "Two-Man Saw". As you decided, they now read "Full Market", "Full Mill" and "Full Lumber
+  Camp", like every other building (Req. 24). Mining Camp already read "Full Mining Camp".
+- **Walls and towers keep their names.** As you decided, Stone Wall and Watch Tower still follow the deepest
+  descendant (Req. 25) and read "Fortified Wall" and "Keep", because their rows are their own upgrades. The tree
+  cannot tell them apart from the Lumber Camp, so both carry a new flag in `data.json`: `"upgrades": true`.
+  Marking them still marks their whole line, as for any building.
+- **Code.** `chipName()` in `js/model.js` names a filter by its line's deepest marked item only for units,
+  technologies and buildings with upgrades.
+- **Tests.** There are now 93.
+  - New: a building at the top of a line is named Full, unless the line holds its upgrades. It is Test 34, and the
+    tests after it are renumbered in `TESTS.md`. With the old naming put back, only this test fails.
+  - The data check for the hand-edited flags now also covers `upgrades`.
+  - All 93 tests pass in light and dark colours, in all four window sizes.
+- **`MAINTAINER.md`.** Step 4 explains the `upgrades` flag, and when to add it.
+
+## 2026-10-19: the tests run in the order of TESTS.md's categories
+
+### What changed
+
+- **Three rounds.** As you asked, the tests now run in the order of the table of contents in `TESTS.md`: the 47
+  functional tests first, then the 27 accessibility tests, then the 19 maintainability tests. Within each round they
+  keep the order they had. `TESTS.md` is renumbered to match, so the former Test 13 is now Test 1.
+- **How.** `runTests()` in `js/tests/run.js` runs the rounds. Tests that moved to another round no longer lean on
+  what the tests around them left behind; each sets up what it needs.
+  - `js/tests/static.js`: the data checks are split into `textTests()` (functional), `tagTests()` (accessibility)
+    and `dataTests()` (maintainability).
+  - `js/tests/behaviour.js`: the focus checks for filter buttons, "Right opens a line" and "Enter goes to the first
+    match" moved into `keyboardTests()`, for the accessibility round.
+  - `js/tests/interface.js`: the audits, the language menu's keys, wider text spacing and Space on the Include box
+    moved into `accessibilityTests()`. The audits still run in every state they ran in before.
+- **Checked.** For one run, the report's sorting was switched off, so it listed the tests in the order they first ran.
+  That order matched `TESTS.md`, all 93 tests. Every line number in `TESTS.md` was checked against the code. All 93
+  tests pass in light and dark colours, in all four window sizes.
+- **`TESTS.md`** also has back the previous entry's changes, the new Test and the flag check's wording, which a
+  save from an editor had undone.
+- **`MAINTAINER.md`** explains the three rounds, and that a new test goes in its own round.

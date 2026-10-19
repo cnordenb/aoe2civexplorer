@@ -673,12 +673,12 @@
     {"group": "fortifications", "kids": [
       {"item": "Palisade Wall"},
       {"item": "Palisade Gate"},
-      {"item": "Stone Wall", "kids": [
+      {"item": "Stone Wall", "upgrades": true, "kids": [
         {"item": "Fortified Wall"}
       ]},
       {"item": "Gate"},
       {"item": "Outpost"},
-      {"item": "Watch Tower", "kids": [
+      {"item": "Watch Tower", "upgrades": true, "kids": [
         {"item": "Guard Tower", "kids": [
           {"item": "Keep"}
         ]}
