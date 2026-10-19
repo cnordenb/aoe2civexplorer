@@ -19,12 +19,18 @@
       "noMatch": "沒有文明符合所有篩選條件。",
       "start": "點擊樹狀圖中的項目，列出擁有它們的文明。",
       "civCount": {"other": "{n} 個文明"},
+      "range": "{own}–{all}",
+      "civRange": "{own}，其中 {all} 擁有其下全部項目",
       "lacking": "，必須缺少",
       "clearHas": "清除「必須擁有」：{name}",
       "clearLacks": "清除「必須缺少」：{name}",
       "full": "{name}（全部）",
       "inParent": "{name}（{parent}）",
-      "source": "資料來源：{source}，{date}。"
+      "source": "資料來源：{source}，{date}。",
+      "options": "選項",
+      "includeAll": "包含特殊與通用項目",
+      "includeHint": "同時顯示特殊單位、科技和建築，所有文明都擁有的項目，以及只有一個文明擁有的項目。",
+      "close": "關閉"
     },
     "groups": {
       "economy": "經濟",

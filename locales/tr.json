@@ -19,12 +19,18 @@
       "noMatch": "Tüm filtrelere uyan medeniyet yok.",
       "start": "Bunlara sahip medeniyetleri listelemek için ağaçtaki öğelere tıklayın.",
       "civCount": {"other": "{n} medeniyet"},
+      "range": "{own}–{all}",
+      "civRange": "{own}; alttaki her şeye sahip olan: {all}",
       "lacking": ", olmamalı",
       "clearHas": "“Olmalı” filtresini kaldır: {name}",
       "clearLacks": "“Olmamalı” filtresini kaldır: {name}",
       "full": "{name} (tamamı)",
       "inParent": "{name} ({parent})",
-      "source": "Veriler: {source}, {date}."
+      "source": "Veriler: {source}, {date}.",
+      "options": "Seçenekler",
+      "includeAll": "Özgün ve Evrensel Olanları Dahil Et",
+      "includeHint": "Özgün birimleri, teknolojileri ve binaları, tüm medeniyetlerin sahip olduklarını ve yalnızca bir medeniyetin sahip olduklarını da gösterir.",
+      "close": "Kapat"
     },
     "groups": {
       "economy": "Ekonomi",

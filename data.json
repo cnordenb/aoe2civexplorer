@@ -45,7 +45,7 @@
       ]},
       {"item": "House"},
       {"group": "dropOffSites", "kids": [
-        {"item": "Mill", "kids": [
+        {"item": "Mill", "optional": true, "kids": [
           {"item": "Horse Collar", "kids": [
             {"item": "Heavy Plow", "kids": [
               {"item": "Crop Rotation"}
@@ -57,14 +57,14 @@
             ]}
           ]}
         ]},
-        {"item": "Lumber Camp", "kids": [
+        {"item": "Lumber Camp", "optional": true, "kids": [
           {"item": "Double-Bit Axe", "kids": [
             {"item": "Bow Saw", "kids": [
               {"item": "Two-Man Saw"}
             ]}
           ]}
         ]},
-        {"item": "Mining Camp", "kids": [
+        {"item": "Mining Camp", "optional": true, "kids": [
           {"item": "Gold Mining", "kids": [
             {"item": "Gold Shaft Mining"}
           ]},
@@ -121,7 +121,7 @@
         {"item": "Dromon"},
         {"item": "Catapult Galleon"},
         {"item": "Lou Chuan"},
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Caravel", "kids": [
             {"item": "Elite Caravel"}
           ]},
@@ -138,9 +138,9 @@
           {"item": "Heavy Warships"}
         ]}
       ]},
-      {"item": "Monastery", "kids": [
+      {"item": "Monastery", "optional": true, "kids": [
         {"item": "Monk"},
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Missionary"}
         ]},
         {"item": "Devotion", "kids": [
@@ -157,12 +157,12 @@
         {"item": "Theocracy"}
       ]},
       {"item": "Fortified Church", "kids": [
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Warrior Priest"}
         ]}
       ]},
       {"item": "Wonder"},
-      {"group": "uniqueBuildings", "kids": [
+      {"group": "uniqueBuildings", "unique": true, "kids": [
         {"item": "Feitoria"},
         {"item": "Folwark"},
         {"item": "Harbor"}
@@ -206,7 +206,7 @@
             {"item": "Elite Fire Lancer"}
           ]}
         ]},
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Condottiero"},
           {"item": "Flemish Militia"},
           {"item": "Ibirapema Warrior", "kids": [
@@ -242,7 +242,7 @@
         ]},
         {"item": "Slinger"},
         {"item": "Hand Cannoneer"},
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Bolas Rider", "kids": [
             {"item": "Elite Bolas Rider"}
           ]},
@@ -280,7 +280,7 @@
         {"item": "Steppe Lancer", "kids": [
           {"item": "Elite Steppe Lancer"}
         ]},
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Camel Scout"},
           {"item": "Imperial Camel Rider"},
           {"item": "Savar"},
@@ -315,7 +315,7 @@
         {"item": "Siege Tower"},
         {"item": "Bombard Cannon"},
         {"item": "Traction Trebuchet"},
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Flaming Camel"},
           {"item": "Houfnice"},
           {"item": "Mounted Trebuchet"},
@@ -325,7 +325,7 @@
       {"item": "Castle", "kids": [
         {"item": "Petard"},
         {"item": "Trebuchet (Packed)"},
-        {"group": "uniqueUnits", "kids": [
+        {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Arambai", "kids": [
             {"item": "Elite Arambai"}
           ]},
@@ -501,7 +501,7 @@
         {"item": "Conscription"},
         {"item": "Sappers"},
         {"item": "Spies/Treason"},
-        {"group": "uniqueTechnologies", "kids": [
+        {"group": "uniqueTechnologies", "unique": true, "kids": [
           {"item": "Anarchy"},
           {"item": "Andean Sling"},
           {"item": "Arquebus"},
@@ -616,7 +616,7 @@
           {"item": "Yeomen"}
         ]}
       ]},
-      {"group": "uniqueBuildings", "kids": [
+      {"group": "uniqueBuildings", "unique": true, "kids": [
         {"item": "Donjon"},
         {"item": "Krepost"}
       ]}
@@ -1203,12 +1203,18 @@
       "noMatch": "No civilisation fits all of the filters.",
       "start": "Click items in the tree to list the civilisations that have them.",
       "civCount": {"one": "{n} civilisation", "other": "{n} civilisations"},
+      "range": "{own}–{all}",
+      "civRange": "{own}, {all} with everything under it",
       "lacking": ", must lack",
       "clearHas": "Clear must have: {name}",
       "clearLacks": "Clear must lack: {name}",
       "full": "Full {name}",
       "inParent": "{name} ({parent})",
-      "source": "Data from {source}, {date}."
+      "source": "Data from {source}, {date}.",
+      "options": "Options",
+      "includeAll": "Include Unique and Universal",
+      "includeHint": "Also shows unique units, technologies and buildings, things every civilisation has, and things only one civilisation has.",
+      "close": "Close"
     },
     "groups": {
       "economy": "Economy",

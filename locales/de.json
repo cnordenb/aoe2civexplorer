@@ -23,12 +23,18 @@
       "noMatch": "Kein Volk erfüllt alle Filter.",
       "start": "Klicke auf Einträge im Baum, um die Völker aufzulisten, die sie haben.",
       "civCount": {"one": "{n} Volk", "other": "{n} Völker"},
+      "range": "{own}–{all}",
+      "civRange": "{own}, davon {all} mit allem darunter",
       "lacking": ", darf nicht vorhanden sein",
       "clearHas": "„Muss vorhanden sein“ entfernen: {name}",
       "clearLacks": "„Darf nicht vorhanden sein“ entfernen: {name}",
       "full": "{name} (vollständig)",
       "inParent": "{name} ({parent})",
-      "source": "Daten von {source}, {date}."
+      "source": "Daten von {source}, {date}.",
+      "options": "Optionen",
+      "includeAll": "Spezielles und Allgemeines einbeziehen",
+      "includeHint": "Zeigt auch Spezialeinheiten, -technologien und -gebäude, was alle Völker haben und was nur ein Volk hat.",
+      "close": "Schließen"
     },
     "groups": {
       "economy": "Wirtschaft",

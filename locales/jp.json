@@ -19,12 +19,18 @@
       "noMatch": "すべてのフィルターに合う文明はありません。",
       "start": "ツリーの項目をクリックすると、それを持つ文明が一覧表示されます。",
       "civCount": {"other": "{n} 文明"},
+      "range": "{own}–{all}",
+      "civRange": "{own}、うち {all} は下位の項目をすべて持つ",
       "lacking": "、除外",
       "clearHas": "必須を解除：{name}",
       "clearLacks": "除外を解除：{name}",
       "full": "{name}（すべて）",
       "inParent": "{name}（{parent}）",
-      "source": "データ：{source}、{date}。"
+      "source": "データ：{source}、{date}。",
+      "options": "オプション",
+      "includeAll": "固有と共通の項目を含める",
+      "includeHint": "固有のユニット、テクノロジー、建物に加え、すべての文明が持つ項目と、1 つの文明だけが持つ項目も表示します。",
+      "close": "閉じる"
     },
     "groups": {
       "economy": "経済",

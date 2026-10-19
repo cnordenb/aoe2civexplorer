@@ -19,12 +19,18 @@
       "noMatch": "모든 필터에 맞는 문명이 없습니다.",
       "start": "트리에서 항목을 클릭하면 그 항목이 있는 문명이 표시됩니다.",
       "civCount": {"other": "문명 {n}개"},
+      "range": "{own}–{all}",
+      "civRange": "{own}, 그중 하위 항목까지 모두 있는 {all}",
       "lacking": ", 반드시 없음",
       "clearHas": "‘반드시 있음’ 해제: {name}",
       "clearLacks": "‘반드시 없음’ 해제: {name}",
       "full": "{name} (전체)",
       "inParent": "{name} ({parent})",
-      "source": "데이터 출처: {source}, {date}."
+      "source": "데이터 출처: {source}, {date}.",
+      "options": "옵션",
+      "includeAll": "특수 및 공통 항목 포함",
+      "includeHint": "특수 유닛, 기술, 건물과 함께 모든 문명이 가진 항목과 한 문명만 가진 항목도 표시합니다.",
+      "close": "닫기"
     },
     "groups": {
       "economy": "경제",

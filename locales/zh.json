@@ -19,12 +19,18 @@
       "noMatch": "没有文明符合所有筛选条件。",
       "start": "点击树中的项目，列出拥有它们的文明。",
       "civCount": {"other": "{n} 个文明"},
+      "range": "{own}–{all}",
+      "civRange": "{own}，其中 {all} 拥有其下全部项目",
       "lacking": "，必须缺少",
       "clearHas": "清除“必须拥有”：{name}",
       "clearLacks": "清除“必须缺少”：{name}",
       "full": "{name}（全部）",
       "inParent": "{name}（{parent}）",
-      "source": "数据来自 {source}，{date}。"
+      "source": "数据来自 {source}，{date}。",
+      "options": "选项",
+      "includeAll": "包括独特和通用项目",
+      "includeHint": "同时显示独特单位、科技和建筑，所有文明都拥有的项目，以及只有一个文明拥有的项目。",
+      "close": "关闭"
     },
     "groups": {
       "economy": "经济",

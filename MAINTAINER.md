@@ -8,20 +8,35 @@ If you are in a hurry, jump to [After a game update](#after-a-game-update).
 
 ## How the page is put together
 
-The page is four files and a folder of language files. There is nothing to install and nothing to build: the files you
-see are exactly the files a visitor's browser downloads.
+The page is a handful of files, a folder of scripts and a folder of language files. There is nothing to install and
+nothing to build: the files you see are exactly the files a visitor's browser downloads.
 
 | File | What it holds |
 | --- | --- |
-| `index.html` | The structure of the page: the header, the two panes, the language menu. It holds no text of its own. |
+| `index.html` | The structure of the page: the header, the two panes, the options window with the language menu. It holds no text of its own. |
 | `style.css` | How the page looks: colours, sizes, the layout for big and small screens. |
-| `script.js` | How the page behaves. It also holds two tools for you: the data updater and the tests. |
+| `js/` | How the page behaves, split into the scripts listed below. |
 | `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in English, the default language. |
 | `favicon.ico` | The small icon browsers show in the tab and in bookmarks. |
 | `locales/` | One file per other language, such as `locales/de.json` for German, with every piece of text in that language. |
 
 Three more files help you: this guide, `README.md`, and `.github/workflows/tests.yml`, which tells GitHub to run the
 tests every time someone pushes a change.
+
+The scripts in `js/` each have one job. They use the browser's own way of loading scripts from each other, called
+modules, so they need no build step and no extra tools:
+
+| Script | Its job |
+| --- | --- |
+| `js/script.js` | Where the page starts. It loads the data, starts the page, and loads the tests or the updater when asked. |
+| `js/datahandler.js` | Everything about data: loading `data.json` and the language files, the chosen language and its text, which civilisations have what, saved choices such as the language, and the updater that fetches new data and writes the files. |
+| `js/model.js` | The tree and its rules: which items are shown, which are marked, and when marking one item marks others. |
+| `js/ui.js` | Everything on the screen: drawing the tree and the list, clicks and keys, the language menu, the options window and the report window. |
+| `js/tests/` | The tests. They are only loaded when the address ends in `?test`, so visitors never download them. |
+
+No script may grow past 400 lines. When one does, the tests fail, and it is time to move part of it into a new script
+in `js/`, or into a new test file in `js/tests/`. Give it a name in lower-case letters only, such as `menu.js`. Import the new script where it is needed, as the others do; the
+tests find every script by following those imports.
 
 The most important idea is that **all the facts live in `data.json` and the language files**. The other files never
 mention a unit, a civilisation or a sentence. So a game update only ever changes `data.json` and the language files,
@@ -129,6 +144,42 @@ So to add a new unique unit to the Castle, find the Castle's Unique Units group 
 `{"item": "New Unit"},` in alphabetical order. Mind the commas: every entry in a list is followed by a comma, except
 the last one. Visual Studio Code underlines mistakes in red.
 
+Where you put an item matters, because the tree works in both directions. Marking an item marks everything under
+it. And when everything under an item is marked, the item is marked too: marking Champion marks Militia,
+Man-at-Arms, Long Swordsman and Two-Handed Swordsman as well. So put an item under another only if needing
+everything below means needing the one above.
+
+A few items are exceptions, and say so with `"optional": true`:
+
+```json
+{"item": "Lumber Camp", "optional": true, "kids": [
+```
+
+An optional item is one that some civilisations can do without while still having everything under it. The Mill,
+Lumber Camp and Mining Camp are optional, because civilisations with a Folwark, Mule Cart or Settlement research
+the same technologies there. The Monastery is optional because Armenians research its technologies at the Fortified
+Church. Marking everything under an optional item leaves the item itself unmarked, so a
+visitor can ask, for example, for civilisations that have Two-Man Saw but no Lumber Camp.
+
+You do not have to find these cases yourself. If a game update creates a new one, the tests fail with "an item is
+optional if some civilisation has everything under it without having the item", and name the item. Add
+`"optional": true` to it, as above, and run the tests again.
+
+The tree also leaves some items out, unless a visitor ticks **Include Unique and Universal** in the page's
+**Options** window, which the cogwheel button at the top right opens:
+
+- Groups marked `"unique": true`, with everything in them. These are the Unique Units, Unique Technologies and
+  Unique Buildings groups:
+
+  ```json
+  {"group": "uniqueUnits", "unique": true, "kids": [
+  ```
+
+  If you add a new group of unique items, mark it the same way.
+- Items that every civilisation has, such as the Town Center, and items that only one civilisation has, such as the
+  Pasture. The page works these out for itself from the data, so there is nothing to mark. An item stays when
+  something under it is kept: the Barracks stays, because not every civilisation has the Champion.
+
 When you have changed the tree, reload the `?update` page. The report should no longer mention those items.
 
 ### Step 5: download the new files
@@ -175,7 +226,7 @@ English corrections go in `overrides` in `data.json`. Then run the updater again
 The page's sentences, such as the button labels and the hints, are under `text`, then `ui`: in `data.json` for
 English, and in the language's file in `locales` for the others. You can change them in any editor.
 
-- Words in braces, such as `{n}`, `{name}`, `{parent}`, `{source}` and `{date}`, are filled in by the page. Keep them,
+- Words in braces, such as `{n}`, `{name}`, `{parent}`, `{own}`, `{all}`, `{source}` and `{date}`, are filled in by the page. Keep them,
   though you may move them. The tests check that every language uses the same ones as English.
 - A text with a count, such as `"compatible"`, has one form per kind of number: `"one"`, `"few"`, `"many"` and
   `"other"`. Languages differ in which they need. English needs "one" (1 civilisation) and "other" (2 civilisations);
@@ -202,7 +253,9 @@ The project follows a few rules that keep it simple to look after. If you change
 check most of them.
 
 - All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
-  `index.html`, all looks in `style.css`, all behaviour in `script.js`.
+  `index.html`, all looks in `style.css`, all behaviour in the scripts in `js/`: data handling in
+  `js/datahandler.js`, everything on the screen in `js/ui.js`, and the tests in `js/tests/`. No script is over 400
+  lines.
 - No comments in the code. Explanations belong in this guide.
 - No images, sounds or animations, apart from the tab icon `favicon.ico`, and no extra libraries, build steps or other
   programming languages.
@@ -212,6 +265,10 @@ check most of them.
 - The page itself never scrolls. When it first opens, with every branch closed, it fits on the screen. When a screen
   is too small for that, the panes or the content area scroll instead.
 - The tests must pass before a change is published.
+- There are at most 100 tests. A test is one line in the test report, such as "keyboard: Right opens a branch and goes
+  into it, and Left goes back out and closes it"; it may check several things at once. To add a test when there are
+  already 100, fold it into a related test, or replace a test that matters less. The tests check this limit too.
+- Record what you change, and why, in `DEVLOG.md`.
 
 Automated tests cannot prove everything about accessibility. After bigger changes, try the page with only a
 keyboard, at 400% zoom, and with a screen reader, such as NVDA on Windows or VoiceOver on a Mac or iPhone.

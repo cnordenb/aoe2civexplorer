@@ -8,16 +8,12 @@
 <meta name="description" content="Find the Age of Empires II civilisations that have, or lack, the buildings, units and technologies you choose.">
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="favicon.ico">
-<script src="script.js" defer></script>
+<script type="module" src="js/script.js"></script>
 </head>
 <body>
 <header class="top" id="top" hidden>
   <h1 data-text="title"></h1>
-  <div class="language" id="language">
-    <span class="sr-only" id="languageLabel" data-text="language"></span>
-    <button type="button" class="tool language-button" id="languageButton" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span id="languageName"></span></button>
-    <ul class="language-list" id="languageList" role="list" hidden></ul>
-  </div>
+  <button type="button" class="tool icon" id="optionsButton" aria-haspopup="dialog" aria-controls="options"><span class="cog" aria-hidden="true">⚙︎</span><span class="sr-only" data-text="options"></span></button>
 </header>
 <noscript><p>AoE2 Civ Explorer needs JavaScript.</p></noscript>
 <p class="load-error" id="loadError" hidden>AoE2 Civ Explorer could not load its data.</p>
@@ -59,6 +55,19 @@
 </main>
 <footer class="foot"><p id="source"><a id="sourceLink"></a></p></footer>
 </div>
+<dialog class="options" id="options" aria-labelledby="optionsTitle">
+  <h2 id="optionsTitle" data-text="options"></h2>
+  <div class="language" id="language">
+    <span id="languageLabel" data-text="language"></span>
+    <button type="button" class="tool language-button" id="languageButton" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span id="languageName"></span></button>
+    <ul class="language-list" id="languageList" role="list" hidden></ul>
+  </div>
+  <div class="settings" id="settings">
+    <div class="option" id="include" role="checkbox" tabindex="0" aria-checked="false" aria-describedby="includeHint"><span class="box" aria-hidden="true"></span><span data-text="includeAll"></span></div>
+    <p id="includeHint" data-text="includeHint"></p>
+  </div>
+  <form method="dialog"><button class="tool" data-text="close"></button></form>
+</dialog>
 <dialog class="report" id="report" lang="en" aria-labelledby="reportTitle">
   <h2 id="reportTitle"></h2>
   <p id="reportStatus" role="status"></p>

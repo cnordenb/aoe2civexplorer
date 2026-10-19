@@ -19,12 +19,18 @@
       "noMatch": "Nenhuma civilização atende a todos os filtros.",
       "start": "Clique nos itens da árvore para listar as civilizações que os têm.",
       "civCount": {"one": "{n} civilização", "other": "{n} civilizações"},
+      "range": "{own}–{all}",
+      "civRange": "{own}, das quais {all} com tudo o que está abaixo",
       "lacking": ", não deve ter",
       "clearHas": "Remover “deve ter”: {name}",
       "clearLacks": "Remover “não deve ter”: {name}",
       "full": "{name} (completo)",
       "inParent": "{name} ({parent})",
-      "source": "Dados de {source}, {date}."
+      "source": "Dados de {source}, {date}.",
+      "options": "Opções",
+      "includeAll": "Incluir exclusivos e universais",
+      "includeHint": "Mostra também unidades, tecnologias e construções exclusivas, o que todas as civilizações têm e o que só uma civilização tem.",
+      "close": "Fechar"
     },
     "groups": {
       "economy": "Economia",

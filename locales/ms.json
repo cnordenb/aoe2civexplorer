@@ -19,12 +19,18 @@
       "noMatch": "Tiada tamadun yang memenuhi semua penapis.",
       "start": "Klik item dalam pokok untuk menyenaraikan tamadun yang memilikinya.",
       "civCount": {"other": "{n} tamadun"},
+      "range": "{own}–{all}",
+      "civRange": "{own}, {all} daripadanya dengan semua yang di bawahnya",
       "lacking": ", mesti tiada",
       "clearHas": "Buang “mesti ada”: {name}",
       "clearLacks": "Buang “mesti tiada”: {name}",
       "full": "{name} (penuh)",
       "inParent": "{name} ({parent})",
-      "source": "Data daripada {source}, {date}."
+      "source": "Data daripada {source}, {date}.",
+      "options": "Pilihan",
+      "includeAll": "Sertakan Unik dan Universal",
+      "includeHint": "Turut memaparkan unit, teknologi dan bangunan unik, perkara yang dimiliki semua tamadun dan perkara yang dimiliki satu tamadun sahaja.",
+      "close": "Tutup"
     },
     "groups": {
       "economy": "Ekonomi",

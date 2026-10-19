@@ -47,17 +47,17 @@ p, h1, h2 { max-width: 80ch; }
 
 .top { display: flex; flex: none; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
 h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1rem; line-height: 1.5; }
-.language { flex: none; margin-left: auto; }
-.language-button { display: inline-flex; align-items: center; gap: 12px; }
+.tool.icon { display: inline-flex; flex: none; align-items: center; justify-content: center; margin-left: auto; padding: 0; font-size: 1.5rem; line-height: 1; }
+.language { display: contents; }
+#languageLabel { grid-area: 2 / 1; align-self: center; }
+.language-button { display: inline-flex; grid-area: 2 / 2; justify-self: start; align-items: center; gap: 12px; }
 .language-button::after {
   content: ""; width: 8px; height: 8px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-25%) rotate(45deg);
 }
 .language-button[aria-expanded="true"]::after { transform: translateY(25%) rotate(-135deg); }
 .language-list {
-  position: fixed; z-index: 1; top: calc(var(--pad) + var(--target) + 4px); right: var(--pad); display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 4px; width: min(34rem, calc(100vw - 2 * var(--pad)));
-  max-height: calc(100vh - 2 * var(--pad) - var(--target) - 4px); max-height: calc(100dvh - 2 * var(--pad) - var(--target) - 4px); margin: 0;
-  padding: 8px; overflow-y: auto; list-style: none; border: 1px solid var(--line); border-radius: 4px; background: var(--bg);
+  display: grid; grid-area: 3 / 1 / 4 / 3; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); align-content: start; gap: 4px;
+  min-height: 0; margin: 0; padding: 8px; overflow-y: auto; list-style: none; border: 1px solid var(--line); border-radius: 4px; background: var(--bg);
 }
 .language-option { width: 100%; text-align: left; }
 .language-option[aria-current="true"] { border-color: var(--mark); box-shadow: inset 4px 0 0 var(--mark); font-weight: 700; }
@@ -131,7 +131,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
   [data-state="mixed"] > .box::after { border-color: CanvasText; }
 }
 .tree > li > .row .name, .node:is(.group, .self) .name { font-weight: 700; }
-.node .n { margin-left: auto; padding-left: 8px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.node .n { margin-left: auto; padding-left: 8px; white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; }
 :is(.twisty, .node):focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
 
 .ticked {
@@ -149,13 +149,26 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .foot { flex: none; }
 .foot p { margin: 8px 0 0; color: var(--muted); }
 
-.report {
+dialog {
   width: min(48rem, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 16px; overflow-y: auto; border: 1px solid var(--line);
   border-radius: 4px; background: var(--bg); color: var(--ink);
 }
-.report::backdrop { background: var(--shade); }
-.report h2 { margin: 0 0 8px; font-size: 1.125rem; }
-.report p { margin: 8px 0; }
+dialog::backdrop { background: var(--shade); }
+dialog h2 { margin: 0 0 8px; font-size: 1.125rem; }
+dialog p { margin: 8px 0; }
+.options { width: min(32rem, calc(100vw - 32px)); }
+.options[open] {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 8px 12px;
+  height: min(30rem, calc(100vh - 32px)); height: min(30rem, calc(100dvh - 32px));
+}
+.options h2, .options form { grid-column: 1 / 3; margin: 0; }
+.settings { grid-area: 3 / 1 / 4 / 3; min-height: 0; overflow-y: auto; }
+.settings p { margin: 8px 0 0; }
+.option {
+  display: flex; align-items: center; gap: 10px; min-height: var(--target); padding: 0 8px; border-radius: 4px; cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+}
+.option:hover { background: var(--hover); }
 .report-list { margin: 8px 0; padding-left: 1.5em; overflow-wrap: anywhere; }
 .downloads a { display: inline-flex; align-items: center; min-height: var(--target); }
 

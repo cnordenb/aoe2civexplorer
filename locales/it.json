@@ -19,12 +19,18 @@
       "noMatch": "Nessuna civiltà soddisfa tutti i filtri.",
       "start": "Fai clic sugli elementi dell’albero per elencare le civiltà che li possiedono.",
       "civCount": {"one": "{n} civiltà", "other": "{n} civiltà"},
+      "range": "{own}–{all}",
+      "civRange": "{own}, di cui {all} con tutto ciò che sta sotto",
       "lacking": ", non deve avere",
       "clearHas": "Rimuovi «deve avere»: {name}",
       "clearLacks": "Rimuovi «non deve avere»: {name}",
       "full": "{name} (completo)",
       "inParent": "{name} ({parent})",
-      "source": "Dati da {source}, {date}."
+      "source": "Dati da {source}, {date}.",
+      "options": "Opzioni",
+      "includeAll": "Includi elementi riservati e universali",
+      "includeHint": "Mostra anche unità, tecnologie ed edifici riservati, ciò che hanno tutte le civiltà e ciò che ha una sola civiltà.",
+      "close": "Chiudi"
     },
     "groups": {
       "economy": "Economia",

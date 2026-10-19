@@ -19,12 +19,18 @@
       "noMatch": "Không có nền văn minh nào phù hợp với tất cả bộ lọc.",
       "start": "Nhấp vào các mục trong cây để liệt kê các nền văn minh có chúng.",
       "civCount": {"other": "{n} nền văn minh"},
+      "range": "{own}–{all}",
+      "civRange": "{own}, trong đó {all} có mọi thứ bên dưới",
       "lacking": ", không được có",
       "clearHas": "Bỏ “phải có”: {name}",
       "clearLacks": "Bỏ “không được có”: {name}",
       "full": "{name} (toàn bộ)",
       "inParent": "{name} ({parent})",
-      "source": "Dữ liệu từ {source}, {date}."
+      "source": "Dữ liệu từ {source}, {date}.",
+      "options": "Tùy chọn",
+      "includeAll": "Bao gồm mục chuyên biệt và phổ biến",
+      "includeHint": "Hiển thị cả đơn vị, công nghệ và công trình chuyên biệt, những gì mọi nền văn minh đều có và những gì chỉ một nền văn minh có.",
+      "close": "Đóng"
     },
     "groups": {
       "economy": "Kinh tế",
