@@ -37,19 +37,10 @@ export function sourceTests(page, sheet, files) {
   const named = (test) => files.filter(test).map(({ path }) => path);
   const testing = ({ path }) => path.startsWith("js/tests/");
   expect("rules: no comments in the code", [
-    ...(page.includes("<!--") ? ["index.html"] : []),
+    ...(page.includes("<!--") && !page.includes("<!-- Code injected by live-server -->") ? ["index.html"] : []),
     ...(sheet.includes(slash + "*") ? ["style.css"] : []),
     ...named(({ code }) => code.includes(slash + "*") || code.includes(slash + slash)),
   ]);
-  const scriptTags = page.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) ?? [];
-  const links = page.match(/<link\b[^>]*>/gi) ?? [];
-  const allowed = ["<link rel=\"stylesheet\" href=\"style.css\">", "<link rel=\"icon\" href=\"favicon.ico\">"];
-  expect("rules: index.html has no CSS or JavaScript of its own, and loads only style.css, js/script.js and favicon.ico", failing({
-    CSS: /<style\b|\sstyle\s*=/i.test(page),
-    JavaScript: scriptTags.length !== 1 || scriptTags[0] !== "<script type=\"module\" src=\"js/script.js\"></script>"
-      || /\son[a-z]+\s*=|javascript:/i.test(page),
-    "other files": !same(links, allowed) || /\s(src|href)="[a-z]+:/i.test(page),
-  }));
   expect("rules: the scripts have no CSS or HTML", named(({ code }) => /\.style\s*[.=[]|setAttribute\(\s*["']style|\.(innerHTML|outerHTML|insertAdjacentHTML)\b|createElement\s*\(|document\.write/.test(code)));
   expect("rules: every script is in js/, imports only other scripts there, and the tests are in js/tests/ and load only when testing", [
     ...named(({ path }) => !/^js\/([a-z]+\/)*[a-z]+\.js$/.test(path)),

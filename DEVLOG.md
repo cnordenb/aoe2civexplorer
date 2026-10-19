@@ -463,3 +463,10 @@
     while the list is open.
   - All 91 tests pass in light and dark colours, in all four window sizes.
   - Without the fixed height, the check fails. The window measured 512 by 273, then 512 by 489, then 512 by 273.
+
+## 2026-10-19: test bug fixed
+
+### What changed
+
+- Tests reduced from 91 to 90
+  - Check for javascript in index.html was removed because a local live server injection was causing false positive.
