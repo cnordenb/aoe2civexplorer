@@ -92,8 +92,8 @@ Maintainability tests:
 
 - [Test 75](#test-75): No comments in the code
 - [Test 76](#test-76): No CSS or HTML in the scripts
-- [Test 77](#test-77): Scripts are in js/, and the tests load only when testing
-- [Test 78](#test-78): No script is over 400 lines
+- [Test 77](#test-77): script.js in the main folder, other scripts in js/, tests on demand
+- [Test 78](#test-78): No script is over 400 lines of code
 - [Test 79](#test-79): Page code in ui.js, data code in datahandler.js
 - [Test 80](#test-80): No images, sounds, animations or dependencies in the sources
 - [Test 81](#test-81): No game data in the scripts
@@ -113,7 +113,7 @@ Maintainability tests:
 ## Test 1
 
 ### File residence:
-`js/tests/static.js`, line 69
+`js/tests/static.js`, line 77
 
 ### Purpose:
 Prevent missing interface text in any language.
@@ -124,7 +124,7 @@ Every language has every interface text English has, and a name for every group.
 ## Test 2
 
 ### File residence:
-`js/tests/static.js`, lines 70-73
+`js/tests/static.js`, lines 78-81
 
 ### Purpose:
 Prevent untranslated items and civilisations in the tree and the civ list.
@@ -289,7 +289,7 @@ A 600 ms touch press marks the item "lacks"; a right-click on it then clears it.
 ## Test 17
 
 ### File residence:
-`js/tests/behaviour.js`, lines 111-112
+`js/tests/behaviour.js`, lines 113-114
 
 ### Purpose:
 Verify Req. 27: a line of single descendants takes the mark given to its deepest item.
@@ -300,7 +300,7 @@ Clicking a line's last item marks the whole line "has" and lists the right civs;
 ## Test 18
 
 ### File residence:
-`js/tests/behaviour.js`, line 115
+`js/tests/behaviour.js`, line 117
 
 ### Purpose:
 Ensure a line never holds contradictory marks.
@@ -311,7 +311,7 @@ With the line's first item must lack, clicking its last item makes every item in
 ## Test 19
 
 ### File residence:
-`js/tests/behaviour.js`, line 118
+`js/tests/behaviour.js`, line 120
 
 ### Purpose:
 Keep an item's mark consistent with fully marked contents.
@@ -322,7 +322,7 @@ Clicking every leaf in a branch marks the branch itself "has".
 ## Test 20
 
 ### File residence:
-`js/tests/behaviour.js`, lines 121-122
+`js/tests/behaviour.js`, lines 123-124
 
 ### Purpose:
 Keep civs that do without an optional item, such as Folwark civs, in the results.
@@ -333,7 +333,7 @@ Marking all leaves under an optional item leaves it unmarked and mixed; the list
 ## Test 21
 
 ### File residence:
-`js/tests/behaviour.js`, lines 126-127
+`js/tests/behaviour.js`, lines 128-129
 
 ### Purpose:
 Allow searching for civs that get an optional item's contents elsewhere.
@@ -344,7 +344,7 @@ An optional item stays "lacks" after everything under it is marked; the list is 
 ## Test 22
 
 ### File residence:
-`js/tests/behaviour.js`, line 132
+`js/tests/behaviour.js`, line 134
 
 ### Purpose:
 Catch items anywhere in the tree that fail to follow their contents' marks.
@@ -355,7 +355,7 @@ With a third of the leaves marked, then all, no non-optional item is unmarked wh
 ## Test 23
 
 ### File residence:
-`js/tests/behaviour.js`, lines 134-135
+`js/tests/behaviour.js`, lines 138-139
 
 ### Purpose:
 Verify that marks travel up the whole tree correctly.
@@ -366,7 +366,7 @@ With every leaf marked, every item is "has", except optional items and those abo
 ## Test 24
 
 ### File residence:
-`js/tests/behaviour.js`, lines 146-147
+`js/tests/behaviour.js`, lines 150-151
 
 ### Purpose:
 Verify Req. 28 and 31: marking a unit or technology opens it, showing every item marked with it.
@@ -377,7 +377,7 @@ Clicking a closed line item opens it down to the end of its line, so every item 
 ## Test 25
 
 ### File residence:
-`js/tests/behaviour.js`, lines 148-149 and 152-153
+`js/tests/behaviour.js`, lines 152-153 and 156-157
 
 ### Purpose:
 Verify Req. 29 and 30: a mark passes down a line only to items held by as many civilisations.
@@ -388,7 +388,7 @@ Click, and X after the line's end is marked, mark only items with the same count
 ## Test 26
 
 ### File residence:
-`js/tests/behaviour.js`, line 172
+`js/tests/behaviour.js`, line 180
 
 ### Purpose:
 Verify each item's compatible civilisations count (Req. 3).
@@ -399,7 +399,7 @@ Closed items with contents show "own–all" counts and other items their own cou
 ## Test 27
 
 ### File residence:
-`js/tests/behaviour.js`, lines 173-174
+`js/tests/behaviour.js`, lines 181-182
 
 ### Purpose:
 Verify that a closed upgrade line shows the range from its first item to its last upgrade.
@@ -410,7 +410,7 @@ The line's count reads its first item's civ count, then its last item's civ coun
 ## Test 28
 
 ### File residence:
-`js/tests/behaviour.js`, line 176
+`js/tests/behaviour.js`, line 184
 
 ### Purpose:
 Avoid a misleading range once an item's contents are visible.
@@ -421,7 +421,7 @@ After Expand all, every item shows only its own count.
 ## Test 29
 
 ### File residence:
-`js/tests/behaviour.js`, line 181
+`js/tests/behaviour.js`, line 189
 
 ### Purpose:
 Verify that the counts follow the active filters (Req. 3).
@@ -432,7 +432,7 @@ With a must-have and a must-lack mark, open and closed items count only the civs
 ## Test 30
 
 ### File residence:
-`js/tests/behaviour.js`, lines 194-195
+`js/tests/behaviour.js`, lines 202-203
 
 ### Purpose:
 Verify Req. 18 and 19, and each branch's arrow.
@@ -443,7 +443,7 @@ Expand all opens every branch, Collapse all closes every branch, and a branch's 
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour.js`, lines 196-201
+`js/tests/behaviour.js`, lines 204-209
 
 ### Purpose:
 Save clicks by opening a line of only children in one step.
@@ -454,7 +454,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour.js`, lines 239-241
+`js/tests/behaviour.js`, lines 247-249
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights, opens to and counts its matches.
@@ -465,7 +465,7 @@ Exactly the matching items are highlighted and visible, and the label next to th
 ## Test 33
 
 ### File residence:
-`js/tests/behaviour.js`, line 245
+`js/tests/behaviour.js`, line 253
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).
@@ -476,7 +476,7 @@ A search without matches says none found and highlights nothing; emptying the se
 ## Test 34
 
 ### File residence:
-`js/tests/interface.js`, lines 33-36
+`js/tests/interface.js`, lines 39-42
 
 ### Purpose:
 Verify Req. 8 and 9: the Language menu is in the Options window and offers every language.
@@ -487,7 +487,7 @@ Options opens with focus on the menu, which opens to one option per language, ea
 ## Test 35
 
 ### File residence:
-`js/tests/interface.js`, lines 42-43
+`js/tests/interface.js`, lines 48-49
 
 ### Purpose:
 Verify Req. 12 and Rule 18: the language menu closes cleanly and nothing moves.
@@ -498,7 +498,7 @@ Escape closes the menu and refocuses its button; moving focus away closes it; th
 ## Test 36
 
 ### File residence:
-`js/tests/interface.js`, lines 47-49
+`js/tests/interface.js`, lines 53-55
 
 ### Purpose:
 Verify Req. 11: the page changes to the chosen language.
@@ -509,7 +509,7 @@ The page's lang and title change to the chosen language; the menu closes, refocu
 ## Test 37
 
 ### File residence:
-`js/tests/interface.js`, line 50
+`js/tests/interface.js`, line 56
 
 ### Purpose:
 Keep the chosen language when the link is shared or the page reloaded.
@@ -520,7 +520,7 @@ The address holds lng=<chosen language>. Always passes when the page is opened a
 ## Test 38
 
 ### File residence:
-`js/tests/interface.js`, line 51
+`js/tests/interface.js`, line 57
 
 ### Purpose:
 Ensure changing the language never loses the user's marks.
@@ -531,7 +531,7 @@ After a language change the marked item is still "has" and the civ list is uncha
 ## Test 39
 
 ### File residence:
-`js/tests/interface.js`, lines 62-63
+`js/tests/interface.js`, lines 70-71
 
 ### Purpose:
 Verify Req. 11 for all interface text, in every language.
@@ -542,7 +542,7 @@ Every element with data-text shows the chosen language's text for its key.
 ## Test 40
 
 ### File residence:
-`js/tests/interface.js`, lines 64-65
+`js/tests/interface.js`, lines 72-73
 
 ### Purpose:
 Verify Req. 11 for the tree, in every language.
@@ -553,7 +553,7 @@ Every tree label shows the chosen language's item or group name.
 ## Test 41
 
 ### File residence:
-`js/tests/interface.js`, line 66
+`js/tests/interface.js`, line 74
 
 ### Purpose:
 Catch unfilled {placeholders} shown to users.
@@ -564,7 +564,7 @@ No visible text on the page contains { or }.
 ## Test 42
 
 ### File residence:
-`js/tests/interface.js`, lines 67-68
+`js/tests/interface.js`, lines 75-76
 
 ### Purpose:
 Verify Req. 5: the footer credits the data source.
@@ -575,7 +575,7 @@ The footer holds a link whose text and address are the source's name and URL fro
 ## Test 43
 
 ### File residence:
-`js/tests/interface.js`, line 71
+`js/tests/interface.js`, line 79
 
 ### Purpose:
 Verify that the civ list is translated and sorted alphabetically in every language (Req. 4).
@@ -586,7 +586,7 @@ With a must-have and a must-lack mark, the list holds the right civs' names, sor
 ## Test 44
 
 ### File residence:
-`js/tests/interface.js`, lines 79-81
+`js/tests/interface.js`, lines 87-89
 
 ### Purpose:
 Verify Req. 13 and 15: by default the tree leaves out unique and universal items.
@@ -597,7 +597,7 @@ No item from a unique group is shown, and every shown leaf is held by more than 
 ## Test 45
 
 ### File residence:
-`js/tests/interface.js`, lines 90-92
+`js/tests/interface.js`, lines 98-100
 
 ### Purpose:
 Verify Req. 14 and 15: ticking Include Unique and Universal shows every item and keeps marks.
@@ -608,7 +608,7 @@ The box is ticked, every item is in the tree, and the marked item and the civ li
 ## Test 46
 
 ### File residence:
-`js/tests/interface.js`, line 93
+`js/tests/interface.js`, line 101
 
 ### Purpose:
 Keep the Include Unique and Universal choice for the next visit.
@@ -619,7 +619,7 @@ Browser storage holds include=true after ticking. Passes when the browser offers
 ## Test 47
 
 ### File residence:
-`js/tests/interface.js`, lines 95-96
+`js/tests/interface.js`, lines 103-104
 
 ### Purpose:
 Verify Req. 7, 13 and 16, and that focus returns when the Options window closes (WCAG 2.4.3).
@@ -630,7 +630,7 @@ The Options button opens the window with the box unticked; Close closes it and r
 ## Test 48
 
 ### File residence:
-`js/tests/static.js`, lines 77-78
+`js/tests/static.js`, lines 85-86
 
 ### Purpose:
 Keep the language menu and the page's lang attributes correct (WCAG 3.1.1, 3.1.2).
@@ -663,7 +663,7 @@ Focus is on the Civilisations heading, the list is empty, the start hint shows a
 ## Test 51
 
 ### File residence:
-`js/tests/behaviour.js`, lines 208-209
+`js/tests/behaviour.js`, lines 216-217
 
 ### Purpose:
 Give keyboard users the same one-step opening of a line (WCAG 2.1.1).
@@ -674,7 +674,7 @@ Right on a line's first item opens exactly that line's chain of only children.
 ## Test 52
 
 ### File residence:
-`js/tests/behaviour.js`, line 223
+`js/tests/behaviour.js`, line 231
 
 ### Purpose:
 Verify keyboard navigation into and out of branches (WCAG 2.1.1).
@@ -685,7 +685,7 @@ Right opens a branch, Right again focuses its first child, Left returns to the b
 ## Test 53
 
 ### File residence:
-`js/tests/behaviour.js`, lines 227-228
+`js/tests/behaviour.js`, lines 235-236
 
 ### Purpose:
 Verify keyboard movement through the tree (WCAG 2.1.1).
@@ -696,7 +696,7 @@ Up on the first item stays put, Down moves to the next, End focuses the last top
 ## Test 54
 
 ### File residence:
-`js/tests/behaviour.js`, line 231
+`js/tests/behaviour.js`, line 239
 
 ### Purpose:
 Let keyboard users move between branch arrows directly.
@@ -707,7 +707,7 @@ Down on the first branch's arrow focuses the second branch's arrow.
 ## Test 55
 
 ### File residence:
-`js/tests/behaviour.js`, lines 253-254
+`js/tests/behaviour.js`, lines 261-262
 
 ### Purpose:
 Let keyboard users jump from the search bar to the results (WCAG 2.1.1).
@@ -718,7 +718,7 @@ Enter in the search bar focuses the first match.
 ## Test 56
 
 ### File residence:
-`js/tests/audit.js`, line 72
+`js/tests/audit.js`, line 79
 
 ### Purpose:
 WCAG 2.4.2 and 3.1.1: the page has a title and states its language.
@@ -729,7 +729,7 @@ The page title is not empty and the page's lang is the current language's tag.
 ## Test 57
 
 ### File residence:
-`js/tests/audit.js`, lines 73-76
+`js/tests/audit.js`, lines 80-83
 
 ### Purpose:
 WCAG 3.1.2: screen readers pronounce each language's name in that language.
@@ -740,7 +740,7 @@ Every lang attribute is well formed, and each language option's lang is that lan
 ## Test 58
 
 ### File residence:
-`js/tests/audit.js`, lines 78-79
+`js/tests/audit.js`, lines 85-86
 
 ### Purpose:
 WCAG 1.3.1: landmarks and a main heading let assistive technology find its way around the page.
@@ -751,7 +751,7 @@ There is exactly one header, one main, one footer and one visible h1.
 ## Test 59
 
 ### File residence:
-`js/tests/audit.js`, lines 80-81
+`js/tests/audit.js`, lines 87-88
 
 ### Purpose:
 WCAG 1.3.1 and 2.4.10: the headings form a clear outline.
@@ -762,7 +762,7 @@ Every visible heading has text and is at most one level below the heading before
 ## Test 60
 
 ### File residence:
-`js/tests/audit.js`, lines 83-88
+`js/tests/audit.js`, lines 90-95
 
 ### Purpose:
 WCAG 4.1.2: labels and relationships resolve for assistive technology.
@@ -773,7 +773,7 @@ No id repeats, and every id in aria-labelledby, aria-controls and aria-described
 ## Test 61
 
 ### File residence:
-`js/tests/audit.js`, lines 89-93
+`js/tests/audit.js`, lines 96-100
 
 ### Purpose:
 WCAG 4.1.2: assistive technology can read each control's state.
@@ -784,7 +784,7 @@ Checkboxes have aria-checked true, false or mixed; arrows and the menu button ha
 ## Test 62
 
 ### File residence:
-`js/tests/audit.js`, lines 95-99
+`js/tests/audit.js`, lines 102-106
 
 ### Purpose:
 WCAG 2.5.3 and 4.1.2: every control has a name matching what users see.
@@ -795,7 +795,7 @@ Every control has an accessible name, and, except for text inputs, that name con
 ## Test 63
 
 ### File residence:
-`js/tests/audit.js`, lines 100-109
+`js/tests/audit.js`, lines 107-116
 
 ### Purpose:
 WCAG 1.4.6 (AAA): text has enhanced contrast.
@@ -806,7 +806,7 @@ All visible text has a contrast of at least 7:1 with its background, or 4.5:1 fo
 ## Test 64
 
 ### File residence:
-`js/tests/audit.js`, lines 110-116
+`js/tests/audit.js`, lines 117-123
 
 ### Purpose:
 WCAG 1.4.11: the edges of controls are visible.
@@ -817,7 +817,7 @@ Buttons, filter buttons, inputs and checkboxes with a border have a border contr
 ## Test 65
 
 ### File residence:
-`js/tests/audit.js`, lines 118-121
+`js/tests/audit.js`, lines 127-130
 
 ### Purpose:
 WCAG 2.5.5 (AAA): targets are large enough to hit.
@@ -828,7 +828,7 @@ Every focusable control, except links inside running text, is at least 44 by 44 
 ## Test 66
 
 ### File residence:
-`js/tests/audit.js`, lines 122-123
+`js/tests/audit.js`, lines 131-132
 
 ### Purpose:
 Enforce Rule 12: no page scrolling.
@@ -839,7 +839,7 @@ The page is no taller and no wider than the window.
 ## Test 67
 
 ### File residence:
-`js/tests/audit.js`, lines 124-127
+`js/tests/audit.js`, lines 133-136
 
 ### Purpose:
 WCAG 1.4.10: content reflows without scrolling sideways.
@@ -850,7 +850,7 @@ No visible element extends past the left or right edge of the window.
 ## Test 68
 
 ### File residence:
-`js/tests/audit.js`, lines 128-131
+`js/tests/audit.js`, lines 137-140
 
 ### Purpose:
 WCAG 1.4.8 (AAA): text is presented readably.
@@ -861,7 +861,7 @@ No paragraph or list item is justified, and each has a line height of at least 1
 ## Test 69
 
 ### File residence:
-`js/tests/audit.js`, lines 132-139
+`js/tests/audit.js`, lines 141-148
 
 ### Purpose:
 Enforce Rules 9, 10 and 11 on the page as rendered.
@@ -872,7 +872,7 @@ No media elements, no images in CSS, no running animations and no animation or t
 ## Test 70
 
 ### File residence:
-`js/tests/interface.js`, lines 121-122
+`js/tests/interface.js`, lines 129-130
 
 ### Purpose:
 Verify keyboard use of the language menu (WCAG 2.1.1).
@@ -883,7 +883,7 @@ Down on the menu button opens the menu at the current language; Down moves one o
 ## Test 71
 
 ### File residence:
-`js/tests/audit.js`, lines 38-47 and 64
+`js/tests/audit.js`, lines 43-52 and 69
 
 ### Purpose:
 WCAG 2.4.7 and 2.4.13 (AAA): keyboard focus is clearly visible.
@@ -894,7 +894,7 @@ Every focusable element takes focus and shows an outline at least 2 px wide with
 ## Test 72
 
 ### File residence:
-`js/tests/audit.js`, lines 48-61 and 65
+`js/tests/audit.js`, lines 53-66 and 70
 
 ### Purpose:
 WCAG 2.4.12 (AAA): nothing hides the element that has focus.
@@ -905,7 +905,7 @@ The centre of the visible part of each focused element is that element, not some
 ## Test 73
 
 ### File residence:
-`js/tests/interface.js`, lines 144-147
+`js/tests/interface.js`, lines 152-155
 
 ### Purpose:
 WCAG 1.4.12: wider text spacing set by the user does not break the layout.
@@ -916,7 +916,7 @@ With WCAG's text spacing applied, the page and every element stay within the win
 ## Test 74
 
 ### File residence:
-`js/tests/interface.js`, lines 161-162
+`js/tests/interface.js`, lines 169-170
 
 ### Purpose:
 Verify that the Include Unique and Universal box works from the keyboard (WCAG 2.1.1).
@@ -927,7 +927,7 @@ Space unticks the box, the unique and universal items leave the tree, and the ma
 ## Test 75
 
 ### File residence:
-`js/tests/static.js`, lines 39-43
+`js/tests/static.js`, lines 44-48
 
 ### Purpose:
 Enforce Rule 7: no comments in the code.
@@ -938,7 +938,7 @@ index.html, style.css and every script hold no comment markers. The comment live
 ## Test 76
 
 ### File residence:
-`js/tests/static.js`, line 44
+`js/tests/static.js`, line 49
 
 ### Purpose:
 Enforce Rule 2: no CSS or HTML inside the JavaScript.
@@ -949,29 +949,29 @@ No script sets inline styles, writes HTML strings, or calls createElement or doc
 ## Test 77
 
 ### File residence:
-`js/tests/static.js`, lines 45-50
+`js/tests/static.js`, lines 50-55
 
 ### Purpose:
 Enforce Rules 2 and 16, and keep the tests out of what visitors download.
 
 ### Assertion expectation:
-Scripts are lower-case .js files in js/ importing only js/ files. Only files in js/tests/ are loaded dynamically.
+script.js is in the main folder and every other script in js/; imports point into js/; only js/tests/ loads on demand.
 
 ## Test 78
 
 ### File residence:
-`js/tests/static.js`, lines 51-52
+`js/tests/static.js`, lines 59-60
 
 ### Purpose:
 Keep every script small enough to read and maintain.
 
 ### Assertion expectation:
-No script reached from js/script.js is over 400 lines.
+No script reached from script.js has over 400 lines of code. Blank lines do not count.
 
 ## Test 79
 
 ### File residence:
-`js/tests/static.js`, lines 53-56
+`js/tests/static.js`, lines 61-64
 
 ### Purpose:
 Keep page code in ui.js and data loading and storage in datahandler.js.
@@ -982,7 +982,7 @@ Outside js/tests/, only ui.js uses document, window or DOM queries, and only dat
 ## Test 80
 
 ### File residence:
-`js/tests/static.js`, lines 57-62
+`js/tests/static.js`, lines 65-70
 
 ### Purpose:
 Enforce Rules 9, 10, 11 and 14 in the source files.
@@ -993,7 +993,7 @@ No media tags in HTML; no url(), animation, transition or @import in CSS; no Aud
 ## Test 81
 
 ### File residence:
-`js/tests/static.js`, lines 63-64
+`js/tests/static.js`, lines 71-72
 
 ### Purpose:
 Enforce Rule 1: game data lives only in data.json.
@@ -1004,7 +1004,7 @@ No civilisation or item name from data.json appears as a quoted string in any sc
 ## Test 82
 
 ### File residence:
-`js/tests/static.js`, line 84
+`js/tests/static.js`, line 92
 
 ### Purpose:
 Prevent duplicate items in the tree, which would break counts and marking.
@@ -1015,7 +1015,7 @@ Every item appears exactly once in the tree in data.json.
 ## Test 83
 
 ### File residence:
-`js/tests/static.js`, lines 86-89
+`js/tests/static.js`, lines 96-99
 
 ### Purpose:
 Catch misplaced or mistyped "optional", "upgrades" and "unique" flags in data.json.
@@ -1026,7 +1026,7 @@ Catch misplaced or mistyped "optional", "upgrades" and "unique" flags in data.js
 ## Test 84
 
 ### File residence:
-`js/tests/static.js`, lines 96-97
+`js/tests/static.js`, lines 109-110
 
 ### Purpose:
 Flag items a game update made optional, so that marking what is under them does not wrongly mark them.
@@ -1037,7 +1037,7 @@ No civ has everything under a non-optional item without having the item, with or
 ## Test 85
 
 ### File residence:
-`js/tests/static.js`, lines 98-101
+`js/tests/static.js`, lines 111-114
 
 ### Purpose:
 Ensure every item's availability is defined and names real civilisations.
@@ -1048,7 +1048,7 @@ Each item's availability is "all", or a has or lacks list naming only civilisati
 ## Test 86
 
 ### File residence:
-`js/tests/static.js`, lines 102-103
+`js/tests/static.js`, lines 115-116
 
 ### Purpose:
 Ensure counted texts have a fallback form for any number.
@@ -1059,7 +1059,7 @@ Every counted (plural) text in every language has an "other" form.
 ## Test 87
 
 ### File residence:
-`js/tests/static.js`, lines 105-106
+`js/tests/static.js`, lines 120-121
 
 ### Purpose:
 Prevent translations that lose or misspell placeholders such as {n}.
@@ -1070,7 +1070,7 @@ Each interface text has the same {placeholders} in every language as in English.
 ## Test 88
 
 ### File residence:
-`js/tests/static.js`, lines 107-108
+`js/tests/static.js`, lines 122-123
 
 ### Purpose:
 Catch stale or misspelt name corrections after a game update.
@@ -1081,7 +1081,7 @@ Every key in each language's overrides is a known item or civilisation.
 ## Test 89
 
 ### File residence:
-`js/tests/static.js`, lines 109-114
+`js/tests/static.js`, lines 124-129
 
 ### Purpose:
 Ensure the footer, the updater and the tests have the data they need (Req. 5).
@@ -1092,7 +1092,7 @@ source has name, url, data, an integer helpOffset and a YYYY-MM date; no tool te
 ## Test 90
 
 ### File residence:
-`js/tests/static.js`, lines 122-124
+`js/tests/static.js`, lines 137-139
 
 ### Purpose:
 Ensure the updater writes data.json and the locale files without losing or changing data.
@@ -1103,7 +1103,7 @@ Writer outputs data.json plus one locales/ file per other language; reading them
 ## Test 91
 
 ### File residence:
-`js/tests/static.js`, lines 125-126
+`js/tests/static.js`, lines 140-141
 
 ### Purpose:
 Keep data.json compact and identical to what the updater would write.
@@ -1114,7 +1114,7 @@ Each item's availability is "all", or whichever of the has or lacks lists is sho
 ## Test 92
 
 ### File residence:
-`js/tests/static.js`, lines 127-129
+`js/tests/static.js`, lines 142-144
 
 ### Purpose:
 Keep stored names identical to what the updater would write.
@@ -1125,7 +1125,7 @@ Joining lines and tidying spaces leaves every stored item and civilisation name 
 ## Test 93
 
 ### File residence:
-`js/tests/run.js`, line 92
+`js/tests/run.js`, line 96
 
 ### Purpose:
 Enforce Rule 17: at most 100 tests.

@@ -13,8 +13,11 @@ export const attempt = (action) => {
     return null;
   }
 };
+
 export const recall = (key) => attempt(() => localStorage.getItem(key));
+
 export const remember = (key, value) => attempt(() => (value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value)));
+
 export const load = (url) => new Promise((resolve, reject) => {
   const request = new XMLHttpRequest();
   request.open("GET", url);
@@ -24,7 +27,9 @@ export const load = (url) => new Promise((resolve, reject) => {
   request.onerror = () => reject(new Error(url));
   request.send();
 });
+
 export const fill = (template, values) => template.replace(/\{(\w+)\}/g, (whole, key) => (key in values ? String(values[key]) : whole));
+
 export const treeKeys = (nodes, key) => nodes.flatMap((node) => [...(node[key] ? [node[key]] : []), ...treeKeys(node.kids ?? [], key)]);
 
 export let language;
@@ -33,6 +38,7 @@ export let tag;
 export let collator;
 export let plurals;
 export let numbers;
+
 export function useLanguage(code) {
   language = code;
   tag = data.languages[code].tag;
@@ -41,41 +47,54 @@ export function useLanguage(code) {
   plurals = new Intl.PluralRules(tag);
   numbers = new Intl.NumberFormat(tag);
 }
+
 export const nameOf = (item) => (item.group ? words.groups[item.key] : words.items[item.key]) ?? item.key;
+
 export const civName = (civ) => words.civs[civ] ?? civ;
+
 export const plural = (key, n) => {
   const forms = words.ui[key];
   return fill(forms[plurals.select(n)] ?? forms.other, { n: numbers.format(n) });
 };
+
 export const plain = (text) => text.toLocaleLowerCase(tag).normalize("NFD").replace(/\p{M}/gu, "").replace(/[^\p{L}\p{N}]/gu, "");
 
 export const localeFile = (code) => `locales/${code}.json`;
+
 export const unpack = (file) => {
   const first = Object.keys(file.languages)[0];
   return { ...file, overrides: { [first]: file.overrides }, text: { [first]: file.text } };
 };
+
 export const addLanguage = (set, code, file) => {
   set.overrides[code] = file.overrides;
   set.text[code] = file.text;
 };
+
 export function useData(raw) {
   data = unpack(JSON.parse(raw));
   civBit = new Map(data.civs.map((civ, i) => [civ, 1n << BigInt(i)]));
   ALL = (1n << BigInt(data.civs.length)) - 1n;
 }
+
 export const loadLanguage = (code) => (data.text[code]
   ? Promise.resolve()
   : load(localeFile(code)).then((raw) => addLanguage(data, code, JSON.parse(raw))));
+
 export const loadLanguages = () => Promise.all(Object.keys(data.languages).map(loadLanguage));
+
 export function pack(set) {
   const [first, ...others] = Object.keys(set.languages);
+
   const own = (key, code) => set[key][code] ?? {};
+
   return [
     { path: "data.json", value: Object.fromEntries(Object.entries(set)
       .map(([key, value]) => [key, ["overrides", "text"].includes(key) ? own(key, first) : value])) },
     ...others.map((code) => ({ path: localeFile(code), value: { overrides: own("overrides", code), text: own("text", code) } })),
   ];
 }
+
 export function preferredLanguage() {
   const codes = Object.keys(data.languages);
   const tags = codes.map((code) => data.languages[code].tag.toLowerCase());
@@ -93,25 +112,31 @@ const bit = (civ) => {
   if (!civBit.has(civ)) throw new Error(`unknown civilisation ${civ}`);
   return civBit.get(civ);
 };
+
 export const size = (set) => {
   let n = 0;
   for (let s = set; s; s &= s - 1n) n++;
   return n;
 };
+
 export const setOf = (rule) => (rule === "all"
   ? ALL
   : rule.has
     ? rule.has.reduce((s, civ) => s | bit(civ), 0n)
     : rule.lacks.reduce((s, civ) => s & ~bit(civ), ALL));
+
 export const civsOf = (set) => data.civs.filter((civ) => set & civBit.get(civ));
 
 const isScalar = (value) => value === null || typeof value !== "object";
+
 const isFlatList = (value) => Array.isArray(value) && value.every(isScalar);
+
 const flat = (value) => (Array.isArray(value)
   ? `[${value.map(flat).join(", ")}]`
   : isScalar(value)
     ? JSON.stringify(value)
     : `{${Object.entries(value).map(([key, item]) => `${JSON.stringify(key)}: ${flat(item)}`).join(", ")}}`);
+
 export function toJson(value, indent = "") {
   const inner = `${indent}  `;
   if (isScalar(value) || isFlatList(value)) return flat(value);
@@ -129,7 +154,9 @@ export function toJson(value, indent = "") {
 }
 
 const isLower = (char) => !!char && char !== char.toUpperCase() && char === char.toLowerCase();
+
 const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
 export function joinLines(text, settings) {
   let joined = "";
   for (const part of text.split("<br>").map((piece) => piece.trim())) {
@@ -142,18 +169,21 @@ export function joinLines(text, settings) {
   }
   return joined.replace(/\s*\/\s*/g, "/").replace(/\s+/g, " ").trim();
 }
+
 function localName(strings, node, settings, offset) {
   const label = joinLines(strings[node.name_string_id] ?? "", settings);
   if (label && !ABBREVIATION.test(label)) return capitalise(label);
   const bold = /<b>(.*?)<\/b>/.exec(strings[node.help_string_id - offset] ?? "");
   return capitalise(bold ? joinLines(bold[1], settings) : label);
 }
+
 export function availabilityOf(owners, civs) {
   const having = civs.filter((civ) => owners.has(civ));
   const lacking = civs.filter((civ) => !owners.has(civ));
   if (!lacking.length) return "all";
   return having.length <= lacking.length ? { has: having } : { lacks: lacking };
 }
+
 export function missingText(set) {
   const codes = Object.keys(set.languages);
   const reference = set.text[codes[0]];
@@ -166,10 +196,13 @@ export function missingText(set) {
     ].map((name) => ({ language: set.languages[code].name, name }));
   });
 }
+
 function refresh(current, techtree, trees, strings) {
   const tools = current.tools;
   const messages = [];
+
   const say = (key, values) => messages.push(fill(tools[key], values));
+
   const civs = Object.keys(techtree.civs).sort();
   const nodes = new Map();
   const owners = new Map();
@@ -221,8 +254,10 @@ function refresh(current, techtree, trees, strings) {
   missingText(fresh).forEach((problem) => say("missingText", problem));
   return { messages, fresh };
 }
+
 export async function fetchUpdate() {
   const get = async (path) => JSON.parse(await load(data.source.data + path));
+
   const techtree = await get("data.json");
   const civs = Object.keys(techtree.civs).sort();
   const [trees, strings] = await Promise.all([

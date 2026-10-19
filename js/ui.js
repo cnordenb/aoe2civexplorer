@@ -7,7 +7,9 @@ import {
 } from "./model.js";
 
 export const $ = (id) => document.getElementById(id);
+
 export const clone = (id) => $(id).content.firstElementChild.cloneNode(true);
+
 const compose = (node, template, values) => node.replaceChildren(...template.split(/(\{\w+\})/).filter(Boolean)
   .map((part) => (/^\{\w+\}$/.test(part) && part.slice(1, -1) in values ? values[part.slice(1, -1)] : part)));
 
@@ -20,6 +22,7 @@ function plant() {
   build(roots, $("tree"));
   for (const item of items) if (open.has(item.path)) setOpen(item, true);
 }
+
 function build(list, ul) {
   for (const item of list) {
     const li = clone("itemTemplate");
@@ -51,12 +54,14 @@ function build(list, ul) {
 }
 
 export const isOpen = (item) => item.twisty?.getAttribute("aria-expanded") === "true";
+
 export function setOpen(item, open) {
   if (!item.twisty) return;
   item.twisty.setAttribute("aria-expanded", String(open));
   item.list.hidden = !open;
   count(item);
 }
+
 function count(item) {
   const own = size(matching & (item.group ? item.all : item.set));
   const all = size(matching & item.all);
@@ -68,13 +73,16 @@ function count(item) {
   compose(item.count, words.ui.range, { own: numbers.format(own), all: numbers.format(all) });
   item.civCount.textContent = fill(words.ui.civRange, { own: plural("civCount", own), all: plural("civCount", all) });
 }
+
 const expand = (item) => chainOf(item).forEach((each) => setOpen(each, true));
+
 export const shown = (item) => !item.parent || (isOpen(item.parent) && shown(item.parent));
 
 function toggle(item, kind) {
   for (const each of mark(item, kind)) for (let p = each.parent; p !== item.parent; p = p.parent) setOpen(p, true);
   update();
 }
+
 function paint() {
   for (const item of items) {
     const s = boxState(item);
@@ -84,6 +92,7 @@ function paint() {
     item.node.classList.toggle("self", !!item.self);
   }
 }
+
 function update() {
   const marked = fit();
   paint();
@@ -112,6 +121,7 @@ function update() {
 }
 
 let found = [];
+
 function find() {
   const text = plain($("find").value);
   found = text ? items.filter((item) => plain(nameOf(item)).includes(text)) : [];
@@ -125,9 +135,11 @@ function find() {
 }
 
 const itemAt = (target) => items[target.closest?.(".node")?.dataset.i];
+
 let press = null;
 let touchEnded = -Infinity;
 let swallowClick = false;
+
 const endPress = () => {
   if (!press) return;
   clearTimeout(press.timer);
@@ -223,12 +235,14 @@ function wireTree() {
 }
 
 export const options = () => [...$("languageList").querySelectorAll("[data-language]")];
+
 export function setMenu(open, focus) {
   $("languageButton").setAttribute("aria-expanded", String(open));
   $("languageList").hidden = !open;
   $("settings").hidden = open;
   focus?.focus();
 }
+
 function buildLanguages() {
   $("languageList").replaceChildren(...Object.entries(data.languages).map(([code, { name, tag: languageTag }]) => {
     const li = clone("languageTemplate");
@@ -239,6 +253,7 @@ function buildLanguages() {
     return li;
   }));
 }
+
 export function setLanguage(code) {
   useLanguage(code);
   document.documentElement.lang = tag;
@@ -256,14 +271,17 @@ export function setLanguage(code) {
   update();
   if ($("find").value) find();
 }
+
 function label() {
   for (const item of items) item.label.textContent = nameOf(item);
   share();
 }
+
 function showInclude() {
   $("include").setAttribute("aria-checked", String(include));
   $("include").dataset.state = include ? "has" : "";
 }
+
 export function setInclude(on) {
   setIncluded(on);
   remember("include", String(on));
@@ -273,6 +291,7 @@ export function setInclude(on) {
   update();
   if ($("find").value) find();
 }
+
 function wireOptions() {
   $("optionsButton").addEventListener("click", () => $("options").showModal());
   $("options").addEventListener("close", () => setMenu(false));
@@ -283,7 +302,9 @@ function wireOptions() {
     setInclude(!include);
   });
 }
+
 let chosen = null;
+
 function choose(code) {
   chosen = code;
   if (!data.text[code]) {
@@ -301,6 +322,7 @@ function choose(code) {
   search.set("lng", code);
   attempt(() => history.replaceState(history.state, "", `?${search}${location.hash}`));
 }
+
 function wireLanguages() {
   const picker = $("language");
   const button = $("languageButton");
@@ -347,11 +369,13 @@ export function openReport(title, status) {
   $("reportDownloads").hidden = true;
   if (!$("report").open) $("report").showModal();
 }
+
 export function report(line) {
   const li = clone("reportTemplate");
   li.textContent = line;
   $("reportList").append(li);
 }
+
 export async function runUpdate() {
   const tools = data.tools;
   openReport(tools.updateTitle, fill(tools.updateLoading, { source: data.source.name }));
@@ -394,6 +418,7 @@ export function start() {
   $("top").hidden = false;
   $("content").hidden = false;
 }
+
 export function showLoadError() {
   $("loadError").hidden = false;
 }

@@ -7,6 +7,7 @@ import { behaviourTests, keyboardTests } from "./behaviour.js";
 import { menuTests, languageTests, optionTests, accessibilityTests } from "./interface.js";
 
 const LIMIT = 100;
+
 const merge = (runs) => {
   const merged = new Map();
   for (const { where, results: run } of runs) {
@@ -25,15 +26,18 @@ function framed(size) {
   return new Promise((resolve) => {
     const frame = clone("frameTemplate");
     let timer = 0;
+
     const listen = (e) => {
       if (e.source === frame.contentWindow) done({ where: e.data.where ?? `the ${size} window`, results: e.data.results });
     };
+
     const done = (run) => {
       removeEventListener("message", listen);
       clearTimeout(timer);
       frame.remove();
       resolve(run);
     };
+
     timer = setTimeout(() => done({ where: `the ${size} window`, results: [{ name: "the tests finished", ok: false, detail: "no answer" }] }), 300000);
     addEventListener("message", listen);
     frame.classList.add(size);

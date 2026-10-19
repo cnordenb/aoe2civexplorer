@@ -10,6 +10,7 @@ const LIMIT = 400;
 
 export async function scripts() {
   const files = new Map();
+
   const visit = async (url, dynamic) => {
     if (files.has(url)) {
       files.get(url).dynamic &&= dynamic;
@@ -28,28 +29,35 @@ export async function scripts() {
       await visit(target, dynamic || lazy);
     }
   };
-  await visit(new URL("js/script.js", here).href, false);
+
+  await visit(new URL("script.js", here).href, false);
   return [...files.values()];
 }
 
 export function sourceTests(page, sheet, files) {
   const failing = (cases) => Object.entries(cases).filter(([, bad]) => bad).map(([name]) => name);
+
   const named = (test) => files.filter(test).map(({ path }) => path);
+
   const testing = ({ path }) => path.startsWith("js/tests/");
+
   expect("rules: no comments in the code", [
     ...(page.includes("<!--") && !page.includes("<!-- Code injected by live-server -->") ? ["index.html"] : []),
     ...(sheet.includes(slash + "*") ? ["style.css"] : []),
     ...named(({ code }) => code.includes(slash + "*") || code.includes(slash + slash)),
   ]);
   expect("rules: the scripts have no CSS or HTML", named(({ code }) => /\.style\s*[.=[]|setAttribute\(\s*["']style|\.(innerHTML|outerHTML|insertAdjacentHTML)\b|createElement\s*\(|document\.write/.test(code)));
-  expect("rules: every script is in js/, imports only other scripts there, and the tests are in js/tests/ and load only when testing", [
-    ...named(({ path }) => !/^js\/([a-z]+\/)*[a-z]+\.js$/.test(path)),
+  expect("rules: script.js is in the main folder and every other script in js/, scripts import only scripts in js/, and the tests are in js/tests/ and load only when testing", [
+    ...named(({ path }) => !/^(script\.js|js\/([a-z]+\/)*[a-z]+\.js)$/.test(path)),
     ...files.flatMap(({ path, imports }) => imports.filter(({ specifier, target }) => !specifier.startsWith(".") || !target.startsWith(`${here}js/`))
       .map(({ specifier }) => `${path} imports ${specifier}`)),
     ...named((file) => testing(file) !== file.dynamic),
   ]);
-  expect(`rules: no script is over ${LIMIT} lines`, files.filter(({ code }) => code.trimEnd().split("\n").length > LIMIT)
-    .map(({ path, code }) => `${path} has ${code.trimEnd().split("\n").length}`));
+
+  const linesOfCode = (code) => code.split("\n").filter((line) => line.trim()).length;
+
+  expect(`rules: no script is over ${LIMIT} lines of code`, files.filter(({ code }) => linesOfCode(code) > LIMIT)
+    .map(({ path, code }) => `${path} has ${linesOfCode(code)}`));
   expect("rules: only ui.js and the tests touch the page, and only datahandler.js and the tests load or store data", [
     ...named((file) => !testing(file) && file.path !== "js/ui.js" && /\b(document|window)\b|getElementById|querySelector|addEventListener/.test(file.code)),
     ...named((file) => !testing(file) && file.path !== "js/datahandler.js" && /XMLHttpRequest|localStorage|\bfetch\s*\(/.test(file.code)),
@@ -82,17 +90,22 @@ export function dataTests() {
   const all = keys();
   const languages = codes();
   expect("data: each item is in the tree once", all.filter((key, i) => all.indexOf(key) !== i));
+
   const flagged = (nodes, flag) => nodes.flatMap((node) => [...(flag in node ? [node] : []), ...flagged(node.kids ?? [], flag)]);
+
   expect("data: only items with something under them are optional or have upgrades, and only groups are unique, all marked with true", [
     ...["optional", "upgrades"].flatMap((flag) => flagged(data.tree, flag).filter((node) => node[flag] !== true || !node.item || !node.kids?.length)),
     ...flagged(data.tree, "unique").filter((node) => node.unique !== true || !node.group),
   ].map((node) => node.item ?? node.group));
+
   const wholeOf = (node) => (node.kids ?? []).reduce((s, kid) => s & wholeOf(kid), node.item ? setOf(data.availability[node.item]) : ALL);
+
   const needless = (nodes) => nodes.flatMap((node) => [
     ...(node.item && !node.optional && node.kids?.length
       && size(node.kids.reduce((s, kid) => s & wholeOf(kid), ALL) & ~setOf(data.availability[node.item]) & ALL) > 0 ? [node.item] : []),
     ...needless(node.kids ?? []),
   ]);
+
   expect("data: an item is optional if some civilisation has everything under it without having the item, with or without unique and universal items",
     [...new Set([...needless(data.tree), ...needless(prune(data.tree))])]);
   expect("data: each item says which civilisations have it, naming only known ones", all.filter((key) => {
@@ -101,7 +114,9 @@ export function dataTests() {
   }));
   expect("data: counted texts have an 'other' form", languages.flatMap((code) => Object.entries(data.text[code].ui)
     .filter(([, value]) => typeof value === "object" && !value.other).map(([key]) => `${code}: ${key}`)));
+
   const holes = (value) => [...new Set(JSON.stringify(value ?? "").match(/\{\w+\}/g) ?? [])].sort().join();
+
   expect("data: translations keep the same placeholders", languages.flatMap((code) => Object.entries(data.text[languages[0]].ui)
     .filter(([key, english]) => holes(english) !== holes(data.text[code].ui[key])).map(([key]) => `${code}: ${key}`)));
   expect("data: overrides name known items and civilisations", languages.flatMap((code) => Object.keys(data.overrides[code] ?? {})

@@ -15,26 +15,28 @@ nothing to build: the files you see are exactly the files a visitor's browser do
 | --- | --- |
 | `index.html` | The structure of the page: the header, the two panes, the options window with the language menu. It holds no text of its own. |
 | `style.css` | How the page looks: colours, sizes, the layout for big and small screens. |
+| `script.js` | Where the page starts. The rest of its behaviour is in `js/`, as listed below. |
 | `js/` | How the page behaves, split into the scripts listed below. |
 | `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in English, the default language. |
 | `favicon.ico` | The small icon browsers show in the tab and in bookmarks. |
 | `locales/` | One file per other language, such as `locales/de.json` for German, with every piece of text in that language. |
+| `documentation/` | This guide and the project's other documents: `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DEVLOG.md` and `code_docu.pdf`. |
 
-Three more files help you: this guide, `README.md`, and `.github/workflows/tests.yml`, which tells GitHub to run the
-tests every time someone pushes a change.
+Two more files help you: `README.md`, which introduces the project, and `.github/workflows/tests.yml`, which tells
+GitHub to run the tests every time someone pushes a change.
 
-The scripts in `js/` each have one job. They use the browser's own way of loading scripts from each other, called
+The scripts each have one job. They use the browser's own way of loading scripts from each other, called
 modules, so they need no build step and no extra tools:
 
 | Script | Its job |
 | --- | --- |
-| `js/script.js` | Where the page starts. It loads the data, starts the page, and loads the tests or the updater when asked. |
+| `script.js` | Where the page starts. It loads the data, starts the page, and loads the tests or the updater when asked. |
 | `js/datahandler.js` | Everything about data: loading `data.json` and the language files, the chosen language and its text, which civilisations have what, saved choices such as the language, and the updater that fetches new data and writes the files. |
 | `js/model.js` | The tree and its rules: which items are shown, which are marked, and when marking one item marks others. |
 | `js/ui.js` | Everything on the screen: drawing the tree and the list, clicks and keys, the language menu, the options window and the report window. |
 | `js/tests/` | The tests. They are only loaded when the address ends in `?test`, so visitors never download them. |
 
-No script may grow past 400 lines. When one does, the tests fail, and it is time to move part of it into a new script
+No script may grow past 400 lines of code; blank lines do not count. When one does, the tests fail, and it is time to move part of it into a new script
 in `js/`, or into a new test file in `js/tests/`. Give it a name in lower-case letters only, such as `menu.js`. Import the new script where it is needed, as the others do; the
 tests find every script by following those imports.
 
@@ -265,16 +267,91 @@ language's folder there, such as `de` for German.
    `data.json`, and translate them.
 3. Run the updater, download, and run the tests. The updater fills in the names of every item and civilisation.
 
+## How the code works
+
+This chapter is for anyone changing the scripts. In the diagram, each arrow points from a script to a script it
+uses. `+` marks what a script shares with others, and `-` what it keeps to itself.
+
+```mermaid
+classDiagram
+  direction TB
+  class script {
+    <<module>>
+  }
+  class ui {
+    <<module>>
+    +start()
+    +setLanguage(code)
+    +setInclude(on)
+    +setOpen(item, open)
+    +runUpdate()
+    -toggle(item, kind)
+    -update()
+  }
+  class model {
+    <<module>>
+    +items
+    +rebuild()
+    +mark(item, kind)
+    +settle()
+    +fit()
+    +filtersOf()
+    +chipName(item, kind)
+  }
+  class datahandler {
+    <<module>>
+    +data
+    +useData(raw)
+    +useLanguage(code)
+    +loadLanguage(code)
+    +setOf(rule)
+    +civsOf(set)
+    +recall(key)
+    +remember(key, value)
+    +fetchUpdate()
+  }
+  class tests {
+    <<js/tests>>
+    +runTests()
+  }
+  script ..> ui
+  script ..> datahandler
+  script ..> tests : only with ?test
+  ui ..> model
+  ui ..> datahandler
+  model ..> datahandler
+  tests ..> ui
+  tests ..> model
+  tests ..> datahandler
+  note for datahandler "reads data.json and locales/"
+```
+
+- **`script.js`**, in the main folder, starts the page. It loads `data.json` and the visitor's language, then calls `start()`. With
+  `?test` it loads the tests, and with `?update` it calls `runUpdate()`.
+- **`js/datahandler.js`** looks after the data. `useData()` reads `data.json`, and `useLanguage()` switches the text.
+  A set of civilisations is a bit mask: `setOf()` makes one from `data.json`, and `civsOf()` turns one back into
+  names. `recall()` and `remember()` keep choices in the browser. `fetchUpdate()` fetches new data for the updater.
+- **`js/model.js`** looks after the tree, and never touches the screen. `rebuild()` builds the items, leaving out
+  unique and universal ones unless they are included. `mark()` marks an item and passes the mark on, `settle()`
+  works out what else follows, `fit()` finds the civilisations that fit every mark, and `filtersOf()` and
+  `chipName()` decide what **Filters** shows.
+- **`js/ui.js`** looks after the screen. `start()` builds the page and listens for clicks and keys. A click on an
+  item runs `toggle()`, which calls `mark()`, opens the rows the mark reached, and then calls `update()` to redraw
+  the boxes, the numbers, **Filters** and the list of civilisations.
+- **`js/tests/`** holds the tests. `runTests()` in `js/tests/run.js` runs them, in three rounds (see below).
+
 ## Keeping to the project's rules
 
 The project follows a few rules that keep it simple to look after. If you change the code, keep to them; the tests
 check most of them.
 
 - All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
-  `index.html`, all looks in `style.css`, all behaviour in in `js/`: data handling in
-  `js/datahandler.js`, everything on the screen in `js/ui.js`, and the tests in `js/tests/`. No script is over 400
-  lines.
+  `index.html`, all looks in `style.css`, all behaviour in `script.js` and `js/`: the start in `script.js`, data
+  handling in `js/datahandler.js`, everything on the screen in `js/ui.js`, and the tests in `js/tests/`. No script is over 400
+  lines of code; blank lines do not count.
 - No comments in the code. Explanations belong in this guide.
+- A blank line before and after every function, so that each one stands on its own. A function that opens or closes
+  its block needs none on that side.
 - No images, sounds or animations, apart from the tab icon `favicon.ico`, and no extra libraries, build steps or other
   programming languages.
 - The page must meet WCAG 2.2 at level AAA, the strictest level of the web's accessibility guidelines. Among other

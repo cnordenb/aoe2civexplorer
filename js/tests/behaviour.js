@@ -101,8 +101,10 @@ async function gestures({ third }) {
 
 function parents({ leaves, branch, line, loose, underAll, without }) {
   reset();
+
   const unmarkedParents = () => items.filter((item) => !item.group && !item.optional && item.kids.length && item.self !== "has"
     && items.filter((each) => !each.group && below(each, item)).every((each) => each.self === "has")).map(nameOf);
+
   const chain = lineOf(line);
   tap(lineEnd(line).node);
   const lineMarked = chain.every((item) => item.self === "has") && line.node.getAttribute("aria-checked") === "true"
@@ -130,7 +132,9 @@ function parents({ leaves, branch, line, loose, underAll, without }) {
   const some = unmarkedParents();
   leaves.forEach((leaf) => leaf.self !== "has" && tap(leaf.node));
   expect("marking: no item is left unmarked while everything under it is marked", [...some, ...unmarkedParents()]);
+
   const aboveOptional = (item) => items.some((each) => each.optional && below(each, item));
+
   expect("marking: marking every leaf marks every item, except optional ones and those above them", items
     .filter((item) => !item.group && item.self !== (item.optional || aboveOptional(item) ? null : "has")).map(nameOf));
   $("clear").click();
@@ -156,7 +160,9 @@ function lines({ uneven }) {
 
 function counts({ partial, other, upgraded }) {
   reset();
+
   const fits = () => items.filter((item) => item.self).reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
+
   const counted = (item) => {
     const own = size(fits() & (item.group ? item.all : item.set));
     const all = size(fits() & item.all);
@@ -165,10 +171,12 @@ function counts({ partial, other, upgraded }) {
         fill(words.ui.civRange, { own: plural("civCount", own), all: plural("civCount", all) })]
       : [numbers.format(own), plural("civCount", own)];
   };
+
   const miscounted = () => items.filter((item) => {
     const [shownText, said] = counted(item);
     return item.count.textContent !== shownText || item.civCount.textContent !== said;
   }).map(nameOf);
+
   expect("counts: a closed item shows its own number, then the number with everything under it", miscounted());
   check("counts: a closed line shows the civilisations with its first item, then with its last upgrade",
     upgraded.count.textContent === fill(words.ui.range, { own: numbers.format(size(upgraded.set)), all: numbers.format(size(lineEnd(upgraded).set)) }));

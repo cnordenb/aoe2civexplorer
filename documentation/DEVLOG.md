@@ -576,3 +576,56 @@
 - **`TESTS.md`** also has back the previous entry's changes, the new Test and the flag check's wording, which a
   save from an editor had undone.
 - **`MAINTAINER.md`** explains the three rounds, and that a new test goes in its own round.
+
+## 2026-10-19: MAINTAINER.md explains the code
+
+### What changed
+
+- **New chapter, "How the code works".** It sits before the rules and says briefly what each script does, naming
+  its main functions, and how a click on an item travels through the code.
+- **UML diagram.** A class diagram, written in Mermaid inside the Markdown, shows each script, its main functions and
+  which scripts it uses. GitHub draws it, so there is no image file. It was checked by drawing it with Mermaid 10.9.1.
+
+## 2026-10-19: a blank line around every function
+
+### What changed
+
+- **Easier to read.** As you asked, every function in `js/` and `js/tests/` now has a blank line before and after
+  it, at every level. A function that opens or closes its block has none on that side. Only blank lines were added;
+  every other line is unchanged, which was checked file by file.
+- **The 400-line limit counts lines of code.** As you decided, blank lines no longer count. The test is now "no script
+  is over 400 lines of code". With the limit lowered to 300 for one run, it failed and named `js/ui.js`, which has
+  389 lines of code.
+- **`TESTS.md`.** Every line number is updated, and so is the limit test's wording.
+- **`MAINTAINER.md`.** The limit counts lines of code, and the rules now ask for a blank line around every function.
+- **Tests.** All 93 tests pass in light and dark colours, in all four window sizes.
+
+## 2026-10-19: code_docu.pdf
+
+### What changed
+
+- **`code_docu.pdf`**, 26 pages: one chapter per file, in this order: `index.html`, `style.css`, each script in `js/`,
+  `data.json`, and `locales/de.json` as an example. Each top-level function in a script is a subchapter that says
+  what it does and why, in at most 240 characters; the two JSON chapters are short.
+- **Checked.** All 159 functions are covered, in the order of the code, and no explanation is over 240 characters;
+  the build checked both against the scripts. The PDF has page numbers and a clickable outline.
+- **Not yet allowed in the repository.** The CI check of allowed files does not list `code_docu.pdf`, so committing
+  it as it is fails that check.
+
+## 2026-10-19: a documentation folder, and script.js in the main folder
+
+### What changed
+
+- **`documentation/`.** As you asked, `README.md` is the only Markdown file left in the main folder. `MAINTAINER.md`,
+  `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DEVLOG.md` and `code_docu.pdf` moved into `documentation/`. Their
+  contents are unchanged; `REQUIREMENTS.md` was only moved.
+- **`script.js`** moved from `js/` to the main folder, as you asked. `index.html` loads it from there, and its imports
+  now point into `js/`.
+- **Links.** `README.md`'s two badges and its link to the guide point into `documentation/`.
+- **CI.** The list of allowed files now allows `README.md` and `script.js` in the main folder, and Markdown and PDF
+  files in `documentation/`. A Markdown file in the main folder now fails the check. This also allows `code_docu.pdf`.
+- **Tests.** The tests find the scripts from `script.js`. The rule test now reads "script.js is in the main folder and
+  every other script in js/, scripts import only scripts in js/, and the tests are in js/tests/ and load only when
+  testing".
+- **Documents.** `MAINTAINER.md` lists `script.js` and `documentation/` among the files; `TESTS.md` has the new wording
+  of Tests 77 and 78; `code_docu.pdf` was built again with `script.js` as its third chapter.

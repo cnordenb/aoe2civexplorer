@@ -9,7 +9,9 @@ const rgba = (value) => {
   const parts = (value.match(/[\d.]+/g) ?? []).map(Number);
   return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, parts.length > 3 ? parts[3] : 1];
 };
+
 const blend = ([r, g, b, a], [R, G, B]) => [r * a + R * (1 - a), g * a + G * (1 - a), b * a + B * (1 - a)];
+
 const backgroundOf = (el) => {
   const layers = [];
   for (let node = el; node; node = node.parentElement) {
@@ -19,6 +21,7 @@ const backgroundOf = (el) => {
   }
   return layers.reverse().reduce((under, layer) => blend(layer, under), [255, 255, 255]);
 };
+
 const luminance = (rgb) => {
   const [r, g, b] = rgb.map((v) => {
     const c = v / 255;
@@ -26,10 +29,12 @@ const luminance = (rgb) => {
   });
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
+
 const contrast = (a, b) => {
   const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (light + 0.05) / (dark + 0.05);
 };
+
 const styles = (el) => [getComputedStyle(el), getComputedStyle(el, "::before"), getComputedStyle(el, "::after"), getComputedStyle(el, "::marker")];
 
 function focusChecks(list) {
@@ -67,7 +72,9 @@ function focusChecks(list) {
 
 export function audit(label, { focus = true } = {}) {
   const note = (name, ok, detail = "") => check(name, ok, detail === "" ? label : `${label}, ${detail}`);
+
   const list = (name, offenders) => note(name, !offenders.length, offenders.slice(0, 3).join("; "));
+
   const all = everything();
   note("accessibility: the page has a title and its language is set", document.title.trim() && root.lang === tag, root.lang);
   list("accessibility: language tags are valid, and each language choice is marked with its language", [
@@ -114,7 +121,9 @@ export function audit(label, { focus = true } = {}) {
       const ratio = contrast(blend(rgba(style.borderTopColor), behind), behind);
       return parseFloat(style.borderTopWidth) > 0 && ratio < 3 ? [`${describe(el)} ${ratio.toFixed(2)}`] : [];
     }));
+
   const inline = (el) => el.matches("p a") && tidy(el.parentElement.textContent) !== tidy(el.textContent);
+
   list("accessibility: targets are at least 44 by 44 pixels", focusables().filter((el) => !inline(el)).filter((el) => {
     const box = el.getBoundingClientRect();
     return box.width < 43.5 || box.height < 43.5;

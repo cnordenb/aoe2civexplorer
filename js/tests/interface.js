@@ -7,13 +7,17 @@ import {
 } from "./helpers.js";
 
 const shownKeys = () => items.filter((item) => !item.group).map((item) => item.key);
+
 const uniqueKeys = () => {
   const under = (nodes, inside) => nodes.flatMap((node) => [
     ...(inside && node.item ? [node.item] : []), ...under(node.kids ?? [], inside || node.unique === true),
   ]);
+
   return new Set(under(data.tree, false));
 };
+
 const keptPath = () => items.find((item) => !item.group && !item.kids.length && item.parent).path;
+
 const byPath = (path) => items.find((item) => item.path === path);
 
 export function menuTests({ partial }) {
@@ -23,10 +27,12 @@ export function menuTests({ partial }) {
   $("optionsButton").focus();
   $("optionsButton").click();
   const inWindow = $("options").open && $("options").contains(button) && document.activeElement === button;
+
   const size = () => {
     const box = $("options").getBoundingClientRect();
     return `${box.width} by ${box.height}`;
   };
+
   const sizes = [size()];
   button.click();
   sizes.push(size());
@@ -58,7 +64,9 @@ export function languageTests(code, { partial, other }) {
   pick(code);
   reset();
   const text = data.text[code];
+
   const note = (name, offenders) => check(name, !offenders.length, `${code}: ${offenders.slice(0, 3).join("; ")}`);
+
   note("languages: the page's text is in the chosen language", [...document.querySelectorAll("[data-text]")]
     .filter((el) => el.textContent !== text.ui[el.dataset.text]).map((el) => el.dataset.text));
   note("languages: the tree is in the chosen language", items.filter((item) => item.label.textContent !== nameOf(item)
