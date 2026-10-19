@@ -253,7 +253,7 @@ The project follows a few rules that keep it simple to look after. If you change
 check most of them.
 
 - All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
-  `index.html`, all looks in `style.css`, all behaviour in the scripts other than the entrypoint script.js in `js/`: data handling in
+  `index.html`, all looks in `style.css`, all behaviour in in `js/`: data handling in
   `js/datahandler.js`, everything on the screen in `js/ui.js`, and the tests in `js/tests/`. No script is over 400
   lines.
 - No comments in the code. Explanations belong in this guide.

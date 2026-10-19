@@ -14,7 +14,7 @@ jobs:
           git checkout --quiet FETCH_HEAD
       - name: Check that the repository holds only the allowed files
         run: |
-          extra="$(git ls-files | grep -vxE 'index\.html|style\.css|script\.js|js/([a-z]+/)*[a-z]+\.js|data\.json|favicon\.ico|locales/[a-z]+\.json|README\.md|MAINTAINER\.md|RULES\.md|LOG\.md|DEVLOG\.md|LICENSE|\.gitignore|\.github/.*' || true)"
+          extra="$(git ls-files | grep -vxE 'index\.html|style\.css|js/([a-z]+/)*[a-z]+\.js|data\.json|favicon\.ico|locales/[a-z]+\.json|README\.md|MAINTAINER\.md|RULES\.md|LOG\.md|DEVLOG\.md|LICENSE|\.gitignore|\.github/.*' || true)"
           if [ -n "$extra" ]; then
             echo "These files are not allowed by the project's rules:"
             echo "$extra"
