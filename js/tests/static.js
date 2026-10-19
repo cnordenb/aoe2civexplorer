@@ -28,7 +28,7 @@ export async function scripts() {
       await visit(target, dynamic || lazy);
     }
   };
-  await visit(new URL("js/script.js", here).href, false);
+  await visit(new URL("script.js", here).href, false);
   return [...files.values()];
 }
 
@@ -44,9 +44,9 @@ export function sourceTests(page, sheet, files) {
   const scriptTags = page.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) ?? [];
   const links = page.match(/<link\b[^>]*>/gi) ?? [];
   const allowed = ["<link rel=\"stylesheet\" href=\"style.css\">", "<link rel=\"icon\" href=\"favicon.ico\">"];
-  expect("rules: index.html has no CSS or JavaScript of its own, and loads only style.css, js/script.js and favicon.ico", failing({
+  expect("rules: index.html has no CSS or JavaScript of its own, and loads only style.css, script.js and favicon.ico", failing({
     CSS: /<style\b|\sstyle\s*=/i.test(page),
-    JavaScript: scriptTags.length !== 1 || scriptTags[0] !== "<script type=\"module\" src=\"js/script.js\"></script>"
+    JavaScript: scriptTags.length !== 1 || scriptTags[0] !== "<script type=\"module\" src=\"script.js\"></script>"
       || /\son[a-z]+\s*=|javascript:/i.test(page),
     "other files": !same(links, allowed) || /\s(src|href)="[a-z]+:/i.test(page),
   }));
