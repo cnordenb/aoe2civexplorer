@@ -19,7 +19,7 @@ nothing to build: the files you see are exactly the files a visitor's browser do
 | `js/` | How the page behaves, split into the scripts listed below. |
 | `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in English, the default language. |
 | `favicon.ico` | The small icon browsers show in the tab and in bookmarks. |
-| `assets/images/` | The pictures, which Simple UI turns off: the backgrounds of the page and the Options window in `ui/backgrounds/`, the buttons and the Find box in `ui/buttons/`, the checkboxes in `ui/checkboxes/`, the mouse cursors in `ui/cursors/`, the panes' frames in `ui/panels/` and the civilisations' icons in `icons/civs/`. See [The background pictures](#the-background-pictures). |
+| `assets/images/` | The pictures, which Simple UI turns off: the backgrounds of the page and the Options window in `ui/backgrounds/`, the buttons and the Find box in `ui/buttons/`, the checkboxes in `ui/checkboxes/`, the mouse cursors in `ui/cursors/`, the panes' frames in `ui/panels/`, the civilisations' icons in `icons/civs/` and the tree's icons in `icons/nodes/`. See [The background pictures](#the-background-pictures). |
 | `assets/fonts/` | The fonts used only with the pictures on: Georgia, Times New Roman Bold and Trajan Pro Bold. See [The panels](#the-panels) and [Civ view](#civ-view-list-or-tiles). |
 | `locales/` | One file per other language, such as `locales/de.json` for German, with every piece of text in that language. |
 | `documentation/` | This guide and the project's other documents: `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DEVLOG.md` and `code_docu.pdf`. |
@@ -68,7 +68,8 @@ down.
   followed by `notice`, the notice Microsoft's [Game Content Usage Rules](https://www.xbox.com/en-US/developers/rules)
   ask for. In it, `{rules}` becomes a link to those rules, whose name and address are in `rules`. The notice is a legal
   text, so it stays in English in every language, and the page marks it as English for screen readers. The footer
-  spans the page, with Simple UI or without, so the notice takes few lines. With the pictures on, each civilisation
+  spans the page, with Simple UI or without, so the notice takes few lines. On a phone it is hidden, to leave the
+  room to the panes; see [Phones and narrow windows](#phones-and-narrow-windows). With the pictures on, each civilisation
   links to its page on aoe2techtree.net: `url`, then `#` and the civilisation's English name.
 - `languages`: the 17 languages. The first, English, is the default: its text is in `data.json` itself, and every
   other language has its own file in `locales`, named after its code. Each language has a `name` (as it is written
@@ -78,9 +79,12 @@ down.
   in German?).
 - `civs`: the civilisations, by their English names.
 - `icons`: where the civilisations' icons are, and the file names that differ from the civilisations' names. See
-  [The civilisation icons](#the-civilisation-icons).
+  [The civilisation icons](#the-civilisation-icons). Also where the tree's icons are (`nodes`), and the icons of the
+  headings Economy, Military and Fortifications (`groups`). See [The tree's icons](#the-trees-icons).
 - `tree`: what the left pane shows, in order. **You edit this by hand.**
 - `availability`: for each item in the tree, which civilisations have it. The updater writes this; never edit it.
+- `pictures`: for each item in the tree, its icon, and whether it is common, regional or unique, which
+  **Include Regionals** uses. The updater writes this; never edit it.
 - `ignore`: names from the game that you have decided not to show. **You edit this by hand.**
 - `overrides`: corrections to English names from the game. **You edit this by hand.**
 - `tools`: the English text of the updater and the tests.
@@ -234,6 +238,35 @@ The fonts come from `assets/fonts/`: `Georgia.ttf` and `timesbd.ttf` (Times New 
 neither file. They have their own names because a font loaded as plain "Georgia" would hide the installed Georgia's
 bold. The title and the buttons use "Civ Georgia" too.
 
+### Phones and narrow windows
+
+In a window narrower than 720 pixels, the tree pane sits above the civilisations pane instead of beside it. As
+long as the window is at least 640 pixels tall, the two share its height, with the pictures on or off:
+
+- The footer is hidden, so the panes reach the bottom of the window. Its source and notice are on the page in
+  every larger window, and on short phones at the end of the page.
+- Each pane's header always shows whole: the tree's title, Find box, buttons and legend, and the civilisations'
+  title, count and **Filters**.
+- The height left over goes to the two scrolling lists, the tree and the civilisations, equally. With everything
+  open and many civilisations listed, each pane takes about half the window and scrolls inside itself; the page
+  never scrolls.
+- A list that needs less than its share takes only what it needs, and the other gets the rest. On the first visit,
+  with the tree closed, the civilisations pane reaches down to the bottom of the window.
+- Each list is at least 44 pixels tall. On a phone too short for both headers and two such lists, as with the
+  pictures on at 360 by 640, the two panes scroll together below the header.
+
+`style.css` does this in the rule `@media (width < 720px) and (height > 639px)`. `.panes` is a grid of five rows:
+the tree's header and list, then the civilisations' header, filters and list. Each pane spans its rows as a
+*subgrid*, so it keeps its frame while its parts sit in the shared rows. The header rows are as tall as their
+contents (`max-content`); the two list rows start at 44 pixels and grow equally, the tree's up to its contents and
+the civilisations' to fill what is left. A window less than 640 pixels tall, or less than 500 at any width, shows
+everything in one column that scrolls as a whole instead, which is how the page reads when zoomed to 400%.
+
+Test 15 opens the whole tree, marks the item most civilisations have, and checks this in every test window.
+Tests 42 and 48 check that the footer is hidden on a phone and spans the panes everywhere else. It was
+written after a bug: the civilisations pane once took the height of its whole list, so the page scrolled and the
+tree pane shrank to nothing.
+
 ### The Find box
 
 With the pictures on, the Find box is drawn from `textfield_9slice.webp` in `assets/images/ui/buttons/`, 45 by 45,
@@ -260,6 +293,12 @@ near its bottom it moves above the pointer. It looks like the tooltips of
 [frcp.net](https://github.com/cnordenb/frcp.net). Its text over the tree is `nodeTip` in the language files. It shows only for a
 mouse, not for touch or the keyboard, where the legend of Simple UI explains the same.
 
+Over **Include Unique and Universal** in the Options window, the tooltip shows what the box does: `includeHint` in
+the language files. With the pictures on, that sentence is no longer shown under the box, but screen readers still
+read it, as the box names it with `aria-describedby`. With Simple UI there are no tooltips, so the sentence stays
+under the box. The Options window lies in the browser's top layer, above everything else on the page, so while the
+mouse is over it, `js/pictures.js` moves the tooltip into the window; otherwise the window would cover it.
+
 `js/pictures.js` places it by setting the custom properties `--x` and `--y` to the pointer's position, as numbers.
 `style.css` turns them into `left` and `top`. The cursor's size is `--reach` on `.tip` in `style.css`, set next to the
 cursor pictures so the two always match; `js/pictures.js` reads it from there. This is the only way the scripts give CSS anything: plain numbers through
@@ -275,6 +314,45 @@ With the pictures on, the list of civilisations shows each one's icon before its
 When a game update adds a civilisation, add its icon to that folder, named in lower case after its English name, or
 add its file's name to `icons`. The tests mark an item many civilisations have and check that every icon in the list
 loads.
+
+### The tree's icons
+
+With the pictures on, each row of the tree shows an icon between its checkbox and its name. The icons are the 48 by 48
+pictures from the `img` folder of [aoe2techtree's repository](https://github.com/SiegeEngineers/aoe2techtree), drawn
+at 40 by 40 inside a 2-pixel outline: 44 by 44 in all, the height of a row.
+
+| Folder | Holds | Copied from aoe2techtree's |
+| --- | --- | --- |
+| `assets/images/icons/nodes/building/` | the buildings | `img/Building/` |
+| `assets/images/icons/nodes/unit/` | the units | `img/Unit/` |
+| `assets/images/icons/nodes/tech/` | the technologies | `img/Tech/` |
+| `assets/images/icons/nodes/misc/` | the headings Economy, Military and Fortifications | |
+
+The files keep aoe2techtree's numbers, which are each item's `picture_index` in its data, not the item's id. Only the
+folders are renamed to lower case, as the GitHub check of allowed files asks.
+
+`pictures` in `data.json` gives each item's folder (`kind`), file (`picture`) and whether the item is `common`,
+`regional` or `unique` (`reach`), for example `"Militia": {"kind": "unit", "picture": 8, "reach": "common"}`. The
+updater writes it from aoe2techtree's data: `kind` is the item's `use_type` in lower case, and `reach` comes from its
+`node_type`, such as `RegionalUnit` or `UniqueTech`; anything else is common. Two cases needed a choice:
+
+- The Monk and the Trade Cart look different for different civilisations. The updater takes the picture most
+  civilisations have.
+- The Fortified Wall, Guard Tower, Keep and Bombard Tower are both buildings and technologies in aoe2techtree. The
+  updater takes the building, which aoe2techtree lists first.
+
+The headings' icons are in `icons` in `data.json`, under `groups`, and are edited by hand. They have no outline. A
+heading without an icon there, such as Unique Units, shows none.
+
+The outline's colour depends on the kind and the reach, as set in `assets/images/icons/nodes/colour_key.csv`: one row
+per reach, one column per kind. The page may only take its looks from `style.css`, so the nine colours are copied
+there, into the rules that start with `.pictures .node-icon[data-kind=`. To change a colour, change it in both
+files. The tests read the CSV file and fail, naming the item, if an outline differs from it.
+
+When a game update adds an item, the updater's report says "New icon for …" and names the file the item needs, such
+as `assets/images/icons/nodes/unit/912.png`. If that file is not there yet, copy `img/Unit/912.png` from aoe2techtree's
+repository into the `unit` folder. The tests check that every item's icon loads, with **Include Unique and
+Universal** ticked so that every item is in the tree.
 
 ### Links to the civilisations' pages
 
@@ -377,10 +455,10 @@ numbers from `style.css`, so they cannot tell whether the numbers match the pict
 the Options window's parchment, see [The Options window](#the-options-window).
 
 Pictures live in `assets/images/`, in folders and files named in lower-case letters, digits and underscores, such as
-`ui/buttons/options_sd.webp`. The GitHub check of allowed files lets only WebP files with such names into that
+`ui/buttons/options_sd.webp`. The GitHub check of allowed files lets only WebP and PNG files with such names into that
 folder. Only `style.css` may use a picture, and only in a rule that starts with `.pictures`, so that Simple UI turns
-it off; the tests check this. The civilisations' icons are the one exception: they are `<img>` elements, made from a
-template in `index.html` only while Simple UI is off. Fonts live in `assets/fonts/` as `.ttf` files, and `style.css` may only load them in an
+it off; the tests check this. The icons of the civilisations and of the tree are the exception: they are `<img>`
+elements, made from templates in `index.html` only while Simple UI is off. Fonts live in `assets/fonts/` as `.ttf` files, and `style.css` may only load them in an
 `@font-face` rule; use them only in `.pictures` rules, so that Simple UI never downloads them.
 
 ## Opening the page on your own computer
@@ -420,6 +498,7 @@ Each line of the report is one finding. Most need nothing from you.
 | In the tree, but not in the source data: … | Something in the tree was renamed or removed in the game. | Fix the tree (step 4). The updater stops until you do. |
 | In the tree more than once: … | The same name is in the tree twice. | Remove one (step 4). The updater stops until you do. |
 | No civilisation has: … | Probably removed from the game. | Consider removing it from the tree. |
+| New icon for …: … | An item is new, or aoe2techtree gave it another picture. | If the named file is not in the project yet, copy it in; see [The tree's icons](#the-trees-icons). |
 | … has no text for: … | A language is missing one of the page's sentences or a group heading. | Add it; see [Changing the page's own text](#changing-the-pages-own-text). |
 | Nothing has changed since the last update, apart from the date. | Exactly that. | Download anyway if you want the footer to show the new month. |
 
@@ -502,6 +581,12 @@ The tree also leaves some items out, unless a visitor ticks **Include Unique and
 - Items that every civilisation has, such as the Town Center, and items that only one civilisation has, such as the
   Pasture. The page works these out for itself from the data, so there is nothing to mark. An item stays when
   something under it is kept: the Barracks stays, because not every civilisation has the Champion.
+
+The **Include Regionals** box in the Options window, ticked unless a visitor unticks it, leaves out regional items,
+such as the Eagle Scout or the Camel Rider, with everything under them. A regional item is one aoe2techtree's data calls
+regional, which the updater copies into `reach` in `pictures`, so there is nothing to mark here either. The two boxes
+work together: with Include Unique and Universal ticked and Include Regionals unticked, everything but the regional
+items shows.
 
 When you have changed the tree, reload the `?update` page. The report should no longer mention those items.
 
@@ -590,6 +675,7 @@ classDiagram
     +setOpen(item, open)
     -toggle(item, kind)
     -update()
+    -dress(item)
   }
   class model {
     <<module>>
@@ -657,13 +743,15 @@ classDiagram
   A set of civilisations is a bit mask: `setOf()` makes one from `data.json`, and `civsOf()` turns one back into
   names. `recall()` and `remember()` keep choices in the browser. `fetchUpdate()` fetches new data for the updater.
 - **`js/model.js`** looks after the tree, and never touches the screen. `rebuild()` builds the items, leaving out
-  unique and universal ones unless they are included. `mark()` marks an item and passes the mark on, `settle()`
+  unique and universal ones unless they are included, and regional ones while Include Regionals is unticked. `mark()` marks an item and passes the mark on, `settle()`
   works out what else follows, `fit()` finds the civilisations that fit every mark, and `filtersOf()` and
   `chipName()` decide what **Filters** shows.
 - **`js/ui.js`** looks after the screen. `start()` builds the page and listens for clicks and keys. A click on an
   item runs `toggle()`, which calls `mark()`, opens the rows the mark reached, and then calls `update()` to redraw
-  the boxes, the numbers, **Filters** and the list of civilisations. `setSimple()` ticks or unticks Simple UI, and
-  adds or removes the `pictures` class on the page, which is what shows the pictures.
+  the boxes, the numbers, **Filters** and the list of civilisations. `setInclude()` and `setRegional()` tick or untick
+  the two Include boxes and build the tree again. `setSimple()` ticks or unticks Simple UI, and
+  adds or removes the `pictures` class on the page, which is what shows the pictures. `dress()` gives a row of the
+  tree its icon, or takes it away with Simple UI on; the tree is built, and Simple UI switched, through it.
 - **`js/pictures.js`** looks after what only the pictures need. `setView()` switches the list of civilisations
   between list and tiles and remembers the choice, and the tooltip follows the mouse. `startPictures()` sets both up.
 - **`js/report.js`** shows the report window: `runUpdate()` for the updater, and `openReport()` and `report()`,

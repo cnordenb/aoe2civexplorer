@@ -1199,3 +1199,157 @@ All of this applies with the pictures on. Simple UI is unchanged.
   1280 by 560. All 100 tests pass in Chrome, in light and dark colours, in all four window sizes.
 - **Documents.** `TESTS.md` has the new wording of Tests 49 and 52. `MAINTAINER.md` has a new section, "The Options
   window", with the measurements behind the numbers in `style.css`.
+
+## 2026-10-21: icons in the tree
+
+### What changed
+
+All of this applies with the pictures on. Simple UI is unchanged.
+
+- **Icons in the tree.** As decided, each row of the tree reads checkbox, icon, name, as in "[ ] [icon] Militia". The
+  icons are the 48 by 48 pictures from aoe2techtree's repository, in `assets/images/icons/nodes/`, drawn at 40 by 40
+  inside a 2-pixel outline: 44 by 44 in all, the height of a row. They are `<img>` elements from a new template,
+  `nodeIconTemplate`, made only while Simple UI is off, as the civilisation icons are. `dress()` in `js/ui.js` adds or
+  removes them when the tree is built and when Simple UI is switched. The 100 by 100 pictures in the same folder are
+  not used.
+- **Outlines.** As decided, the outline's colour follows `colour_key.csv`, by unit, building or technology and by
+  common, regional or unique. The nine colours are in `style.css`, as the page takes its looks only from there, and
+  the tests compare them with the CSV file. As decided, the icons of Economy, Military and Fortifications, from
+  `misc/`, have no outline, and the Unique Units, Unique Buildings and Unique Technologies headings, which have no
+  picture, show no icon.
+- **Which picture.** The files are named after each item's `picture_index` in aoe2techtree's data, not its id, and
+  the folders after its `use_type`. Every item in the tree has a file. The Monk and the Trade Cart have a picture per
+  architecture there; the most common one is used (Monk 33, Trade Cart 34). The Fortified Wall, Guard Tower, Keep and
+  Bombard Tower are both buildings and technologies there; their building pictures are used.
+- **Lower-case folders.** `Building`, `Unit` and `Tech` became `building`, `unit` and `tech`. The GitHub check of
+  allowed files only lets in lower-case paths, as with `assets/fonts/` before.
+- **`pictures` in `data.json`.** For each item, its folder (`kind`), its file (`picture`) and its `reach`: common,
+  regional or unique, from aoe2techtree's `node_type`. The updater writes it, so new items get their icon with the
+  rest of their data, and it reports "New icon for {name}: {file}" when an item's icon is new or changed, so the
+  maintainer knows which file to copy in. `icons` also holds the tree's folder (`nodes`) and the headings' icons
+  (`groups`). `pictures` was made by running the updater's own code on today's aoe2techtree data; it reported nothing
+  new apart from the icons.
+- **Tests.** Still 100.
+  - Test 51 also checks, with every item included, that each item and top-level heading shows its icon between its
+    box and its name, from the right file, loaded, 44 by 44, with the outline `colour_key.csv` gives, and that the
+    unique headings show none.
+  - Test 54 counts `<img>` elements as images too, so Simple UI must take the tree's icons away.
+  - Test 92 checks that each item has an icon in `pictures`.
+  - A new helper, `loaded()`, waits for the icons in Tests 51 and 52.
+- **Checked.** In screenshots at 1920 by 1080, with the tree expanded and unique items included. With one outline
+  colour changed in `style.css`, Test 51 failed and named the item; with the icons left on under Simple UI, Tests 54
+  and 76 failed. All 100 tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **`js/ui.js`** has 388 lines of code.
+- **Noticed.** `colour_key.csv` gives common technologies `#D43652`, the same colour as unique buildings; it is used as
+  given. The updater would also put the Dock's items in `data.json` and the language files into the tree's order;
+  only `pictures` was taken from its output, so that is left for the next update.
+- **Documents.** `TESTS.md` has the new wording of Tests 51, 54 and 92, and their new lines. `MAINTAINER.md` has a
+  section on the tree's icons, `pictures` in `data.json` and the updater's new message.
+
+## 2026-10-21: Include Regionals, and the Include description as a tooltip
+
+### What changed
+
+- **Include Regionals.** As decided, the Options window has a new box, "Include Regionals", ticked by default. Unticked,
+  it leaves out regional items, such as the Eagle Scout, the Camel Rider or the Longship, with everything under them,
+  such as the Warrior Priest in the Fortified Church. Marks on other items are kept, and the choice is remembered. It
+  works with or without Include Unique and Universal, and with or without Simple UI. Which items are regional comes
+  from `reach` in `pictures` in `data.json`, which the updater copies from aoe2techtree's `node_type`, so there is
+  nothing to mark by hand. The label uses the game's own word for regional (string 20133) in each of the 17 languages.
+- **How.** `prune()` in `js/model.js` now takes two switches, one for unique and universal items and one for regional
+  ones, and `rebuild()` always uses it. `setRegional()` in `js/ui.js` ticks the box and builds the tree again, as
+  `setInclude()` does; the steps both share moved into `replant()`.
+- **The description as a tooltip.** As decided, with the pictures on, "Also shows unique units, technologies and
+  buildings…" is no longer shown under Include Unique and Universal, but as the tooltip over that box. Screen readers
+  still read it, as the box names it with `aria-describedby` and the sentence is only hidden from sight. Include
+  Regionals now sits straight under Include Unique and Universal. A modal window lies in the browser's top layer,
+  above the tooltip, so `js/pictures.js` moves the tooltip into the Options window while the mouse is over it.
+- **Simple UI keeps the sentence.** Simple UI has no tooltips, and WCAG 2.2 AAA asks that the description can be read
+  without a mouse, so with Simple UI the sentence stays under the box, with Include Regionals below it.
+- **Common technologies' outline.** `colour_key.csv` now gives `#397139` for common technologies; Test 51 caught that
+  `style.css` still had `#D43652`, and `style.css` now follows the CSV file.
+- **Tests.** Still 100.
+  - Test 44 also checks that regional items are shown by default.
+  - Test 45 also unticks Include Regionals, with every item included, and checks that exactly the items outside
+    regional ones remain, marks kept; then ticks it again.
+  - Test 46 checks that both choices are remembered, and Test 47 that Options opens with Include Regionals ticked.
+  - Test 53 checks the tooltip over Include: its text, that it lies in the Options window, that the sentence is hidden
+    from sight with the pictures on and that the box still names it.
+  - Test 81 unticks and ticks Include Regionals with Space.
+  - Test 91 checks the optional items with regional items left out, too.
+  - The tests start with Include Regionals ticked and put the visitor's choice back at the end.
+  - `js/tests/interface.js` passed 400 lines of code, so its helpers for the options tests moved to
+    `js/tests/helpers.js`.
+- **Checked.** In screenshots of the Options window with the pictures and with Simple UI. With the regional filter
+  switched off in `prune()`, Tests 45 and 81 failed; with the tooltip left outside the Options window, Test 53 failed.
+  All 100 tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **`js/ui.js`** has 400 lines of code, the limit. The next addition to it needs part of it moved to another script.
+- **Requirements.** Requirement 8 lists a description of the Include checkbox in the Options window; with the pictures
+  on, it is now the tooltip. Include Regionals is not in `REQUIREMENTS.md` yet, which only the chief developer edits.
+- **Documents.** `TESTS.md` has the new wording of Tests 44 to 47, 53, 81 and 91, and the new lines of the tests in
+  `js/tests/interface.js`, `js/tests/static.js` and `js/tests/run.js`. `MAINTAINER.md` describes Include Regionals,
+  the tooltip over Include and `setRegional()`.
+
+## 2026-10-21: the phone layout, and Test 15
+
+### What changed
+
+- **The bug.** On a phone, with the tree open and many civilisations listed, the civilisations pane grew to the height
+  of its whole list (about 1,800 pixels with 56 civilisations), the page scrolled, the list did not scroll inside its
+  pane, and the tree pane was crushed to its border, its header spilling over the civilisations pane. The cause was
+  `min-height: auto` on the civilisations pane in the one-column layout: for a pane holding a scrolling list, it
+  works out to the list's full height, so the pane could never shrink. It was meant to keep the header, the filters
+  and a 44-pixel list in view, as the entry of 2026-10-21 on pinned filters says. No test caught it, as none filled
+  the list in a phone-sized window.
+- **The fix.** As asked, with everything open and the civilisations listed, the two panes now take about half the
+  window each, and each list scrolls inside its pane. In windows narrower than 720 pixels and at least 640 tall,
+  `.panes` is a grid of five rows, the tree's header and list and the civilisations' header, filters and list, and
+  each pane spans its rows as a subgrid, keeping its frame. Headers are as tall as their contents and always show
+  whole; the two lists share the rest equally, each up to what it needs, and the civilisations' list takes what is
+  left over, so on the first visit it still reaches the footer. A first try split the panes themselves in half, but
+  then the tree's header (Find box, buttons, legend) spilled out of its half at 360 by 640, so the lists, not the
+  panes, share the height.
+- **Short phones.** Where the two headers and two 44-pixel lists do not fit, as with the pictures on at 360 by 640 or
+  360 by 780, the panes scroll together between the header and the footer, and nothing overlaps. Their scroll bar's
+  room is kept (`scrollbar-gutter: stable`), so that on a computer it cannot appear while typing and narrow the Find
+  box. The panes have one column of `minmax(0, 1fr)`, so a header cannot push its pane wider than the window.
+- **Measured.** With everything open and 56 civilisations listed, the page never scrolls. With Simple UI, the two
+  lists are 141 and 141 pixels at 390 by 844, and 169 and 169 at 412 by 915. With the pictures on they are 97 and 69
+  at 390 by 844; the civilisations' frame is 28 pixels thicker than the tree's. Screenshots checked at 360 by 640,
+  360 by 780, 390 by 844 and 412 by 915, with a phone's touch screen emulated.
+- **Test 15 replaced.** As asked, "Clear clears everything" made way for a test of this bug. Clear is still pressed
+  before nearly every test, by `reset()`. The new Test 15 opens the whole tree and marks the item most civilisations
+  have, then checks, in every test window, that the page does not scroll, that both headers sit inside their panes,
+  that the panes do not overlap, that the list scrolls inside its pane, and that stacked lists share the height
+  within a pixel when both scroll. With the old layout put back, it failed in the 360 by 640 and 390 by 844 windows
+  ("the page is 375 by 1754; treeTitle sticks out"), and it was the only test that failed.
+- **Tests.** Still 100. A first version ticked Include Unique and Universal to list all 56 civilisations; that
+  rebuilds the tree, and the later tests, which keep the items picked at the start, failed. It now uses the item
+  most civilisations have, and leaves Include alone. All 100 tests pass in Chrome, in light and dark colours, in
+  all four window sizes.
+- **Not changed.** On small phones with the pictures on, the footer (about 180 pixels at 360 wide) and the
+  civilisations' 38-pixel frame take much of the height; making them smaller on phones would let the panes split the
+  height there too.
+- **Documents.** `TESTS.md` has the new Test 15 and the new lines of the tests in `js/tests/behaviour.js`.
+  `MAINTAINER.md` has a section, "Phones and narrow windows".
+
+## 2026-10-21: no footer on phones
+
+### What changed
+
+- **The footer is hidden on phones.** As decided, the footer need not show in the phone layout, so it is hidden there
+  to give its room to the panes: `.foot { display: none; }` in the rule `@media (width < 720px) and (height > 639px)`.
+  It took about 150 pixels with Simple UI and 180 with the pictures, at 360 pixels wide. In shorter narrow windows,
+  where everything scrolls in one column, the footer stays at the end, as it takes no room from the panes there.
+- **Measured.** With everything open and 56 civilisations listed, the two lists now share the height in every phone
+  size tried: with Simple UI 115 and 115 pixels at 360 by 640, 185 and 185 at 360 by 780, 217 and 217 at 390 by
+  844, 245 and 245 at 412 by 915; with the pictures 96 and 68 at 360 by 780, 179 and 151 at 390 by 844, 213 and 185
+  at 412 by 915. Only 360 by 640 with the pictures is still 19 pixels short, so there the panes scroll together.
+- **Tests.** Still 100. Tests 42 and 48 checked that the footer is as wide as the panes; they now expect it hidden in
+  the phone layout and as wide as the panes elsewhere, through a shared helper, `spans()`. Test 48 leaves hidden
+  elements out of its check that everything sits on the parchment. All 100 tests pass in Chrome, in light and dark
+  colours, in all four window sizes; the 500 by 900 window, and the 360 by 640 and 390 by 844 test windows, use the
+  phone layout.
+- **Requirements.** Requirement 5 asks for the footer, but requirement 0 limits the requirements to desktop at 16:9.
+- **Documents.** `TESTS.md` has the new wording of Tests 42 and 48, and the new lines of the tests after Test 42.
+  `MAINTAINER.md` says where the footer is hidden.

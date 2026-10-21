@@ -26,7 +26,7 @@ Functional completeness & correctness tests:
 - [Test 12](#test-12): A line's filter button clears only its own kind of mark
 - [Test 13](#test-13): A building heading a line reads Full, unless it holds upgrades
 - [Test 14](#test-14): Marking a top-level group marks and shows all in it
-- [Test 15](#test-15): Clear clears everything
+- [Test 15](#test-15): Everything open and a long civ list fit the screen, on phones too, panes sharing the height
 - [Test 16](#test-16): A long press marks must lack, and a right-click clears it
 - [Test 17](#test-17): Marking a line's end marks the whole line
 - [Test 18](#test-18): Marking a line's end replaces must-lack marks above it
@@ -53,18 +53,18 @@ Functional completeness & correctness tests:
 - [Test 39](#test-39): The page's text is in the chosen language
 - [Test 40](#test-40): The tree is in the chosen language
 - [Test 41](#test-41): No placeholders are left in the text
-- [Test 42](#test-42): The footer links the source and Microsoft's rules, as wide as the page
+- [Test 42](#test-42): The footer links the source and Microsoft's rules, as wide as the page, hidden on phones
 - [Test 43](#test-43): The civ list is translated and sorted
-- [Test 44](#test-44): Unique and universal items are hidden by default
-- [Test 45](#test-45): Ticking Include shows every item, keeping marks
-- [Test 46](#test-46): The Include choice is remembered
-- [Test 47](#test-47): Options opens unticked, and Close returns focus
-- [Test 48](#test-48): The pictures and cursors suit the screen, the page sits on the parchment, the footer spans it
+- [Test 44](#test-44): Unique and universal items are hidden by default, regional ones shown
+- [Test 45](#test-45): Ticking Include shows every item, unticking Include Regionals hides regional ones, keeping marks
+- [Test 46](#test-46): The Include and Include Regionals choices are remembered
+- [Test 47](#test-47): Options opens with Include unticked and Include Regionals ticked, and Close returns focus
+- [Test 48](#test-48): The pictures and cursors suit the screen, the page sits on the parchment, the footer spans it or is hidden on phones
 - [Test 49](#test-49): The title reads Civ Explorer, centred in its frame, and Options sits in its parchment's frame
 - [Test 50](#test-50): Text buttons show the button picture with whole ends, in bold Georgia
-- [Test 51](#test-51): Every checkbox and radio button shows its picture from its sheet
+- [Test 51](#test-51): Every checkbox and radio button shows its picture from its sheet, and tree rows their outlined icons
 - [Test 52](#test-52): The panels, Options included, sit in their frames, with fonts, colours, civ icons and links, six tiles a row, pinned filters
-- [Test 53](#test-53): The Find box shows a search icon or a clearing cross, and the tree has a tooltip unless turned off
+- [Test 53](#test-53): The Find box shows a search icon or a clearing cross; the tree and Include have tooltips unless turned off
 - [Test 54](#test-54): Simple UI takes away every image and the civ links, keeps its box in place and is remembered
 
 Accessibility tests:
@@ -95,7 +95,7 @@ Accessibility tests:
 - [Test 78](#test-78): Focus shows a thick, high-contrast outline
 - [Test 79](#test-79): Nothing covers what has focus
 - [Test 80](#test-80): Wider text spacing breaks nothing
-- [Test 81](#test-81): Space unticks Include, keeping marks
+- [Test 81](#test-81): Space unticks and ticks Include and Include Regionals, keeping marks
 
 Maintainability tests:
 
@@ -108,8 +108,8 @@ Maintainability tests:
 - [Test 88](#test-88): No game data in the scripts
 - [Test 89](#test-89): Each item is in the tree once
 - [Test 90](#test-90): Optional, upgrades and unique flags are well placed
-- [Test 91](#test-91): Items a civ can do without are optional
-- [Test 92](#test-92): Each item's availability names known civs
+- [Test 91](#test-91): Items a civ can do without are optional, with or without regional items
+- [Test 92](#test-92): Each item's availability names known civs, and each item has an icon
 - [Test 93](#test-93): Counted texts have an "other" form
 - [Test 94](#test-94): Translations keep their placeholders
 - [Test 95](#test-95): Overrides name known items and civs
@@ -276,18 +276,18 @@ From closed, clicking the group makes its state "has", while it holds no mark it
 ## Test 15
 
 ### File residence:
-`js/tests/behaviour.js`, line 65
+`js/tests/behaviour.js`, lines 69-93
 
 ### Purpose:
-Verify Req. 17: Clear removes every mark.
+Verify that on phones a full tree and civ list never stretch the page or crush the tree pane, as they once did.
 
 ### Assertion expectation:
-After Clear, no item has a mark.
+No page scroll; headers inside panes; no overlap; list scrolls in place; stacked scroll areas within 1px of each other.
 
 ## Test 16
 
 ### File residence:
-`js/tests/behaviour.js`, line 99
+`js/tests/behaviour.js`, line 127
 
 ### Purpose:
 Verify marking by long press and right-click (Req. 3).
@@ -298,7 +298,7 @@ A 600 ms touch press marks the item "lacks"; a right-click on it then clears it.
 ## Test 17
 
 ### File residence:
-`js/tests/behaviour.js`, lines 113-114
+`js/tests/behaviour.js`, lines 141-142
 
 ### Purpose:
 Verify Req. 27: a line of single descendants takes the mark given to its deepest item.
@@ -309,7 +309,7 @@ Clicking a line's last item marks the whole line "has" and lists the right civs;
 ## Test 18
 
 ### File residence:
-`js/tests/behaviour.js`, line 117
+`js/tests/behaviour.js`, line 145
 
 ### Purpose:
 Ensure a line never holds contradictory marks.
@@ -320,7 +320,7 @@ With the line's first item must lack, clicking its last item makes every item in
 ## Test 19
 
 ### File residence:
-`js/tests/behaviour.js`, line 120
+`js/tests/behaviour.js`, line 148
 
 ### Purpose:
 Keep an item's mark consistent with fully marked contents.
@@ -331,7 +331,7 @@ Clicking every leaf in a branch marks the branch itself "has".
 ## Test 20
 
 ### File residence:
-`js/tests/behaviour.js`, lines 123-124
+`js/tests/behaviour.js`, lines 151-152
 
 ### Purpose:
 Keep civs that do without an optional item, such as Folwark civs, in the results.
@@ -342,7 +342,7 @@ Marking all leaves under an optional item leaves it unmarked and mixed; the list
 ## Test 21
 
 ### File residence:
-`js/tests/behaviour.js`, lines 128-129
+`js/tests/behaviour.js`, lines 156-157
 
 ### Purpose:
 Allow searching for civs that get an optional item's contents elsewhere.
@@ -353,7 +353,7 @@ An optional item stays "lacks" after everything under it is marked; the list is 
 ## Test 22
 
 ### File residence:
-`js/tests/behaviour.js`, line 134
+`js/tests/behaviour.js`, line 162
 
 ### Purpose:
 Catch items anywhere in the tree that fail to follow their contents' marks.
@@ -364,7 +364,7 @@ With a third of the leaves marked, then all, no non-optional item is unmarked wh
 ## Test 23
 
 ### File residence:
-`js/tests/behaviour.js`, lines 138-139
+`js/tests/behaviour.js`, lines 166-167
 
 ### Purpose:
 Verify that marks travel up the whole tree correctly.
@@ -375,7 +375,7 @@ With every leaf marked, every item is "has", except optional items and those abo
 ## Test 24
 
 ### File residence:
-`js/tests/behaviour.js`, lines 150-151
+`js/tests/behaviour.js`, lines 178-179
 
 ### Purpose:
 Verify Req. 28 and 31: marking a unit or technology opens it, showing every item marked with it.
@@ -386,7 +386,7 @@ Clicking a closed line item opens it down to the end of its line, so every item 
 ## Test 25
 
 ### File residence:
-`js/tests/behaviour.js`, lines 152-153 and 156-157
+`js/tests/behaviour.js`, lines 180-181 and 184-185
 
 ### Purpose:
 Verify Req. 29 and 30: a mark passes down a line only to items held by as many civilisations.
@@ -397,7 +397,7 @@ Click, and X after the line's end is marked, mark only items with the same count
 ## Test 26
 
 ### File residence:
-`js/tests/behaviour.js`, line 180
+`js/tests/behaviour.js`, line 208
 
 ### Purpose:
 Verify each item's compatible civilisations count (Req. 3).
@@ -408,7 +408,7 @@ Closed items with contents show "own–all" counts and other items their own cou
 ## Test 27
 
 ### File residence:
-`js/tests/behaviour.js`, lines 181-182
+`js/tests/behaviour.js`, lines 209-210
 
 ### Purpose:
 Verify that a closed upgrade line shows the range from its first item to its last upgrade.
@@ -419,7 +419,7 @@ The line's count reads its first item's civ count, then its last item's civ coun
 ## Test 28
 
 ### File residence:
-`js/tests/behaviour.js`, line 184
+`js/tests/behaviour.js`, line 212
 
 ### Purpose:
 Avoid a misleading range once an item's contents are visible.
@@ -430,7 +430,7 @@ After Expand all, every item shows only its own count.
 ## Test 29
 
 ### File residence:
-`js/tests/behaviour.js`, line 189
+`js/tests/behaviour.js`, line 217
 
 ### Purpose:
 Verify that the counts follow the active filters (Req. 3).
@@ -441,7 +441,7 @@ With a must-have and a must-lack mark, open and closed items count only the civs
 ## Test 30
 
 ### File residence:
-`js/tests/behaviour.js`, lines 202-203
+`js/tests/behaviour.js`, lines 230-231
 
 ### Purpose:
 Verify Req. 18 and 19, and each branch's arrow.
@@ -452,7 +452,7 @@ Expand all opens every branch, Collapse all closes every branch, and a branch's 
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour.js`, lines 204-209
+`js/tests/behaviour.js`, lines 232-237
 
 ### Purpose:
 Save clicks by opening a line of only children in one step.
@@ -463,7 +463,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour.js`, lines 247-249
+`js/tests/behaviour.js`, lines 275-277
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights, opens to and counts its matches.
@@ -474,7 +474,7 @@ Exactly the matching items are highlighted and visible, and the number shows on 
 ## Test 33
 
 ### File residence:
-`js/tests/behaviour.js`, line 253
+`js/tests/behaviour.js`, line 281
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).
@@ -485,7 +485,7 @@ A search without matches says none found, on one line right of the search bar; e
 ## Test 34
 
 ### File residence:
-`js/tests/interface.js`, lines 40-43
+`js/tests/interface.js`, lines 26-29
 
 ### Purpose:
 Verify Req. 8 and 9: the Language menu is in the Options window and offers every language.
@@ -496,7 +496,7 @@ Options opens with focus on the menu, which opens to one option per language, ea
 ## Test 35
 
 ### File residence:
-`js/tests/interface.js`, lines 49-50
+`js/tests/interface.js`, lines 35-36
 
 ### Purpose:
 Verify Req. 12 and Rule 18: the language menu closes cleanly and nothing moves.
@@ -507,7 +507,7 @@ Escape closes the menu and refocuses its button; moving focus away closes it; th
 ## Test 36
 
 ### File residence:
-`js/tests/interface.js`, lines 54-56
+`js/tests/interface.js`, lines 40-42
 
 ### Purpose:
 Verify Req. 11: the page changes to the chosen language.
@@ -518,7 +518,7 @@ The page's lang and title change to the chosen language; the menu closes, refocu
 ## Test 37
 
 ### File residence:
-`js/tests/interface.js`, line 57
+`js/tests/interface.js`, line 43
 
 ### Purpose:
 Keep the chosen language when the link is shared or the page reloaded.
@@ -529,7 +529,7 @@ The address holds lng=<chosen language>. Always passes when the page is opened a
 ## Test 38
 
 ### File residence:
-`js/tests/interface.js`, line 58
+`js/tests/interface.js`, line 44
 
 ### Purpose:
 Ensure changing the language never loses the user's marks.
@@ -540,7 +540,7 @@ After a language change the marked item is still "has" and the civ list is uncha
 ## Test 39
 
 ### File residence:
-`js/tests/interface.js`, lines 71-72
+`js/tests/interface.js`, lines 57-58
 
 ### Purpose:
 Verify Req. 11 for all interface text, in every language.
@@ -551,7 +551,7 @@ Every element with data-text shows the chosen language's text for its key.
 ## Test 40
 
 ### File residence:
-`js/tests/interface.js`, lines 73-74
+`js/tests/interface.js`, lines 59-60
 
 ### Purpose:
 Verify Req. 11 for the tree, in every language.
@@ -562,7 +562,7 @@ Every tree label shows the chosen language's item or group name.
 ## Test 41
 
 ### File residence:
-`js/tests/interface.js`, line 75
+`js/tests/interface.js`, line 61
 
 ### Purpose:
 Catch unfilled {placeholders} shown to users.
@@ -573,18 +573,18 @@ No visible text on the page contains { or }.
 ## Test 42
 
 ### File residence:
-`js/tests/interface.js`, lines 76-80
+`js/tests/interface.js`, lines 62-65
 
 ### Purpose:
 Verify Req. 5: the footer credits the data source, and gives Microsoft's notice in English.
 
 ### Assertion expectation:
-Links to the source and Microsoft's rules, from data.json; the notice is marked English; the footer spans the panes.
+Links to source and rules from data.json; notice marked English; footer spans the panes, or is hidden on a phone.
 
 ## Test 43
 
 ### File residence:
-`js/tests/interface.js`, line 83
+`js/tests/interface.js`, line 68
 
 ### Purpose:
 Verify that the civ list is translated and sorted alphabetically in every language (Req. 4).
@@ -595,62 +595,62 @@ With a must-have and a must-lack mark, the list holds the right civs' names, sor
 ## Test 44
 
 ### File residence:
-`js/tests/interface.js`, lines 91-93
+`js/tests/interface.js`, lines 76-79
 
 ### Purpose:
-Verify Req. 13 and 15: by default the tree leaves out unique and universal items.
+Verify Req. 13 and 15: by default the tree leaves out unique and universal items, and shows regional ones.
 
 ### Assertion expectation:
-No item from a unique group is shown, and every shown leaf is held by more than one civ but not by all.
+No item from a unique group is shown, some regional one is, and every shown leaf is held by more than one civ, not all.
 
 ## Test 45
 
 ### File residence:
-`js/tests/interface.js`, lines 102-104
+`js/tests/interface.js`, lines 87-97
 
 ### Purpose:
-Verify Req. 14 and 15: ticking Include Unique and Universal shows every item and keeps marks.
+Verify Req. 14 and 15, and Include Regionals: each box adds or removes its items and keeps marks.
 
 ### Assertion expectation:
-The box is ticked, every item is in the tree, and the marked item and the civ list are unchanged.
+Include: every item shown. Unticked Regionals: no regional item or item under one. Mark and civ list unchanged.
 
 ## Test 46
 
 ### File residence:
-`js/tests/interface.js`, line 105
+`js/tests/interface.js`, line 98
 
 ### Purpose:
-Keep the Include Unique and Universal choice for the next visit.
+Keep the Include Unique and Universal and the Include Regionals choices for the next visit.
 
 ### Assertion expectation:
-Browser storage holds include=true after ticking. Passes when the browser offers no storage.
+Browser storage holds include=true and regional=false after the clicks. Passes when the browser offers no storage.
 
 ## Test 47
 
 ### File residence:
-`js/tests/interface.js`, lines 107-108
+`js/tests/interface.js`, lines 100-101
 
 ### Purpose:
 Verify Req. 7, 13 and 16, and that focus returns when the Options window closes (WCAG 2.4.3).
 
 ### Assertion expectation:
-The Options button opens the window with the box unticked; Close closes it and returns focus to the Options button.
+Options opens with Include unticked and Include Regionals ticked; Close closes it and returns focus to the button.
 
 ## Test 48
 
 ### File residence:
-`js/tests/interface.js`, lines 113-142
+`js/tests/interface.js`, lines 106-135
 
 ### Purpose:
 Verify that without Simple UI the pictures and cursors suit the screen and everything sits on the parchment.
 
 ### Assertion expectation:
-Right background; sword cursor, pointing one on links; Options (sd/4k, #EE9D05 ring); on the parchment; full footer.
+Right background; sword, pointing on links; Options (sd/4k, #EE9D05 ring); on the parchment; footer full, or hidden.
 
 ## Test 49
 
 ### File residence:
-`js/tests/interface.js`, lines 143-164
+`js/tests/interface.js`, lines 136-157
 
 ### Purpose:
 Verify that without Simple UI the titles sit in their frames: Civ Explorer on the page, Options on its own parchment.
@@ -661,7 +661,7 @@ Short title, bold Georgia, #391C1B, centred in title_frame; Options in options_s
 ## Test 50
 
 ### File residence:
-`js/tests/interface.js`, lines 165-176
+`js/tests/interface.js`, lines 158-169
 
 ### Purpose:
 Verify that without Simple UI each text button shows the button picture, ends unstretched, in bold Georgia.
@@ -672,18 +672,18 @@ button_sd/4k, normal frame; ends at their own shape (12:50); no ring; Georgia 70
 ## Test 51
 
 ### File residence:
-`js/tests/interface.js`, lines 177-189
+`js/tests/interface.js`, lines 170-197
 
 ### Purpose:
-Verify that without Simple UI every checkbox and radio button shows its state from its sheet instead of drawn marks.
+Verify that without Simple UI boxes show their sheets, and tree rows their icons, outlined as colour_key.csv says.
 
 ### Assertion expectation:
-Checkboxes: row by state, empty, ticked or crossed, no drawn marks. Radios: radiobutton_sd or 4k, row by chosen or not.
+Boxes and radios: row by state, no drawn marks. Icons: right file, loaded, 44px, between box and name, outline per CSV.
 
 ## Test 52
 
 ### File residence:
-`js/tests/interface.js`, lines 191-242
+`js/tests/interface.js`, lines 199-249
 
 ### Purpose:
 Verify that without Simple UI the panels, Options too, have their frames, fonts and colours, civ icons, links and tiles.
@@ -694,24 +694,24 @@ Frames, fonts and colours, Options' too (bold Georgia, #2A0F14); icons; links in
 ## Test 53
 
 ### File residence:
-`js/tests/interface.js`, lines 243-277
+`js/tests/interface.js`, lines 250-290
 
 ### Purpose:
-Verify that without Simple UI Find clears with its cross, and a tooltip follows the mouse over the tree unless turned off.
+Verify that without Simple UI Find clears with its cross, and tooltips show over the tree and Include unless turned off.
 
 ### Assertion expectation:
-Tiled 325px field, no ring, one-line status right of it; clearing cross; tip at the cursor's corner, none if Tooltips off.
+325px field, no ring, status beside it; clearing cross; tip at the cursor; Include's hint as a tip; none if off.
 
 ## Test 54
 
 ### File residence:
-`js/tests/interface.js`, lines 280-301
+`js/tests/interface.js`, lines 293-314
 
 ### Purpose:
 Verify Req. 2, 32 and 33, and Rules 18 and 22: Simple UI turns every image and civ link off, and its box does not move.
 
 ### Assertion expectation:
-Ticking leaves no image or civ link, shows the full title, keeps the box still, is saved; Space unticks it, all return.
+Ticking leaves no image, icon or civ link, shows the full title, keeps the box still, is saved; Space brings all back.
 
 ## Test 55
 
@@ -727,7 +727,7 @@ Every language has a name and a well-formed language tag.
 ## Test 56
 
 ### File residence:
-`js/tests/behaviour.js`, lines 76-77
+`js/tests/behaviour.js`, lines 104-105
 
 ### Purpose:
 Verify that filter buttons remove filters without losing keyboard focus (WCAG 2.4.3).
@@ -738,7 +738,7 @@ Clicking the first filter button clears its item and moves focus to the next fil
 ## Test 57
 
 ### File residence:
-`js/tests/behaviour.js`, lines 79-81
+`js/tests/behaviour.js`, lines 107-109
 
 ### Purpose:
 Keep focus and guidance sensible once no filters remain (WCAG 2.4.3).
@@ -749,7 +749,7 @@ Focus is on the Civilisations heading, the list is empty, the start hint shows a
 ## Test 58
 
 ### File residence:
-`js/tests/behaviour.js`, lines 216-217
+`js/tests/behaviour.js`, lines 244-245
 
 ### Purpose:
 Give keyboard users the same one-step opening of a line (WCAG 2.1.1).
@@ -760,7 +760,7 @@ Right on a line's first item opens exactly that line's chain of only children.
 ## Test 59
 
 ### File residence:
-`js/tests/behaviour.js`, line 231
+`js/tests/behaviour.js`, line 259
 
 ### Purpose:
 Verify keyboard navigation into and out of branches (WCAG 2.1.1).
@@ -771,7 +771,7 @@ Right opens a branch, Right again focuses its first child, Left returns to the b
 ## Test 60
 
 ### File residence:
-`js/tests/behaviour.js`, lines 235-236
+`js/tests/behaviour.js`, lines 263-264
 
 ### Purpose:
 Verify keyboard movement through the tree (WCAG 2.1.1).
@@ -782,7 +782,7 @@ Up on the first item stays put, Down moves to the next, End focuses the last top
 ## Test 61
 
 ### File residence:
-`js/tests/behaviour.js`, line 239
+`js/tests/behaviour.js`, line 267
 
 ### Purpose:
 Let keyboard users move between branch arrows directly.
@@ -793,7 +793,7 @@ Down on the first branch's arrow focuses the second branch's arrow.
 ## Test 62
 
 ### File residence:
-`js/tests/behaviour.js`, lines 261-262
+`js/tests/behaviour.js`, lines 289-290
 
 ### Purpose:
 Let keyboard users jump from the search bar to the results (WCAG 2.1.1).
@@ -958,7 +958,7 @@ No media elements, no images in CSS, the page's own background included, no runn
 ## Test 77
 
 ### File residence:
-`js/tests/interface.js`, lines 326-327
+`js/tests/interface.js`, lines 339-340
 
 ### Purpose:
 Verify keyboard use of the language menu (WCAG 2.1.1).
@@ -991,7 +991,7 @@ The centre of the visible part of each focused element's first line is that elem
 ## Test 80
 
 ### File residence:
-`js/tests/interface.js`, lines 349-352
+`js/tests/interface.js`, lines 362-365
 
 ### Purpose:
 WCAG 1.4.12: wider text spacing set by the user does not break the layout.
@@ -1002,13 +1002,13 @@ With WCAG's text spacing applied, the page and every element stay within the win
 ## Test 81
 
 ### File residence:
-`js/tests/interface.js`, lines 366-367
+`js/tests/interface.js`, lines 378-385
 
 ### Purpose:
-Verify that the Include Unique and Universal box works from the keyboard (WCAG 2.1.1).
+Verify that the Include Unique and Universal and Include Regionals boxes work from the keyboard (WCAG 2.1.1).
 
 ### Assertion expectation:
-Space unticks the box, the unique and universal items leave the tree, and the marks and the civ list are unchanged.
+Space unticks either box and its items leave the tree; Space ticks Regionals again; marks and civ list unchanged.
 
 ## Test 82
 
@@ -1118,23 +1118,23 @@ Catch misplaced or mistyped "optional", "upgrades" and "unique" flags in data.js
 Flag items a game update made optional, so that marking what is under them does not wrongly mark them.
 
 ### Assertion expectation:
-No civ has everything under a non-optional item without having the item, with or without unique and universal items.
+No civ has everything under a non-optional item without the item, with or without unique, universal or regional items.
 
 ## Test 92
 
 ### File residence:
-`js/tests/static.js`, lines 115-118
+`js/tests/static.js`, lines 115-120
 
 ### Purpose:
-Ensure every item's availability is defined and names real civilisations.
+Ensure every item's availability is defined and names real civilisations, and every item has an icon.
 
 ### Assertion expectation:
-Each item's availability is "all", or a has or lacks list naming only civilisations in data.json.
+Availability is "all" or a has or lacks list of known civilisations; pictures gives a kind, picture number and reach.
 
 ## Test 93
 
 ### File residence:
-`js/tests/static.js`, lines 119-120
+`js/tests/static.js`, lines 121-122
 
 ### Purpose:
 Ensure counted texts have a fallback form for any number.
@@ -1145,7 +1145,7 @@ Every counted (plural) text in every language has an "other" form.
 ## Test 94
 
 ### File residence:
-`js/tests/static.js`, lines 124-125
+`js/tests/static.js`, lines 126-127
 
 ### Purpose:
 Prevent translations that lose or misspell placeholders such as {n}.
@@ -1156,7 +1156,7 @@ Each interface text has the same {placeholders} in every language as in English.
 ## Test 95
 
 ### File residence:
-`js/tests/static.js`, lines 126-127
+`js/tests/static.js`, lines 128-129
 
 ### Purpose:
 Catch stale or misspelt name corrections after a game update.
@@ -1167,7 +1167,7 @@ Every key in each language's overrides is a known item or civilisation.
 ## Test 96
 
 ### File residence:
-`js/tests/static.js`, lines 128-133
+`js/tests/static.js`, lines 130-135
 
 ### Purpose:
 Ensure the footer, the updater and the tests have the data they need (Req. 5).
@@ -1178,7 +1178,7 @@ source has name, url, data, an integer helpOffset and a YYYY-MM date; no tool te
 ## Test 97
 
 ### File residence:
-`js/tests/static.js`, lines 141-143
+`js/tests/static.js`, lines 143-145
 
 ### Purpose:
 Ensure the updater writes data.json and the locale files without losing or changing data.
@@ -1189,7 +1189,7 @@ Writer outputs data.json plus one locales/ file per other language; reading them
 ## Test 98
 
 ### File residence:
-`js/tests/static.js`, lines 144-145
+`js/tests/static.js`, lines 146-147
 
 ### Purpose:
 Keep data.json compact and identical to what the updater would write.
@@ -1200,7 +1200,7 @@ Each item's availability is "all", or whichever of the has or lacks lists is sho
 ## Test 99
 
 ### File residence:
-`js/tests/static.js`, lines 146-148
+`js/tests/static.js`, lines 148-150
 
 ### Purpose:
 Keep stored names identical to what the updater would write.
@@ -1211,7 +1211,7 @@ Joining lines and tidying spaces leaves every stored item and civilisation name 
 ## Test 100
 
 ### File residence:
-`js/tests/run.js`, line 110
+`js/tests/run.js`, line 113
 
 ### Purpose:
 Enforce Rule 17: at most 100 tests.

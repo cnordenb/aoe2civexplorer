@@ -1,9 +1,10 @@
 import {
   data, attempt, recall, remember, fill, size, civsOf, preferredLanguage, loadLanguage,
-  words, tag, collator, numbers, useLanguage, nameOf, civName, plural, plain,
+  words, tag, collator, numbers, useLanguage, nameOf, civName, plural, plain, iconFile,
 } from "./datahandler.js";
 import {
-  items, roots, include, matching, setIncluded, rebuild, setMark, boxState, mark, fit, filtersOf, unmarkLine, share, chipName, chainOf,
+  items, roots, include, regional, matching, setIncluded, setRegionals, rebuild, setMark, boxState, mark, fit, filtersOf, unmarkLine, share,
+  chipName, chainOf,
 } from "./model.js";
 
 export const $ = (id) => document.getElementById(id);
@@ -20,7 +21,19 @@ function plant() {
   rebuild();
   $("tree").replaceChildren();
   build(roots, $("tree"));
+  items.forEach(dress);
   for (const item of items) if (open.has(item.path)) setOpen(item, true);
+}
+
+function dress(item) {
+  const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
+  if (simple || !own) return item.icon?.remove();
+  if (!item.icon) {
+    item.icon = clone("nodeIconTemplate");
+    item.icon.src = iconFile(own);
+    Object.assign(item.icon.dataset, own);
+  }
+  item.label.before(item.icon);
 }
 
 function build(list, ul) {
@@ -298,14 +311,25 @@ export function tick(id, on) {
   $(id).dataset.state = on ? "has" : "";
 }
 
-export function setInclude(on) {
-  setIncluded(on);
-  remember("include", String(on));
-  tick("include", on);
+function replant() {
   plant();
   label();
   update();
   if ($("find").value) find();
+}
+
+export function setInclude(on) {
+  setIncluded(on);
+  remember("include", String(on));
+  tick("include", on);
+  replant();
+}
+
+export function setRegional(on) {
+  setRegionals(on);
+  remember("regional", String(on));
+  tick("regional", on);
+  replant();
 }
 
 export let simple = false;
@@ -315,10 +339,11 @@ export function setSimple(on) {
   remember("simple", String(on));
   tick("simple", on);
   document.documentElement.classList.toggle("pictures", !on);
+  items.forEach(dress);
   if (items.length) update();
 }
 
-export const flip = { include: () => setInclude(!include), simple: () => setSimple(!simple) };
+export const flip = { include: () => setInclude(!include), regional: () => setRegional(!regional), simple: () => setSimple(!simple) };
 
 function wireOptions() {
   $("optionsButton").addEventListener("click", () => $("options").showModal());
@@ -392,6 +417,8 @@ function wireLanguages() {
 export function start() {
   setIncluded(recall("include") === "true");
   tick("include", include);
+  setRegionals(recall("regional") !== "false");
+  tick("regional", regional);
   plant();
   buildLanguages();
   for (const node of document.querySelectorAll("[data-tool]")) node.textContent = data.tools[node.dataset.tool];

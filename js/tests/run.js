@@ -1,6 +1,6 @@
 import { data, params, load, fill, attempt, recall, remember, language } from "../datahandler.js";
-import { include } from "../model.js";
-import { clone, simple, setLanguage, setInclude, setSimple } from "../ui.js";
+import { include, regional } from "../model.js";
+import { clone, simple, setLanguage, setInclude, setRegional, setSimple } from "../ui.js";
 import { view, setView, tips, setTips } from "../pictures.js";
 import { openReport, report } from "../report.js";
 import { root, results, check, codes, pick, reset, fixtures } from "./helpers.js";
@@ -57,9 +57,10 @@ export function loadFailed(error) {
 export async function runTests() {
   const before = {
     language, include, simple, view, url: location.href, stored: recall("language"), included: recall("include"), simplified: recall("simple"),
-    viewed: recall("civView"), tips, tipped: recall("tooltips"),
+    viewed: recall("civView"), tips, tipped: recall("tooltips"), regional, regionals: recall("regional"),
   };
   if (include) setInclude(false);
+  if (!regional) setRegional(true);
   if (!simple) setSimple(true);
   if (!tips) setTips(true);
   const where = `${innerWidth} by ${innerHeight}`;
@@ -89,6 +90,7 @@ export async function runTests() {
   }
   reset();
   if (include !== before.include) setInclude(before.include);
+  if (regional !== before.regional) setRegional(before.regional);
   setSimple(before.simple);
   setView(before.view);
   setTips(before.tips);
@@ -96,6 +98,7 @@ export async function runTests() {
   attempt(() => history.replaceState(history.state, "", before.url));
   remember("language", before.stored);
   remember("include", before.included);
+  remember("regional", before.regionals);
   remember("simple", before.simplified);
   remember("civView", before.viewed);
   remember("tooltips", before.tipped);

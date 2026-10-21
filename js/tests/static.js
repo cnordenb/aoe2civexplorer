@@ -110,11 +110,13 @@ export function dataTests() {
     ...needless(node.kids ?? []),
   ]);
 
-  expect("data: an item is optional if some civilisation has everything under it without having the item, with or without unique and universal items",
-    [...new Set([...needless(data.tree), ...needless(prune(data.tree))])]);
-  expect("data: each item says which civilisations have it, naming only known ones", all.filter((key) => {
+  expect("data: an item is optional if some civilisation has everything under it without having the item, with or without unique, universal and regional items",
+    [...new Set([data.tree, prune(data.tree), prune(data.tree, true, false), prune(data.tree, false, false)].flatMap(needless))]);
+  expect("data: each item says which civilisations have it, naming only known ones, and which icon it has", all.filter((key) => {
     const rule = data.availability[key];
-    return !rule || (rule !== "all" && (rule.has ?? rule.lacks ?? [null]).some((civ) => !data.civs.includes(civ)));
+    const { kind, picture, reach } = data.pictures[key] ?? {};
+    return !rule || (rule !== "all" && (rule.has ?? rule.lacks ?? [null]).some((civ) => !data.civs.includes(civ)))
+      || !kind || !Number.isInteger(picture) || !reach;
   }));
   expect("data: counted texts have an 'other' form", languages.flatMap((code) => Object.entries(data.text[code].ui)
     .filter(([, value]) => typeof value === "object" && !value.other).map(([key]) => `${code}: ${key}`)));
