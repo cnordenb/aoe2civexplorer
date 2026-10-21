@@ -19,4 +19,4 @@ Rule 18: User-hostile UI behaviour is strictly forbidden: a UI element (such as 
 Rule 19: Tests will be documented, without excess clutter, text or story-telling, in TESTS.md.  
 Rule 20: The intended UI and behaviour of aoe2civexplorer is defined by REQUIREMENTS.md.  
 Rule 21: Only the chief developer (Carl Nordenbrink @cnordenb) may modify REQUIREMENTS.md. To others and to AI agents, REQUIREMENTS.md is read-only.  
-Rule 22: rule 9 is inhibited unless in simple theme.
+Rule 22: rules 3 and 9 are inhibited unless in Simple UI mode.
