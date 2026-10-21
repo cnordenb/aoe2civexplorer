@@ -38,3 +38,13 @@ jobs:
             done
           done
           exit $status
+      - name: Check that no folder holds more than 7 files, the main folder 8, apart from assets and locales (Rule 26)
+        if: always()
+        run: |
+          crowded="$(git ls-files | grep -vE '^(assets|locales)/' | sed -E 's#/[^/]+$##; t; s#.*#.#' | sort | uniq -c \
+            | awk '$1 > ($2 == "." ? 8 : 7) { print ($2 == "." ? "the main folder" : $2) ": " $1 " files" }')"
+          if [ -n "$crowded" ]; then
+            echo "These folders hold too many files (7 at most, 8 in the main folder):"
+            echo "$crowded"
+            exit 1
+          fi

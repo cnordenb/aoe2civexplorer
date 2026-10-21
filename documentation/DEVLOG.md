@@ -1414,3 +1414,68 @@ All of this applies with the pictures on. Simple UI is unchanged.
   page's font, and at 125% and 150% display scaling.
 - **Documents.** `TESTS.md` has the new wording of Test 54 and the new lines of the tests in
   `js/tests/interface.js`. `MAINTAINER.md` explains, in "The Options window", why the language's name never wraps.
+
+## 2026-10-21: fewer test windows, and three tests removed
+
+### What changed
+
+- **Two test windows gone.** As decided, the tests no longer open the 360 by 640 and 390 by 844 windows, which were
+  judged too unlikely to be worth testing. The 320 by 256 window stays: it is how the page looks at 400% zoom, which
+  WCAG's reflow criterion asks for, and Rule 3 and Rule 4 rely on it for Simple UI. The 322 by 480 and 352 by 480
+  windows seen in a report are not set by the tests; the first window in a report is always the browser window the
+  tests ran in. On GitHub, the 500 by 900 run still tries the phone layout.
+- **Tests 49, 50 and 52 removed.** As asked. Nothing checks these things any more:
+  - Test 49: the title "Civ Explorer" in bold Georgia in its frame, and the Options window's title in the frame of
+    its parchment.
+  - Test 50: the text buttons' picture with unstretched ends, and their bold Georgia lettering and shadow.
+  - Test 52: the panels' frames, fonts and colours; the civilisation icons and that they load; the links to
+    aoe2techtree.net and the tooltip showing them; Civ view's tiles; the pinned filters; the Find box above the
+    buttons and the hidden legend.
+- **97 tests**, renumbered in `TESTS.md`: what was Test 51 is now 49, and every test after it moved down by three.
+  The numbers in a run were compared with `TESTS.md` again, and all 97 match.
+- **Tidying.** `civsOf` and `matching` were only used by Test 52 and are no longer imported in
+  `js/tests/interface.js`, which has 313 lines of code.
+- **Checked.** All 97 tests pass in Chrome, in light and dark colours, in all four window sizes, each with the
+  320 by 256 window.
+- **Documents.** `TESTS.md` lists the 97 tests. `MAINTAINER.md` no longer promises checks that the removed tests
+  made, mentions only the 320 by 256 window in step 6, and says where the phone layout is tested.
+
+## 2026-10-21: no 320 by 256 window, and Test 82 checks Rules 23 to 26
+
+### What changed
+
+- **No more test windows.** As decided, the tests no longer open the 320 by 256 window either. They run only in the
+  window they are opened in; on GitHub that is each of its four window sizes. The code that opened windows went with
+  it: `framed()` and the messages between windows in `js/tests/run.js`, the `frameTemplate` in `index.html`, the
+  `.test-frame` rules in `style.css`, and `frameTitle` in `data.json`. The report now says "in a window of …
+  pixels". Nothing now checks the page at 400% zoom, which WCAG's reflow criterion asks for with Simple UI; try it by
+  hand after bigger changes, as the end of `MAINTAINER.md` says.
+- **Test 82 checks Rules 23, 24 and 25.** As asked, it now checks `index.html`, `style.css` and every script for
+  files over 400 lines of code (Rule 25), functions over 60 lines of code (Rule 23) and lines over 120 characters
+  (Rule 24). Blank lines are not lines of code. Before, it only checked that no script had over 400 lines of code.
+  `data.json`, the language files and the documents are data and text, not code, so they are not checked.
+- **How functions are measured.** `js/tests/static.js` first blanks out strings, the text of template strings and
+  regular expressions, so that braces inside them do not count, then pairs each function body's `{` with its
+  `}`: a body follows `=>`, or a `)` that closes a function's parameters rather than an `if`, `for`,
+  `while`, `switch` or `catch`. Functions written without braces, such as `(a) => a + 1`, are not measured; they are
+  short. On every script, it found as many functions as `function` and `=> {` appear, and its braces balanced.
+- **Rule 26 is checked by GitHub.** A page in a browser cannot list folders, so Test 82 cannot see Rule 26. GitHub can:
+  a new step in `.github/workflows/tests.yml` counts the committed files in each folder, leaving out `assets/` and
+  `locales/`, and fails if a folder holds more than 7. It runs after the tests, even when they fail, so both
+  results show.
+- **What fails now.** Test 82 fails, as the code does not keep to the new rules yet:
+  - Rule 23: `wireTree()` in `js/ui.js` has 90 lines of code, `pictureTests()` in `js/tests/interface.js` 127, and
+    `audit()` in `js/tests/audit.js` 73.
+  - Rule 24: 232 lines are over 120 characters: 14 in `index.html`, 49 in `style.css`, 1 in `script.js`, 10 in
+    `js/datahandler.js`, 6 in `js/model.js`, 4 in `js/ui.js`, 1 in `js/report.js`, 4 in `js/tests/run.js`, 18 in
+    `js/tests/helpers.js`, 23 in `js/tests/static.js`, 36 in `js/tests/behaviour.js`, 54 in `js/tests/interface.js`
+    and 12 in `js/tests/audit.js`. The new code keeps to 120.
+  - Rule 25: no file is over 400 lines of code; `js/ui.js` has exactly 400.
+  - Rule 26: the main folder holds 8 files: `.gitignore`, `LICENSE`, `README.md`, `data.json`, `favicon.ico`,
+    `index.html`, `script.js` and `style.css`. Every other folder holds 7 or fewer.
+  The other 96 tests pass.
+- **Documents.** `TESTS.md` has the new wording of Test 82 and the new lines of the tests in `js/tests/static.js` and
+  `js/tests/run.js`. `MAINTAINER.md` describes Rules 23 to 26 and the GitHub step, and no longer mentions the
+  320 by 256 window in step 6.
+
+Currently: big refactor time, focussing on getting project compliant with rules 23-26. Hard stop on new features until this is under wraps.

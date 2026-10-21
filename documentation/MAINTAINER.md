@@ -40,8 +40,11 @@ modules, so they need no build step and no extra tools:
 | `js/report.js` | The report window of the updater and the tests, split off from `js/ui.js` for the same reason. With `js/ui.js` and `js/pictures.js`, it is one of the three scripts that touch the screen. |
 | `js/tests/` | The tests. They are only loaded when the address ends in `?test`, so visitors never download them. |
 
-No script may grow past 400 lines of code; blank lines do not count. When one does, the tests fail, and it is time to move part of it into a new script
-in `js/`, or into a new test file in `js/tests/`. Give it a name in lower-case letters only, such as `menu.js`. Import the new script where it is needed, as the others do; the
+Four rules keep the code small enough to read. No file may have over 400 lines of code (Rule 25), no function over
+60 (Rule 23), and no line over 120 characters (Rule 24); blank lines are not lines of code. Test 82 checks these in
+`index.html`, `style.css` and every script. No folder may hold more than 7 files, apart from `assets/` and
+`locales/` (Rule 26); a page cannot see folders, so GitHub checks this one. When a script grows too long, move part
+of it into a new script in `js/`, or into a new test file in `js/tests/`. Give it a name in lower-case letters only, such as `menu.js`. Import the new script where it is needed, as the others do; the
 tests find every script by following those imports.
 
 The most important idea is that **all the facts live in `data.json` and the language files**. The other files never
@@ -262,10 +265,11 @@ contents (`max-content`); the two list rows start at 44 pixels and grow equally,
 the civilisations' to fill what is left. A window less than 640 pixels tall, or less than 500 at any width, shows
 everything in one column that scrolls as a whole instead, which is how the page reads when zoomed to 400%.
 
-Test 15 opens the whole tree, marks the item most civilisations have, and checks this in every test window.
-Tests 42 and 48 check that the footer is hidden on a phone and spans the panes everywhere else. It was
-written after a bug: the civilisations pane once took the height of its whole list, so the page scrolled and the
-tree pane shrank to nothing.
+Test 15 opens the whole tree, marks the item most civilisations have, and checks this in whatever window the tests
+run in. It was written after a bug: the civilisations pane once took the height of its whole list, so the page
+scrolled and the tree pane shrank to nothing. Tests 42 and 48 check that the footer is hidden on a phone and spans
+the panes everywhere else. On GitHub, the 500 by 900 window is the one with the phone layout; on your computer, make
+the browser window narrower than 720 pixels to try it.
 
 ### The Find box
 
@@ -312,8 +316,7 @@ With the pictures on, the list of civilisations shows each one's icon before its
 `maya.png`. `icons` also holds the folder.
 
 When a game update adds a civilisation, add its icon to that folder, named in lower case after its English name, or
-add its file's name to `icons`. The tests mark an item many civilisations have and check that every icon in the list
-loads.
+add its file's name to `icons`. No test checks these icons, so after adding one, mark an item and look at the list.
 
 ### The tree's icons
 
@@ -359,8 +362,8 @@ Universal** ticked so that every item is in the tree.
 With the pictures on, each civilisation in the list, and each tile, is a link to its page on aoe2techtree.net, such as
 [https://aoe2techtree.net/#Armenians](https://aoe2techtree.net/#Armenians) for the Armenians. `js/ui.js` builds the
 address from `url` in `source` in `data.json` and the civilisation's English name, so the links follow the source if
-it ever moves. With Simple UI the civilisations are plain text and link nowhere. The tests check that each link
-leads to the right page, that the tooltip shows it, and that Simple UI takes the links away.
+it ever moves. With Simple UI the civilisations are plain text and link nowhere. The tests check that Simple UI takes the
+links away and gives them back, but not where they lead.
 
 ### Civ view: list or tiles
 
@@ -399,8 +402,8 @@ move its box (Rule 18; the tests check it). Everything else is drawn around it:
   one than in the other. Only the title and the language row sit above the Simple UI box. The title's row has a fixed
   height, and the language's name on its button never wraps, in either mode: in a very narrow window a long name ends
   in "…", while the opened list shows it whole and screen readers read it whole. So the row is 44 pixels tall either
-  way. It once wrapped with Simple UI only, in the 320 by 256 test window with the wider fonts of Linux, and the box
-  moved 14 pixels, so the tests failed on GitHub but passed on Windows.
+  way. It once wrapped with Simple UI only, in a 320 by 256 window the tests used then, with the wider fonts of
+  Linux, and the box moved 14 pixels, so the tests failed on GitHub but passed on Windows.
 - The parchment is drawn on the window's `::backdrop`, over the usual shade. It is scaled so that the panel fits in
   the box from 60 to 592 across and 95 to 622 down, in the picture's pixels: inside the thin inner border and below
   the title frame. The panel is centred in that box.
@@ -414,8 +417,7 @@ The numbers in `style.css` come from these measurements, in the picture's pixels
 | 0.0092 (6 / 652) and 0.46166 (301 / 652) | How far the middle of the title frame (332 across, 57.5 down) is right of and above the middle of the box. |
 | 0.3 | The title's width, a little less than the title frame's (218 of 652). |
 
-`--lid` is the height of the title's row and the gap below it, which the panel leaves out. The tests work out where
-the title should be from the same measurements.
+`--lid` is the height of the title's row and the gap below it, which the panel leaves out.
 
 In windows less than 588 pixels tall, there is no room for the parchment above the panel. The parchment is then left
 out, and the title stays in the panel, which covers the whole window. The language list, when open, lies on the
@@ -448,8 +450,9 @@ as it did before there were pictures, with the usual margins and the text cogwhe
 and a visitor who has chosen Simple UI never downloads a picture.
 
 **Accessibility applies to Simple UI.** As decided on 2026-10-21, the page must meet WCAG 2.2 AAA only with Simple UI
-on, so the tests run with Simple UI on. Two tests turn it off: one checks that the right pictures show and that the
-header, panes and footer stay inside the area above, and the other checks that Simple UI takes every image away.
+on, so the tests run with Simple UI on. Tests 48 to 51 turn it off. They check that the right pictures show and
+that the header, panes and footer stay inside the area above; the pictures of the checkboxes and the tree's icons;
+the Find box and the tooltip; and that Simple UI takes every image away and gives it back.
 
 ### Changing the pictures
 
@@ -605,10 +608,9 @@ the same name: `data.json` in the project folder, and the language files in its 
 
 Open the page with `?test` added to the address, for example `http://127.0.0.1:5501/index.html?test`.
 
-Wait about half a minute. You will see small copies of the page flash in the top-left corner: the tests also try the
-page in a phone-sized window and in a 320 by 256 window, which is how the page looks to someone who zooms in to 400%.
-At the end a window says **All … tests passed**, or lists what failed first, each by its number in `TESTS.md`, such
-as "Test 70 failed". Each failure then says what is wrong and where, for example which text has too little contrast
+Wait about half a minute. The tests run in the window as it is, so try a wide and a narrow window now and then. At
+the end a window says **All … tests passed**, or lists what failed first, each by its number in `TESTS.md`, such
+as "Test 67 failed". Each failure then says what is wrong and where, for example which text has too little contrast
 in which language.
 
 ### Step 7: publish
@@ -617,7 +619,8 @@ Commit the new files and push them, for example with GitHub Desktop or `git comm
 the same tests again, in Chrome, in light and dark colours and at several window sizes. You can watch them in the
 **Actions** tab of the repository: a green tick means everything passed. If something failed, the log says how many
 tests failed in which colours and windows, and then names each by its number, such as `Test 15 failed`. Look the
-number up in `TESTS.md`, and open the page with `?test` to see what is wrong and where.
+number up in `TESTS.md`, and open the page with `?test` to see what is wrong and where. After the tests, GitHub
+also checks that no folder holds more than 7 files (Rule 26), and names any that does.
 
 ## Fixing a name
 
@@ -774,8 +777,9 @@ check most of them.
 - All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
   `index.html`, all looks in `style.css`, all behaviour in `script.js` and `js/`: the start in `script.js`, data
   handling in `js/datahandler.js`, everything on the screen in `js/ui.js` and `js/pictures.js`, the report window
-  in `js/report.js`, and the tests in `js/tests/`. No script is over 400
-  lines of code; blank lines do not count.
+  in `js/report.js`, and the tests in `js/tests/`. No file is over 400 lines of code, no function over 60, and no
+  line over 120 characters; blank lines do not count. No folder holds more than 7 files, apart from `assets/` and
+  `locales/`.
 - No comments in the code. Explanations belong in this guide.
 - A blank line before and after every function, so that each one stands on its own. A function that opens or closes
   its block needs none on that side.

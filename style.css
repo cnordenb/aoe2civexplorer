@@ -403,9 +403,5 @@ dialog p { margin: 8px 0; }
   .tree ul { margin-left: 12px; }
 }
 
-.test-frame { position: fixed; z-index: 2; top: 0; left: 0; border: 0; background: var(--bg); }
-.test-frame.small { width: 320px; height: 256px; }
-.test-frame.phone { width: 360px; height: 640px; }
-.test-frame.tall { width: 390px; height: 844px; }
 .text-spacing-test * { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; }
 .text-spacing-test p { margin-bottom: 2em !important; }

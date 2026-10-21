@@ -1,5 +1,5 @@
-import { data, ALL, size, civsOf, attempt, recall, language, nameOf, iconFile } from "../datahandler.js";
-import { items, matching } from "../model.js";
+import { data, ALL, size, attempt, recall, language, nameOf, iconFile } from "../datahandler.js";
+import { items } from "../model.js";
 import { $, options, setInclude, setSimple } from "../ui.js";
 import { audit } from "./audit.js";
 import {
@@ -134,40 +134,6 @@ export async function pictureTests() {
     && button.backgroundPosition.split(" ").every((part) => parseFloat(part) === 0) && button.boxShadow === "rgb(238, 157, 5) 0px 0px 0px 2px"
     && root.scrollHeight <= innerHeight && root.scrollWidth <= innerWidth && spread,
     [style.backgroundImage, button.backgroundImage].map((url) => url.split("/").pop()).concat(off, stray).join(", "));
-  const heading = document.querySelector("h1");
-  const lettering = getComputedStyle(heading);
-
-  const middle = (el) => (el.getBoundingClientRect().left + el.getBoundingClientRect().right) / 2;
-
-  $("optionsButton").click();
-  const sheet = $("options").getBoundingClientRect();
-  const named = $("optionsTitle").getBoundingClientRect();
-  const scale = Math.max(sheet.width / 532, (sheet.height - named.height - 8) / 527);
-  const backdrop = getComputedStyle($("options"), "::backdrop").backgroundImage;
-  const titled = getComputedStyle($("optionsTitle")).fontFamily.startsWith("\"Civ Georgia\"") && (innerHeight < 588
-    ? backdrop === "none" && named.top >= sheet.top && named.bottom <= sheet.bottom
-    : backdrop.endsWith(`/assets/images/ui/backgrounds/options_${sharp}.webp")`)
-      && Math.abs((named.left + named.right) / 2 - (sheet.left + sheet.right) / 2 - 6 * scale) < 1
-      && Math.abs((named.top + named.bottom) / 2 - (sheet.top + sheet.bottom + named.height + 8) / 2 + 301 * scale) < 1);
-  $("options").close();
-  check("options: without Simple UI, the title reads Civ Explorer in bold Georgia, centred in its frame at the top of the parchment, and the Options window's title sits in the frame of its own parchment",
-    same([...heading.children].filter(rendered).map((el) => el.textContent), [data.text[language].ui.titleShort])
-    && lettering.fontFamily.startsWith("\"Civ Georgia\"") && lettering.fontWeight === "700" && lettering.color === "rgb(57, 28, 27)"
-    && lettering.backgroundImage.endsWith(`/assets/images/ui/backgrounds/title_frame_${sharp}.webp")`)
-    && getComputedStyle($("top")).backgroundColor === "rgba(0, 0, 0, 0)" && Math.abs(middle(heading) - middle($("top"))) < 1 && titled,
-    `${heading.textContent}, ${lettering.backgroundImage.split("/").pop()}, Options ${titled} ${backdrop.split("/").pop()}`);
-  const plate = innerWidth > 2560 || innerHeight > 1440 ? "4k" : "sd";
-  const plain = [...document.querySelectorAll(".tool:not(.icon)")].filter((el) => {
-    const look = getComputedStyle(el);
-    const ends = ["::before", "::after"].map((end) => getComputedStyle(el, end));
-    return !look.backgroundImage.endsWith(`/assets/images/ui/buttons/button_${plate}.webp")`) || look.boxShadow.includes("rgb(238, 157, 5)")
-      || !look.backgroundPosition.split(" ").every((part) => parseFloat(part) === 0)
-      || !ends.every((end) => end.backgroundImage === look.backgroundImage && end.backgroundSize === "auto 300%" && end.aspectRatio === "12 / 50")
-      || !look.fontFamily.startsWith("\"Civ Georgia\"") || look.fontWeight !== "700" || look.color !== "rgb(242, 210, 182)"
-      || look.textShadow !== "rgba(0, 0, 0, 0.5) 2px 2px 0px";
-  }).map(describe);
-  check("options: without Simple UI, text buttons show the button picture with unstretched ends, and bold Georgia text with a shadow",
-    !plain.length, plain.join(", "));
   const blank = [...document.querySelectorAll(".box")].filter((box) => {
     const look = getComputedStyle(box);
     const state = box.parentElement.dataset.state;
@@ -196,58 +162,6 @@ export async function pictureTests() {
   check("options: without Simple UI, every checkbox and radio button shows its picture from its sheet, empty, ticked, crossed or chosen, and every item and top-level group its icon between its box and name, outlined as colour_key.csv says",
     !blank.length && document.querySelector("[data-state=has] > .box") && document.querySelector("[data-state=lacks] > .box") && outlines.size === 9
     && !unpictured.length, blank.concat(unpictured).join(", "));
-
-  const lettered = (pane) => [pane, ...pane.querySelectorAll("*")].filter((el) => rendered(el) && !el.closest(".tool")
-    && [...el.childNodes].some((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim()));
-
-  const [tree, list] = document.querySelectorAll(".pane");
-  const frames = [[tree, "nodes9slice", "64 fill", "30px"], [list, "civs9slice", "85 fill", "30px"], [$("options"), "nodes9slice", "64 fill", "30px", "::before"]];
-  const unframed = frames.filter(([pane, picture, slice, width, part]) => {
-    const look = getComputedStyle(pane, part);
-    return !look.borderImageSource.endsWith(`/assets/images/ui/panels/${picture}.webp")`) || look.borderImageSlice !== slice
-      || look.borderImageWidth !== width || !/^repeat( repeat)?$/.test(look.borderImageRepeat);
-  }).map(([pane]) => describe(pane));
-  $("optionsButton").click();
-  const miswritten = [
-    ...lettered(tree).filter((el) => !getComputedStyle(el).fontFamily.startsWith("\"Civ Georgia\"") || getComputedStyle(el).color !== "rgb(57, 28, 27)"),
-    ...lettered(list).filter((el) => !getComputedStyle(el).fontFamily.startsWith("\"Civ Times\"") || getComputedStyle(el).color !== "rgb(255, 255, 255)"
-      || getComputedStyle(el).fontWeight !== "700"),
-    ...lettered($("options")).filter((el) => !getComputedStyle(el).fontFamily.startsWith("\"Civ Georgia\"") || getComputedStyle(el).color !== "rgb(42, 15, 20)"
-      || getComputedStyle(el).fontWeight !== "700"),
-  ].map(describe);
-  $("options").close();
-  const fonts = await Promise.all(["16px \"Civ Georgia\"", "700 16px \"Civ Times\"", "700 12px \"Trajan Pro\""].map((font) => document.fonts.load(font).catch(() => [])));
-  const placed = !rendered(tree.querySelector(".legend")) && tree.querySelector(".find label").getBoundingClientRect().width <= 1
-    && tree.querySelector(".find").getBoundingClientRect().bottom <= tree.querySelector(".tools").getBoundingClientRect().top;
-  tap(items.find((item) => !item.group && size(item.set) > data.civs.length / 2).node);
-  const icons = [...$("civs").children].map((li) => li.querySelector(".civ-icon"));
-  await loaded(icons.filter(Boolean));
-  const iconed = icons.length > 0 && icons.every((img) => img?.naturalWidth > 0) && same(icons.map((img) => img.src.split("/").pop()).sort(),
-    civsOf(matching).map((civ) => `${data.icons.names[civ] ?? civ.toLowerCase()}.png`).sort());
-  const first = $("civs").querySelector("a");
-  const corner = first.getBoundingClientRect();
-  first.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, pointerType: "mouse", clientX: corner.left + 4, clientY: corner.top + 4 }));
-  const linked = !$("tip").hidden && $("tip").textContent === first.href && same([...$("civs").querySelectorAll("a")].map((a) => a.href).sort(),
-    civsOf(matching).map((civ) => new URL(`#${civ}`, data.source.url).href).sort());
-  $("count").dispatchEvent(new PointerEvent("pointermove", { bubbles: true, pointerType: "mouse", clientX: 0, clientY: 0 }));
-  const pinned = $("ticked").getBoundingClientRect().top;
-  $("civScroll").scrollTop = 1e6;
-  const stays = !$("ticked").hidden && !$("civScroll").contains($("ticked")) && $("ticked").getBoundingClientRect().top === pinned;
-  $("civScroll").scrollTop = 0;
-  $("views").querySelector("[value=tile]").click();
-  const tile = $("civs").firstElementChild;
-  const label = getComputedStyle(tile.querySelector(".civ-name"));
-  const tiled = $("civs").classList.contains("tiles") && (recall("civView") === "tile" || attempt(() => localStorage) === null)
-    && getComputedStyle(tile).backgroundImage.endsWith(`/assets/images/ui/panels/civ_box_${sharp}.webp")`) && tile.querySelector(".civ-icon")
-    && label.fontFamily.startsWith("\"Trajan Pro\"") && label.backgroundImage === "linear-gradient(rgb(255, 255, 255), rgb(255, 153, 0))"
-    && label.filter === "drop-shadow(rgba(0, 0, 0, 0.5) 2px 2px 0px)" && getComputedStyle($("civs")).gridTemplateColumns.split(" ").length === 6
-    && Math.abs(tile.offsetWidth - tile.offsetHeight) < 1;
-  $("views").querySelector("[value=list]").click();
-  reset();
-  check("options: without Simple UI, the panels sit in their frames, in their fonts and colours, with civilisation icons and links as a list or tiles of six a row, filters pinned, search first and no legend",
-    !unframed.length && !miswritten.length && fonts.every((faces) => faces.length > 0) && placed && iconed && linked && stays && tiled
-    && !$("civs").classList.contains("tiles"),
-    [...unframed, ...miswritten].join(", ") || `fonts ${fonts.map((faces) => faces.length)}, layout ${placed}, icons ${iconed}, links ${linked}, pinned ${stays}, tiles ${tiled}`);
   const lens = () => getComputedStyle($("find").parentElement, "::after");
   const field = getComputedStyle($("find"));
   const width = () => $("find").getBoundingClientRect().width;
@@ -296,7 +210,7 @@ export async function pictureTests() {
   const before = { pictures: pictures(), spot: simpleSpot() };
   before.basics = picturesOn() && civLinks() === $("civs").children.length;
   $("simple").click();
-  const title = [...heading.children].filter(rendered).map((el) => el.textContent);
+  const title = [...document.querySelector("h1").children].filter(rendered).map((el) => el.textContent);
   const problems = [
     ...need(before.basics, "no pictures or links before ticking"),
     ...need(simpleTicked(true), "the box is not ticked"),

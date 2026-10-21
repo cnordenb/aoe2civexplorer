@@ -3,8 +3,8 @@ import {
   words, tag, collator, numbers, useLanguage, nameOf, civName, plural, plain, iconFile,
 } from "./datahandler.js";
 import {
-  items, roots, include, regional, matching, setIncluded, setRegionals, rebuild, setMark, boxState, mark, fit, filtersOf, unmarkLine, share,
-  chipName, chainOf,
+  items, roots, include, regional, matching, setIncluded, setRegionals, rebuild, setMark, boxState, mark, fit,
+  filtersOf, unmarkLine, share, chipName, chainOf,
 } from "./model.js";
 
 export const $ = (id) => document.getElementById(id);
@@ -28,11 +28,8 @@ function plant() {
 function dress(item) {
   const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
   if (simple || !own) return item.icon?.remove();
-  if (!item.icon) {
-    item.icon = clone("nodeIconTemplate");
-    item.icon.src = iconFile(own);
-    Object.assign(item.icon.dataset, own);
-  }
+  item.icon ??= Object.assign(clone("nodeIconTemplate"), { src: iconFile(own) });
+  Object.assign(item.icon.dataset, own);
   item.label.before(item.icon);
 }
 
@@ -115,9 +112,9 @@ function icon(civ) {
 function update() {
   const marked = fit();
   paint();
-  const civs = marked.length ? civsOf(matching) : [];
+  const civs = (marked.length ? civsOf(matching) : []).map((civ) => [civName(civ), civ]);
   $("count").textContent = plural("compatible", civs.length);
-  $("civs").replaceChildren(...civs.map((civ) => [civName(civ), civ]).sort(([a], [b]) => collator.compare(a, b)).map(([name, civ]) => {
+  $("civs").replaceChildren(...civs.sort(([a], [b]) => collator.compare(a, b)).map(([name, civ]) => {
     const li = clone("civTemplate");
     const link = li.firstElementChild;
     link.lastElementChild.textContent = name;
@@ -231,8 +228,8 @@ function wireTree() {
     toggle(item, "lacks");
   });
   tree.addEventListener("click", (e) => {
-    const twisty = e.target.closest(".twisty");
-    if (twisty) return isOpen(items[twisty.dataset.i]) ? setOpen(items[twisty.dataset.i], false) : expand(items[twisty.dataset.i]);
+    const branch = items[e.target.closest(".twisty")?.dataset.i];
+    if (branch) return isOpen(branch) ? setOpen(branch, false) : expand(branch);
     const item = itemAt(e.target);
     if (!item || swallowClick) return;
     toggle(item, "has");
@@ -343,7 +340,9 @@ export function setSimple(on) {
   if (items.length) update();
 }
 
-export const flip = { include: () => setInclude(!include), regional: () => setRegional(!regional), simple: () => setSimple(!simple) };
+export const flip = {
+  include: () => setInclude(!include), regional: () => setRegional(!regional), simple: () => setSimple(!simple),
+};
 
 function wireOptions() {
   $("optionsButton").addEventListener("click", () => $("options").showModal());
