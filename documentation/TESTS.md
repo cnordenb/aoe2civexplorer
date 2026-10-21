@@ -6,6 +6,10 @@ This document lists each test, its purpose, and in which test file it resides. T
 
 Test descriptions must remain brief and parameters (eg. Purpose) may not exceed 120 characters. Tests are ordered in order of their execution.
 
+The test report and the GitHub check name each test by its number here, such as "Test 15 failed". The number is worked out
+while the tests run: it is the test's place in the order the tests first run in the main window. So when a test is added,
+removed or moved, renumber this document to match.
+
 WCAG 2.2 AAA is only required with Simple UI on, so the tests run with Simple UI on. Tests 48 to 54 turn it off to test the pictures.
 
 ## Table of contents per category
@@ -1211,7 +1215,7 @@ Joining lines and tidying spaces leaves every stored item and civilisation name 
 ## Test 100
 
 ### File residence:
-`js/tests/run.js`, line 113
+`js/tests/run.js`, line 114
 
 ### Purpose:
 Enforce Rule 17: at most 100 tests.

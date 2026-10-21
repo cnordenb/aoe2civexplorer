@@ -1353,3 +1353,25 @@ All of this applies with the pictures on. Simple UI is unchanged.
 - **Requirements.** Requirement 5 asks for the footer, but requirement 0 limits the requirements to desktop at 16:9.
 - **Documents.** `TESTS.md` has the new wording of Tests 42 and 48, and the new lines of the tests after Test 42.
   `MAINTAINER.md` says where the footer is hidden.
+
+## 2026-10-21: tests named by number
+
+### What changed
+
+- **The GitHub check names failed tests by number.** As asked, the log no longer prints each failed test's long name
+  and details. For each window size it prints the summary, such as "3 of 100 tests failed in light colours, in
+  windows of 500 by 749, 320 by 256, 360 by 640, and 390 by 844 pixels.", and then one line per failed test, such as
+  "Test 42 failed". The number is the test's number in `TESTS.md`. A window that never finished says so.
+- **The report window** shows the same number before each test's name, with the details after it: "Test 42 failed:
+  languages: the footer … (500 by 749: en; …)". It lists the tests in the order of `TESTS.md`, failed ones first;
+  before, it sorted them by the word before the colon, so its order matched nothing in `TESTS.md`.
+- **How.** `js/tests/run.js` numbers the tests while they run: a test's number is its place in the order the tests
+  first run in the main window, which is how `TESTS.md` was already ordered. The three messages that are not tests
+  ("the page loaded", "the tests finished", "the tests ran to the end") get no number and still read "Failed: …".
+  The report's texts are `pass`, `fail` and `aborted` in `tools` in `data.json`.
+- **Checked.** The numbers of a full run were compared, one by one, with the list in `TESTS.md`; all 100 match. With
+  the footer shown on phones and one outline colour changed, the log read "3 of 100 tests failed …", then "Test 42
+  failed", "Test 48 failed" and "Test 51 failed". All 100 tests pass in Chrome, in light and dark colours, in all
+  four window sizes.
+- **Documents.** `TESTS.md` explains the numbers. `MAINTAINER.md` says how a failure reads in the report and in the
+  GitHub log.

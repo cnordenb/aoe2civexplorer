@@ -1637,8 +1637,9 @@
   "ignore": [],
   "overrides": {"Heavy Demolition Ship": "Heavy Demolition Ship"},
   "tools": {
-    "pass": "Passed: {name}",
-    "fail": "Failed: {name} ({detail})",
+    "pass": "Test {number} passed: {name}",
+    "fail": "Test {number} failed: {name} ({detail})",
+    "aborted": "Failed: {name} ({detail})",
     "testTitle": "Test results",
     "frameTitle": "The page in a small window, being tested",
     "testPassed": "All {n} tests passed in {colours} colours, in windows of {windows} pixels.",

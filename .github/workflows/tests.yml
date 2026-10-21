@@ -31,8 +31,8 @@ jobs:
               if grep -q 'data-tests="passed"' page.html; then
                 grep -o 'id="reportStatus"[^>]*>[^<]*' page.html | sed 's/.*>//'
               else
-                echo "Failed with window size $size:"
-                grep -o 'Failed: [^<]*' page.html || echo "The tests did not finish."
+                grep -o 'id="reportStatus"[^>]*>[^<]*' page.html | sed 's/.*>//' | grep . || echo "The tests did not finish in a window of $size pixels."
+                grep -o 'Test [0-9]* failed\|Failed: [^<]*' page.html | sed 's/^/  /' || true
                 status=1
               fi
             done

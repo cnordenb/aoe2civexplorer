@@ -602,14 +602,17 @@ Open the page with `?test` added to the address, for example `http://127.0.0.1:5
 
 Wait about half a minute. You will see small copies of the page flash in the top-left corner: the tests also try the
 page in a phone-sized window and in a 320 by 256 window, which is how the page looks to someone who zooms in to 400%.
-At the end a window says **All … tests passed**, or lists what failed first. Each failure says what is wrong and
-where, for example which text has too little contrast in which language.
+At the end a window says **All … tests passed**, or lists what failed first, each by its number in `TESTS.md`, such
+as "Test 70 failed". Each failure then says what is wrong and where, for example which text has too little contrast
+in which language.
 
 ### Step 7: publish
 
 Commit the new files and push them, for example with GitHub Desktop or `git commit` and `git push`. GitHub runs
 the same tests again, in Chrome, in light and dark colours and at several window sizes. You can watch them in the
-**Actions** tab of the repository: a green tick means everything passed.
+**Actions** tab of the repository: a green tick means everything passed. If something failed, the log says how many
+tests failed in which colours and windows, and then names each by its number, such as `Test 15 failed`. Look the
+number up in `TESTS.md`, and open the page with `?test` to see what is wrong and where.
 
 ## Fixing a name
 

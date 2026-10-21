@@ -20,9 +20,10 @@ const merge = (runs) => {
       merged.get(name).failures.push(detail ? `${where}: ${detail}` : where);
     }
   }
-  return [...merged.values()].map(({ name, ok, failures }) => ({ name, ok, detail: failures.slice(0, 3).join("; ") }))
-    .sort((a, b) => a.name.split(":")[0].localeCompare(b.name.split(":")[0]));
+  return [...merged.values()].map(({ name, ok, failures }) => ({ name, ok, detail: failures.slice(0, 3).join("; ") }));
 };
+
+const reportLine = (result, tools) => fill(!result.number ? tools.aborted : result.ok ? tools.pass : tools.fail, result);
 
 function framed(size) {
   return new Promise((resolve) => {
@@ -111,6 +112,9 @@ export async function runTests() {
   for (const size of ["small", "phone", "tall"]) runs.push(await framed(size));
   const merged = merge(runs);
   merged.push({ name: `rules: there are at most ${LIMIT} tests`, ok: merged.length + 1 <= LIMIT, detail: `${merged.length + 1} tests` });
+  merged.filter((result) => result.name.includes(":")).forEach((result, i) => {
+    result.number = i + 1;
+  });
   const failed = merged.filter((result) => !result.ok);
   root.dataset.tests = failed.length ? "failed" : "passed";
   const tools = data.tools;
@@ -118,5 +122,5 @@ export async function runTests() {
     failed: failed.length, n: merged.length, colours: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     windows: new Intl.ListFormat("en").format(runs.map((run) => run.where)),
   }));
-  for (const result of [...failed, ...merged.filter((r) => r.ok)]) report(fill(result.ok ? tools.pass : tools.fail, result));
+  for (const result of [...failed, ...merged.filter((r) => r.ok)]) report(reportLine(result, tools));
 }
