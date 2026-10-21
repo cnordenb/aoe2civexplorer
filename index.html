@@ -1,86 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
-<title>AoE2 Civ Explorer</title>
-<meta name="description" content="Find the Age of Empires II civilisations that have, or lack, the buildings, units and technologies you choose.">
-<link rel="stylesheet" href="style.css">
-<link rel="icon" href="favicon.ico">
-<script type="module" src="script.js"></script>
+  <meta charset="utf-8">
+  <title>Moved to new domain</title>
+  <link rel="canonical" href="https://frcp.net/civexplorer/">
+  <meta http-equiv="refresh" content="0; url=https://frcp.net/civexplorer/">
+  <script>
+    window.location.replace("https://frcp.net/civexplorer/");
+  </script>
 </head>
 <body>
-<header class="top" id="top" hidden>
-  <h1 data-text="title"></h1>
-  <button type="button" class="tool icon" id="optionsButton" aria-haspopup="dialog" aria-controls="options"><span class="cog" aria-hidden="true">⚙︎</span><span class="sr-only" data-text="options"></span></button>
-</header>
-<noscript><p>AoE2 Civ Explorer needs JavaScript.</p></noscript>
-<p class="load-error" id="loadError" hidden>AoE2 Civ Explorer could not load its data.</p>
-<div class="content" id="content" hidden>
-<main class="panes">
-  <section class="pane" aria-labelledby="treeTitle">
-    <div class="pane-head">
-      <h2 id="treeTitle" data-text="tree"></h2>
-      <div class="tools">
-        <button type="button" class="tool" id="clear" data-text="clear"></button>
-        <button type="button" class="tool" id="expandAll" data-text="expandAll"></button>
-        <button type="button" class="tool" id="collapseAll" data-text="collapseAll"></button>
-      </div>
-      <div class="find">
-        <label for="find" data-text="find"></label>
-        <input type="search" id="find" autocomplete="off" spellcheck="false">
-        <p id="found" role="status"></p>
-      </div>
-      <p class="legend">
-        <span data-state="has"><span class="box" aria-hidden="true"></span><span data-text="mustHave"></span></span>
-        <span data-state="lacks"><span class="box" aria-hidden="true"></span><span data-text="mustLack"></span></span>
-      </p>
-    </div>
-    <div class="scroll"><ul class="tree" id="tree" role="list"></ul></div>
-  </section>
-  <section class="pane" aria-labelledby="civTitle">
-    <div class="pane-head">
-      <h2 id="civTitle" tabindex="-1" data-text="civs"></h2>
-      <p id="count" role="status"></p>
-    </div>
-    <div class="scroll" id="civScroll" tabindex="0" role="group" aria-labelledby="civTitle">
-      <div class="ticked" id="ticked" hidden>
-        <span id="tickedLabel" data-text="filters"></span><ul role="list" aria-labelledby="tickedLabel" id="chips"></ul>
-      </div>
-      <ul class="civs" id="civs" role="list"></ul>
-      <p class="none" id="none" hidden></p>
-    </div>
-  </section>
-</main>
-<footer class="foot"><p id="source"><a id="sourceLink"></a></p></footer>
-</div>
-<dialog class="options" id="options" aria-labelledby="optionsTitle">
-  <h2 id="optionsTitle" data-text="options"></h2>
-  <div class="language" id="language">
-    <span id="languageLabel" data-text="language"></span>
-    <button type="button" class="tool language-button" id="languageButton" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span id="languageName"></span></button>
-    <ul class="language-list" id="languageList" role="list" hidden></ul>
-  </div>
-  <div class="settings" id="settings">
-    <div class="option" id="include" role="checkbox" tabindex="0" aria-checked="false" aria-describedby="includeHint"><span class="box" aria-hidden="true"></span><span data-text="includeAll"></span></div>
-    <p id="includeHint" data-text="includeHint"></p>
-  </div>
-  <form method="dialog"><button class="tool" data-text="close"></button></form>
-</dialog>
-<dialog class="report" id="report" lang="en" aria-labelledby="reportTitle">
-  <h2 id="reportTitle"></h2>
-  <p id="reportStatus" role="status"></p>
-  <ul class="report-list" id="reportList" role="list"></ul>
-  <ul class="report-list downloads" id="reportDownloads" role="list" hidden></ul>
-  <form method="dialog"><button class="tool" data-tool="close"></button></form>
-</dialog>
-<template id="itemTemplate"><li><div class="row"><button type="button" class="twisty" aria-expanded="false"></button><span class="gap"></span><div class="node" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span class="name"></span><span class="sr-only lacking"></span><span class="n"><span class="count" aria-hidden="true"></span><span class="sr-only civ-count"></span></span></div></div><ul role="list" hidden></ul></li></template>
-<template id="chipTemplate"><li><button type="button" class="chip"><span class="box" aria-hidden="true"></span><span class="sr-only chip-label"></span><span class="chip-name" aria-hidden="true"></span><span aria-hidden="true">×</span></button></li></template>
-<template id="civTemplate"><li></li></template>
-<template id="languageTemplate"><li><button type="button" class="tool language-option"></button></li></template>
-<template id="reportTemplate"><li></li></template>
-<template id="downloadTemplate"><li><a download></a></li></template>
-<template id="frameTemplate"><iframe class="test-frame"></iframe></template>
+  <p>This page redirects to <a href="https://frcp.net/civexplorer/">frcp.net/civexplorer</a>. To view index.html, go to the repository's <a href="https://github.com/cnordenb/aoe2civexplorer/tree/development">development branch on github</a>.</p>
 </body>
 </html>
