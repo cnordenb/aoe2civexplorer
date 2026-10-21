@@ -1,3 +1,5 @@
+NB: The main branch only has simple UI implentation. The fancier AoE2DE UI version you can find in the [development branch](https://github.com/cnordenb/aoe2civexplorer/tree/development).
+
 [![GitHub last commit](https://img.shields.io/github/last-commit/cnordenb/aoe2civexplorer)](#)
 [![language](https://img.shields.io/badge/language-JavaScript-FFFF00)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![accessibility](https://img.shields.io/badge/accessibility-WCAG_2.2_AAA-A5FFCA)](https://www.w3.org/TR/WCAG22/)
