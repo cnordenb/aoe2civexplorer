@@ -2,7 +2,7 @@ import { data, tag, nameOf } from "../datahandler.js";
 import { items } from "../model.js";
 import { $, options } from "../ui.js";
 import {
-  TAG, root, check, describe, rendered, everything, focusables, tidy, nameFor, squash, visibleTexts,
+  TAG, root, check, describe, rendered, everything, styles, pictured, focusables, tidy, nameFor, squash, visibleTexts,
 } from "./helpers.js";
 
 const rgba = (value) => {
@@ -35,8 +35,6 @@ const contrast = (a, b) => {
   return (light + 0.05) / (dark + 0.05);
 };
 
-const styles = (el) => [getComputedStyle(el), getComputedStyle(el, "::before"), getComputedStyle(el, "::after"), getComputedStyle(el, "::marker")];
-
 function focusChecks(list) {
   const outlines = [];
   const hidden = [];
@@ -59,7 +57,7 @@ function focusChecks(list) {
         right: Math.min(view.right, edge.right), bottom: Math.min(view.bottom, edge.bottom),
       });
     }
-    const box = el.getBoundingClientRect();
+    const box = el.getClientRects()[0] ?? el.getBoundingClientRect();
     const x = (Math.max(box.left, view.left) + Math.min(box.right, view.right)) / 2;
     const y = (Math.max(box.top, view.top) + Math.min(box.bottom, view.bottom)) / 2;
     const hit = document.elementFromPoint(x, y);
@@ -140,8 +138,7 @@ export function audit(label, { focus = true } = {}) {
   }).map(describe));
   list("rules: no images, sounds, video or animations on the page or in its styles", [
     ...[...document.querySelectorAll("img, svg, canvas, picture, video, audio, object, embed, iframe, source, track, map, area"),
-      ...all.filter((el) => styles(el).some((style) => style.backgroundImage !== "none"
-        || style.listStyleImage !== "none" || style.borderImageSource !== "none" || /url\(/.test(style.content)))].map(describe),
+      ...[root, document.body, ...all].filter(pictured)].map(describe),
     ...(document.getAnimations().length ? [`${document.getAnimations().length} running`] : []),
     ...all.filter((el) => styles(el).some((style) => style.animationName.split(",").some((name) => name.trim() !== "none")
       || style.transitionDuration.split(",").some((time) => parseFloat(time) > 0))).map(describe),

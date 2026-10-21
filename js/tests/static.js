@@ -46,7 +46,7 @@ export function sourceTests(page, sheet, files) {
     ...(sheet.includes(slash + "*") ? ["style.css"] : []),
     ...named(({ code }) => code.includes(slash + "*") || code.includes(slash + slash)),
   ]);
-  expect("rules: the scripts have no CSS or HTML", named(({ code }) => /\.style\s*[.=[]|setAttribute\(\s*["']style|\.(innerHTML|outerHTML|insertAdjacentHTML)\b|createElement\s*\(|document\.write/.test(code)));
+  expect("rules: the scripts have no CSS or HTML, and only hand numbers to CSS custom properties", named(({ code }) => /\.style\b(?!\.setProperty\("--\w+", [^"]*\))\s*[.=[]|setAttribute\(\s*["']style|\.(innerHTML|outerHTML|insertAdjacentHTML)\b|createElement\s*\(|document\.write/.test(code)));
   expect("rules: script.js is in the main folder and every other script in js/, scripts import only scripts in js/, and the tests are in js/tests/ and load only when testing", [
     ...named(({ path }) => !/^(script\.js|js\/([a-z]+\/)*[a-z]+\.js)$/.test(path)),
     ...files.flatMap(({ path, imports }) => imports.filter(({ specifier, target }) => !specifier.startsWith(".") || !target.startsWith(`${here}js/`))
@@ -58,12 +58,16 @@ export function sourceTests(page, sheet, files) {
 
   expect(`rules: no script is over ${LIMIT} lines of code`, files.filter(({ code }) => linesOfCode(code) > LIMIT)
     .map(({ path, code }) => `${path} has ${linesOfCode(code)}`));
-  expect("rules: only ui.js and the tests touch the page, and only datahandler.js and the tests load or store data", [
-    ...named((file) => !testing(file) && file.path !== "js/ui.js" && /\b(document|window)\b|getElementById|querySelector|addEventListener/.test(file.code)),
+  expect("rules: only ui.js, report.js, pictures.js and the tests touch the page, and only datahandler.js and the tests load or store data", [
+    ...named((file) => !testing(file) && !["js/ui.js", "js/report.js", "js/pictures.js"].includes(file.path) && /\b(document|window)\b|getElementById|querySelector|addEventListener/.test(file.code)),
     ...named((file) => !testing(file) && file.path !== "js/datahandler.js" && /XMLHttpRequest|localStorage|\bfetch\s*\(/.test(file.code)),
   ]);
-  expect("rules: no images, sounds, animations or dependencies in the sources", failing({
-    images: /<(img|svg|canvas|picture|video|audio|object|embed)\b/i.test(page) || /url\(/i.test(sheet),
+  expect("rules: images only from assets/images/, in templates or CSS, only without Simple UI, fonts only from assets/fonts/, and no sounds, animations or dependencies in the sources", failing({
+    images: /<(svg|canvas|picture|video|audio|object|embed)\b/i.test(page) || /<img\b/i.test(page.replace(/<template\b[\s\S]*?<\/template>/gi, "")) || [...sheet.matchAll(/([^{}]*)\{([^{}]*)\}/g)]
+      .some(([, selector, body]) => [...body.matchAll(/url\(\s*"?([^")]*)/gi)].some(([, src]) => (selector.trim() === "@font-face"
+        ? !/^assets\/fonts\/[A-Za-z0-9-]+\.ttf$/.test(src)
+        : !selector.split(/,(?![^(]*\))/).every((part) => /^(html)?\.pictures\b/.test(part.trim()))
+          || !/^assets\/images\/([a-z0-9]+\/)*[a-z0-9_]+\.webp$/.test(src)))),
     sounds: files.some(({ code }) => /new\s+(Audio|AudioContext)\b/.test(code)),
     animations: /@keyframes|\banimation|\btransition/i.test(sheet) || files.some(({ code }) => /\.animate\s*\(/.test(code)),
     dependencies: files.some(({ code }) => /\brequire\s*\(/.test(code)) || /@import/i.test(sheet),

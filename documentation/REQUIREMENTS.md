@@ -31,3 +31,5 @@
 29. All descendant nodes of equal number of compatible civilisattions in a line of single descendant nodes will be assigned the same value as the one the user assigns to a node.
 30. A node will not be automatically assigned a value if the assigned value is given to a unit node or technology node of different number of compatible civilisations.
 31. A node will be expanded to if it is automatically assigned a value.
+32. Options window will contain a "Simple UI" checkbox.
+33. The page will not use any images upon the user enabling the Simple UI checkbox.

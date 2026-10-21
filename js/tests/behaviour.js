@@ -1,7 +1,7 @@
 import { ALL, fill, size, words, numbers, nameOf, plural, plain } from "../datahandler.js";
 import { items, roots, state, lineOf, lineEnd, chipName } from "../model.js";
 import { $, isOpen, setOpen, shown } from "../ui.js";
-import { check, expect, wait, same, keyDown, tap, type, reset, listed, expected, below } from "./helpers.js";
+import { check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below } from "./helpers.js";
 
 const chainOf = (item) => {
   const chain = [item];
@@ -244,13 +244,13 @@ function finding({ partial }) {
   reset();
   type(nameOf(partial));
   const matches = items.filter((item) => plain(nameOf(item)).includes(plain(nameOf(partial))));
-  check("find: matches are marked and their number announced, with branches open down to each", partial.node.classList.contains("found")
+  check("find: matches are marked and their number announced beside the box, with branches open down to each", partial.node.classList.contains("found")
     && items.every((item) => item.node.classList.contains("found") === matches.includes(item)) && matches.every((item) => shown(item))
-    && $("found").textContent === plural("found", matches.length));
+    && $("found").textContent === plural("found", matches.length) && beside());
   type("qqqqzzzzqqqq");
-  const none = $("found").textContent === words.ui.noneFound && !document.querySelector(".found");
+  const none = $("found").textContent === words.ui.noneFound && !document.querySelector(".found") && beside();
   type("");
-  check("find: no match says none found, and an empty search clears the result", none && $("found").textContent === "");
+  check("find: no match says none found beside the box, and an empty search clears the result", none && $("found").textContent === "");
   reset();
 }
 

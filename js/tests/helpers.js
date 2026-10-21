@@ -25,6 +25,11 @@ export const rendered = (el) => el.getClientRects().length > 0 && getComputedSty
 
 export const everything = () => [...document.body.querySelectorAll("*")].filter(rendered);
 
+export const styles = (el) => [getComputedStyle(el), getComputedStyle(el, "::before"), getComputedStyle(el, "::after"), getComputedStyle(el, "::marker")];
+
+export const pictured = (el) => styles(el).some((style) => style.backgroundImage !== "none" || style.listStyleImage !== "none"
+  || style.borderImageSource !== "none" || /url\(/.test(style.content) || /url\(/.test(style.cursor));
+
 export const focusables = () => [...document.querySelectorAll("a[href], button, input, select, textarea, [tabindex]")]
   .filter((el) => el.tabIndex >= 0 && !el.disabled && rendered(el));
 
@@ -79,6 +84,13 @@ export const reset = () => {
   setMenu(false);
   if ($("options").open) $("options").close();
   document.activeElement?.blur();
+};
+
+export const beside = () => {
+  const box = $("find").getBoundingClientRect();
+  const note = $("found").getBoundingClientRect();
+  return note.left >= box.right - 0.5 && note.top < box.bottom && note.bottom > box.top
+    && note.height < 1.5 * parseFloat(getComputedStyle($("found")).lineHeight);
 };
 
 export const listed = () => [...$("civs").children].map((li) => li.textContent);

@@ -632,3 +632,570 @@ Log of sessions from 18-19 October, refining a single file prototype generated b
 - **Documents.** `MAINTAINER.md` lists `script.js` and `documentation/` among the files; `TESTS.md` has the new wording
   of Tests 77 and 78; `code_docu.pdf` was built again with `script.js` as its third chapter.
 - **Checked.** All 93 tests pass in light and dark colours, in all four window sizes.
+
+## 2026-10-21: background pictures, and a Simple UI option (requirements 32 and 33, rule 22)
+
+### What changed
+
+- **Background pictures.** As decided, the page shows a parchment pinned to a wooden board behind the panes. There
+  are four versions in `assets/images/ui/backgrounds/`, and `style.css` picks one by the window's size, using media
+  queries and no script:
+  - `ultrawide.webp` when the window is wider than 16:9, whatever its size;
+  - otherwise `uhd.webp` when it is bigger than 2560 by 1440, `qhd.webp` when it is bigger than 1920 by 1080, and
+    `fhd.webp` for anything smaller.
+
+  The browser downloads only the picture in use. A maximised browser on a 16:9 screen usually shows the page in a
+  window wider than 16:9, because of its tabs and address bar, so it gets `ultrawide.webp`.
+- **Solid panels.** As decided, the header, both panes and the footer have solid backgrounds, and the picture shows
+  only in the gaps around and between them. The parchment is light and the wood is dark, so no text colour could
+  keep a 7:1 contrast on both, in light or dark colours. The header became a full-width bar with 6 pixels of padding,
+  so the Options button's border and focus outline sit on it. The footer became a box as wide as its text.
+- **Simple UI.** A new box in the Options window, below the Include hint, unticked by default. Ticking it removes the
+  picture, so the page uses no images at all, and the layout stays exactly the same. The choice is remembered, like
+  Include. Its label is translated into all 17 languages.
+- **No picture until it is wanted.** The picture shows only while the page has the `pictures` class. `script.js` calls
+  `setSimple()` with the saved choice before it loads `data.json`, so the picture starts loading at once, and a visitor
+  who has chosen Simple UI never downloads one. Without JavaScript there is no picture.
+- **`js/ui.js`.** `setSimple()` is new. `tick()` replaces `showInclude()` and draws both boxes. One click listener
+  and one key listener on the settings now serve both boxes. `ui.js` has 397 lines of code, close to the limit of
+  400.
+- **Tests.** 95 tests, two new:
+  - "options: without Simple UI, the background picture suits the window's size and shape" works out which picture
+    the window should get and compares it with the one shown. It runs in every window, so the four test windows in
+    GitHub check `ultrawide.webp` and `fhd.webp`. `qhd.webp` and `uhd.webp` were checked by hand in windows of 2184 by
+    1349 and 2984 by 1849.
+  - "options: ticking Simple UI takes away every image without moving anything and is remembered, and Space unticks
+    it" looks for pictures on the whole page, including the page's own background and every `::before` and `::after`.
+    It also checks that the box, both lists and the Options button do not move.
+  - The contrast tests for text, control borders and focus outlines now fail anything that sits straight on a
+    picture. Before, they would have measured it against the colour under the picture.
+  - The rule tests allow the background and nothing else. On the page, only the page's background may be a picture.
+    In `style.css`, `url()` may only appear in `.pictures` rules and only point into `assets/images/ui/backgrounds/`.
+  - During the tests Simple UI is off, and the visitor's choice is put back afterwards, as is done for Include.
+- **Checked.** Each new or changed test was broken on purpose and failed as it should. This was done for the panes,
+  the header and the footer without their backgrounds, the wrong picture for the window, Simple UI leaving the
+  picture on, and a `url()` outside `.pictures`. All 95 tests pass in Chrome, in light and dark colours, in all four
+  window sizes.
+- **CI.** The check of allowed files now lets in WebP files under `assets/images/` named in lower-case letters.
+- **Documents.** `TESTS.md` has Tests 48 and 49, everything after them renumbered, and new line numbers and wording
+  where the code changed. `MAINTAINER.md` has a section on the background pictures, the new file folder, `setSimple()`
+  and the rule on images. `REQUIREMENTS.md` was not touched. `code_docu.pdf` was not rebuilt, so it does not yet
+  describe `setSimple()` or `tick()`, and it still describes `showInclude()`.
+
+## 2026-10-21: the page sits on the parchment, and WCAG applies to Simple UI
+
+### What changed
+
+- **WCAG only with Simple UI.** As decided, WCAG 2.2 AAA is only required with Simple UI on. The tests now run with
+  Simple UI on; only the two picture tests turn it off.
+- **The page sits on the parchment.** As decided, with the picture on, the header, the panes and the footer fit
+  inside the parchment, between the two pins at its top corners. The area was measured in the pictures themselves:
+  - `fhd.webp`, `qhd.webp` and `uhd.webp` have the same layout. Their sheet spans 10.5% to 92% of the width and
+    1.2% to 98.5% of the height, and the pins sit at 13.2% to 14.5% and 88% to 89.2% of the width. The page uses
+    15.5% to 87% of the width and 3% to 96.7% of the height.
+  - In `ultrawide.webp` the sheet spans 19.2% to 80.4% of the width, and the pins sit at 21.3% to 22.3% and 77.3% to
+    78.3%. The page uses 23.25% to 76.36% of the width and 3.1% to 96.8% of the height.
+
+  `style.css` keeps these shares as five numbers on `.pictures body` (`--ratio`, `--left`, `--right`, `--top`,
+  `--bottom`). From them it works out, for any window, where the picture's parchment lands, and pads the page to
+  fit it. This needs no script, because a picture that fills the window and stays centred lands in a place that
+  depends only on the window's size. When the parchment fills the whole window, as on a phone, the usual 16-pixel
+  margin stays.
+- **Simple UI looks as the page did before the pictures.** The solid header bar, the footer box and the panes'
+  backgrounds now apply only with the picture on. So turning Simple UI on or off moves the page, but not the
+  Simple UI box itself.
+- **Tests.** Still 95.
+  - Test 48 also checks that the header, the content area, both panes and the footer are inside the parchment area,
+    and that the page does not scroll. It takes the five numbers from `style.css`, so it checks the layout but
+    not whether the numbers match the picture. That was checked by eye in screenshots at 1920 by 1080, 1920 by 900,
+    2560 by 1080 and 1280 by 800.
+  - Test 49 now only checks that the Simple UI box stays where it is.
+  - The contrast tests no longer need to look for text on a picture, so `js/tests/audit.js` is back as it was,
+    except for the image check. That check now covers the page's own background too, because the tests run with
+    Simple UI on.
+- **Checked.** The new check was broken on purpose twice, and each time the right test failed. Without the padding,
+  Test 48 failed. With the audits run on the picture, the image check failed. All 95 tests pass in Chrome, in light
+  and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` explains that the tests run with Simple UI on, and has the new wording of Tests 48, 49
+  and 71. `MAINTAINER.md` has the five numbers, explains how to measure them for a new picture, and says that
+  WCAG applies to Simple UI. `RULES.md` was not changed: Rules 3 and 4 still ask for WCAG 2.2 AAA everywhere.
+
+## 2026-10-21: a picture for the Options button
+
+### What changed
+
+- **The Options button.** As decided, with the pictures on, the cogwheel button shows a picture from
+  `assets/images/ui/buttons/` instead of the text cogwheel. Each file is a strip of three square pictures: normal on
+  the left, under the mouse in the middle, and pressed on the right. `style.css` sizes the strip to three times the
+  button and moves it to 0%, 50% or 100%, so only one picture shows at a time.
+- **sd or 4k.** `options_sd.webp` holds three 52 by 52 pictures, and `options_4k.webp` three 104 by 104 ones. The
+  button stays 52 by 52 either way. `options_4k.webp` is used when the client's resolution is larger than 1920 by
+  1080. That is the case when the window is bigger than 1920 by 1080, or when the screen has more than one device
+  pixel per page pixel, as on phones and on laptops scaled to 125% or more. The second case gives a window of 1920 by
+  1080 or less a real resolution above 1080p. Without it, such screens would get a blurry button.
+- **An outline.** As decided, the button has a 2-pixel ring of `#ee9d05` around it. It is a `box-shadow` rather than
+  an `outline`, because `outline` already shows keyboard focus; the focus outline draws just outside the ring. It is
+  2 page pixels, so 2 screen pixels on an ordinary screen, and it grows with the button on sharp screens.
+- **Simple UI** keeps the old button: the text cogwheel with a border, 44 by 44.
+- **Tests.** Still 95.
+  - Test 48 also checks that the button shows `options_sd.webp` or `options_4k.webp` as described, at its normal
+    picture and with its ring. The mouse states cannot be tested from a script. They were checked in screenshots, with the middle and
+    right pictures forced on in a copy of `style.css`.
+  - Test 49 now expects two pictures without Simple UI, the background and the button, and none with it.
+  - Test 82 now allows `url()` to point anywhere in `assets/images/`, still only in `.pictures` rules.
+- **CI.** The check of allowed files now allows digits and underscores in names under `assets/images/`, such as
+  `options_4k.webp` and `civs9slice.webp`.
+- **Checked.** At a device scale of 2 every test passed with the button on `options_4k.webp`. With the sharp-screen
+  condition taken out of `style.css`, Test 48 failed as it should. All 95 tests pass in Chrome, in light and dark
+  colours, in all four window sizes.
+- **Not used yet.** `assets/images/` also holds pictures for label buttons, checkboxes, cursors and the two panes.
+  The page does not use them yet.
+- **Documents.** `TESTS.md` has the new wording of Tests 48, 49 and 82. `MAINTAINER.md` has a section on the Options
+  button and its two files, and the folder and naming rules for pictures.
+
+## 2026-10-21: picture cursors
+
+### What changed
+
+- **Cursors.** As decided, with the pictures on, the mouse cursor comes from `assets/images/ui/cursors/`. It is a
+  sword over the page and a pointing hand over links, buttons, the tree's boxes and the Options window's boxes. In
+  the Find box it stays the text cursor, so it is clear where typing goes. Labels needed their own rule, because
+  browsers give them the plain arrow instead of the cursor around them.
+- **x1 and x2.** `x2` (48 by 48) is for uhd and `x1` (32 by 32) for sd, as decided. `x2` is used when the window is
+  bigger than 2560 by 1440, the same test that picks `uhd.webp`, and `x1` otherwise, which includes qhd windows.
+  Sharp screens do not switch to `x2`, unlike the Options button. Chrome already enlarges a cursor by the screen's
+  scale, so `x2` on a screen at 200% would come out 96 pixels wide.
+- **The point.** In all four pictures the tip of the sword and of the finger is the top-left pixel. This was found
+  by reading the pictures' pixels, so every cursor has its point at `0 0`.
+- **Tests.** Still 95.
+  - Test 48 also checks every element on the page: the hand over what can be clicked, the text cursor in the Find
+    box, and the sword everywhere else, each in the `x1` or `x2` size the window should get. A window of 2984 by 1849
+    was checked by hand, for `x2`.
+  - The image check now counts a cursor picture as an image. So Test 71 also makes sure Simple UI has no picture
+    cursor, and Test 49 that ticking Simple UI takes the cursors away too.
+  - Test 82 now checks each selector in a list on its own, so `.pictures, .pictures label` passes but
+    `.pictures, label` fails.
+- **Checked.** Leaving labels out of the cursor rule made Test 48 fail, naming `label`. Writing `.pictures, label`
+  made Tests 49, 71 and 82 fail. All 95 tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Test 48 and new line numbers. `MAINTAINER.md` has a section on the
+  cursors.
+
+## 2026-10-21: game buttons with Trajan Pro
+
+### What changed
+
+- **Button pictures.** As decided, with the pictures on, every button with words on it shows `button_sd.webp`, or
+  `button_4k.webp` for uhd. That covers Clear, Expand all, Collapse all, the language menu and its choices, and Close.
+  Each file is three bars on top of each other: normal, under the mouse, pressed. The bars are 55 to 58 rows tall in
+  `button_sd.webp` and exactly 111 in `button_4k.webp`, which was measured from the pixels, so showing a third at a time
+  fits within two rows. The strip is stretched to each button's width. `button_4k.webp` is used when the window is
+  bigger than 2560 by 1440, the same test as `uhd.webp` and the `x2` cursors.
+- **Trajan Pro Bold.** As decided, the words are in Trajan Pro Bold, `#ffb20d`, fading from white at the top to
+  `#ffb20d` at the bottom, with a black shadow at 50% opacity, 2 pixels down and 2 to the right (45 degrees). The font is
+  `assets/Fonts/TrajanPro-Bold.ttf`. A copy installed on the visitor's computer is used first, and the file is only
+  downloaded with the pictures on.
+- **A gold ring.** As decided, the text buttons have the same 2-pixel `#ee9d05` ring as the Options button. The chosen
+  language already used a `box-shadow` for its blue mark, so it now has both, the ring and the mark. The language
+  menu leaves 8 pixels between its choices instead of 4, so the rings do not touch.
+- **A caption inside each button.** A `text-shadow` would be drawn over the fade, and a `filter` on the button would
+  shadow the whole picture. So each of these buttons now holds its words in a `<span class="caption">`, which carries
+  the fade and a `drop-shadow` filter. `index.html` and the language template changed for this, and
+  `buildLanguages()` in `js/ui.js` writes into the caption.
+- **The Simple UI box stays put.** Trajan Pro is wider than the usual font. In the 320 by 256 test window, "Português
+  (Brasil)" took two lines on the language button, which pushed the Simple UI box down by 12 pixels when Simple UI was
+  turned off; the existing test caught this (rule 18). With the pictures on, the language button now keeps its words
+  on one line and ends a name that does not fit in "…".
+- **Tests.** 96, one new:
+  - New Test 49 checks every text button: the right picture at its normal bar, the ring, and words in Trajan Pro Bold,
+    `#ffb20d`, with the fade and the shadow. It also checks that the font loads. That needed `pictureTests()` to wait
+    for the font, so it is now `async`.
+  - Test 83 (the source rules) also allows `url()` in an `@font-face` rule, pointing into `assets/Fonts/`.
+- **CI.** The check of allowed files now allows `.ttf` files in `assets/Fonts/`.
+- **Checked.** In screenshots, with the mouse states forced on in a copy of `style.css`, the middle bar showed under
+  the mouse and the bottom one when pressed. With the installed copy of the font switched off, the font loaded from
+  `assets/Fonts/` and Test 49 passed, which is what GitHub will do. Without the fade, Test 49 failed. In a window of 2984
+  by 1849, `button_4k.webp` was used. All 96 tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new Test 49, everything after it renumbered, and the new wording of Test 83.
+  `MAINTAINER.md` has a section on the text buttons and the font.
+
+## 2026-10-21: checkbox pictures
+
+### What changed
+
+- **Checkboxes.** As decided, with the pictures on, every checkbox shows a picture from the checkbox sheet: in the
+  tree, in the legend, on the filter buttons and in the Options window. The sheet has three rows and three columns.
+  The rows are unchecked, enabled (a red tick) and disabled (a cross); they show not marked, must have and must lack.
+  The columns are normal, under the mouse and pressed.
+- **Under the mouse and pressed.** The column changes when the mouse is over, or presses, the whole item, Options
+  choice or filter button, since a click anywhere on it acts on the box. A long press in the tree, which marks
+  must lack, shows the pressed column once it is ready.
+- **Partly marked.** The sheet has no picture for a branch that is partly marked. It shows the empty box with a black
+  dash over it, as the dash was drawn before.
+- **sd or 4k.** The boxes stay 20 by 20; `checkboxes_4k.webp` holds the same pictures at twice the detail. It is used on
+  the same terms as `options_4k.webp`: when the window is bigger than 1920 by 1080, or the screen is sharper than
+  usual. The cells are exactly 20 and 40 pixels, so each picture lines up exactly.
+- **Tests.** 97, one new: Test 50 checks every checkbox on the page: the right file, the normal column, and the row
+  for its state. It also checks that the drawn tick, cross and frame are gone, and that a ticked and a crossed box
+  are among those checked.
+- **Checked.** In screenshots, with the mouse states forced on in a copy of `style.css`, the middle and right columns
+  showed. With the rows for must have and must lack swapped, Test 50 failed. At a device scale of 2, every test passed
+  with `checkboxes_4k.webp`. All 97 tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new Test 50 and everything after it renumbered. `MAINTAINER.md` has a section on
+  the checkboxes.
+
+## 2026-10-21: the title in its frame
+
+### What changed
+
+- **Civ Explorer.** As decided, with the pictures on, the title reads "Civ Explorer", in bold Georgia coloured
+  `#391c1b`. It applies only with the pictures on. With Simple UI on, the title stays the full sentence that
+  requirement 2 asks for, which is also the more useful heading for accessibility. Both texts are in the language
+  files, `title` and the new `titleShort`. `titleShort` is "Civ Explorer" in all 17 languages, as a name. The heading
+  holds both, and `style.css` shows one.
+- **No header panel.** As decided, the header's solid bar is gone with the pictures on. The title sits in
+  `title_frame_sd.webp`, or `title_frame_4k.webp` on the same terms as the Options button. The frame is centred at the
+  top of the parchment, at most 784 pixels wide, and the Options button stays on the right. The header is a grid of
+  three columns, so the frame stays truly centred however wide the button is.
+- **Centred in the frame.** The frame's plain inner box was measured from its pixels: 20.28% to 79.59% of the width and
+  36.21% to 70.69% of the height. The heading's padding is exactly that box, and the title is centred in it. The
+  title's size follows the frame's width (`cqi`), 24 pixels at full size and never under 12.
+- **Blending in.** The frame's edges are already partly transparent, but its top showed as a straight line against
+  the torn top of the parchment. A gradient `mask-image` fades all four edges a little more; the ornaments and the
+  title are untouched.
+- **Tests.** 98, one new:
+  - New Test 49 checks that only "Civ Explorer" shows, in bold Georgia, `#391c1b`, on the right frame picture. It also
+    checks that the header has no background and that the frame is centred.
+  - Test 52, Simple UI, also checks that the full title shows with Simple UI on.
+  - Test 36 now reads the full title from its own span, since the heading holds both.
+- **Checked.** In screenshots at 1920 by 1080, 1920 by 900 and 600 by 900, in light and dark colours. With the
+  full title left visible with the pictures on, Test 49 failed. All 98 tests pass in Chrome, in light and dark colours,
+  in all four window sizes.
+- **Not changed.** `REQUIREMENTS.md`, whose requirement 2 still names the full sentence.
+- **Documents.** `TESTS.md` has the new Test 49 and everything after it renumbered. `MAINTAINER.md` has a section on
+  the title.
+
+## 2026-10-21: framed panels with their own fonts
+
+### What changed
+
+- **Nine-slice frames.** As decided, with the pictures on, the tree pane sits in `nodes9slice.webp` and the
+  civilisations pane in `civs9slice.webp`, drawn with `border-image`. Where to cut was measured from the pictures. The
+  tree's frame and gold corners end 24 pixels in, so it is cut at 24 and drawn at full size. The rounded corners of
+  the civilisations' frame reach 76 pixels in, so it is cut at 76 and drawn at half size, 38 pixels, which keeps
+  the corners in proportion. Each pane's border is as wide as its frame, so no text sits on a corner.
+- **Text.** As decided, the tree pane's text is Georgia in `#391c1b`, and the civilisations pane's text is Times New
+  Roman Bold (`timesbd`) in white. The buttons keep their own Trajan Pro, and the Find box keeps its own colours.
+- **Fonts.** `assets/Fonts/Georgia.ttf` and `assets/Fonts/timesbd.ttf` are loaded under their own names, "Civ Georgia"
+  and "Civ Times", with the installed copies tried first. Loading the file as plain "Georgia" would have hidden the
+  installed Georgia Bold, so bold text would have been a thickened regular. No bold Georgia file was given. Where
+  Georgia is not installed, bold text in the tree uses the browser's next choice. The title now uses "Civ Georgia"
+  too, so it also gets Georgia where it is not installed.
+- **Colours that suit the frames.** The panes' grey headers are see-through with the pictures on. In the tree, the
+  highlight under the mouse is a light tint and Find's highlight a gold tint, both readable with dark brown text in
+  light and dark colours. Among the civilisations, the filter buttons have an orange outline and see-through
+  background, so their white text shows; the dividing lines are orange.
+- **Tests.** 99, one new: Test 52 checks both frames' pictures, cuts and widths. It also checks the font and colour of
+  every piece of text in both panes, and that both fonts load. Test 49, the title, now expects "Civ Georgia".
+- **Checked.** In screenshots at 1920 by 1080 and 1920 by 900, in light and dark colours, with marks, filters and a
+  search on. With the installed fonts switched off, both font files loaded and every test passed, which is what GitHub
+  will do. With the tree's text colour changed, Test 52 failed. All 99 tests pass in Chrome, in light and dark
+  colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new Test 52 and everything after it renumbered. `MAINTAINER.md` has a section on
+  the panels and lists the new fonts.
+
+## 2026-10-21: a thinner frame for the tree
+
+### What changed
+
+- **The tree's frame was too thick.** It was drawn at 24 pixels, the picture's own size. A screenshot of the game in 4K
+  (`reference_image.png`) shows the same frame on its panels, and its pixels were measured. There, the frame runs 17
+  screen pixels from its shadow to its tan middle, where `nodes9slice.webp` has 22, so the game draws it at about 0.8
+  of its size in 4K. This page uses half as many pixels as a 4K screen (16-pixel text where the game's is about 32),
+  which makes about 0.4, so the frame is now drawn at 10 pixels: `border-image-width` and the pane's border are both
+  10 pixels. The cut stays at 24, so the corners and lines are the same, only smaller. A sharp screen at twice the
+  scale draws it at 20 screen pixels, close to the game's 17 to 19.
+- **The civilisations' frame** is unchanged at 38 pixels, as nothing was said about it.
+- **Tests.** Test 52 now expects the tree's frame to be 10 pixels wide.
+- **Checked.** In screenshots at 1920 by 1080, at a device scale of 1 and 2, the frame matches the reference's thin
+  gold line and small corner. All 99 tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Test 52, and `MAINTAINER.md` how the 10 pixels were measured.
+
+## 2026-10-21: unstretched frames, new buttons, a Find box, a tooltip and civilisation icons
+
+### What changed
+
+All of this applies with the pictures on. Simple UI is unchanged.
+
+- **Frames are no longer stretched.** As decided, the nine pieces of a frame are never stretched, only repeated
+  (`border-image-repeat: repeat`). Cut at 24, the tree's frame then showed small gold ticks every 60 pixels along its
+  edges, because the cut ran through the tips of its gold corners. The frames are now cut at a third and drawn 30
+  pixels wide: the tree's at 64, the civilisations' at 85, as set in `style.css` meanwhile.
+- **New button picture and lettering.** As decided, the text buttons use the new `button_sd.webp` and
+  `button_4k.webp`, lose their gold ring (the Options button keeps its), and their words are bold Georgia in
+  `#f2d2b6`. The white-to-gold fade went with Trajan Pro; the 50% black shadow stayed. Trajan Pro is no longer used.
+  The new picture has gold ends, so, in the spirit of the frames, the ends are not stretched either. `::before` and
+  `::after` draw them at their own shape, 12 by 50 of the picture's pixels; their size was measured from the
+  picture. Only the plain red middle stretches. The language menu's arrow moved into a `<span class="chevron">`, as
+  `::after` now draws the right end.
+- **No legend, search first.** As decided, the legend is left out and the three buttons sit below the Find box. Simple
+  UI keeps both as requirement 3 has them, and keeps the legend's keyboard hints.
+- **Find box.** As decided, the "Find" label is hidden, though screen readers still read it. The box is drawn from
+  `textfield_9slice.webp` in nine repeated 15-pixel pieces. `search.webp` shows at its right while it is empty, and
+  `clear_search.webp` while it holds text. The latter is a button that empties the box. CSS tells the two apart with
+  `:placeholder-shown`, so the box has a placeholder of one space.
+- **Tooltip.** As decided, "Left-click to enable, right-click to disable" follows the mouse over the tree, in the style
+  of frcp.net: 12-pixel Georgia, `#391c1b` on `#d7b394`, a grey border and a soft shadow. It sits 10 pixels right of and
+  20 below the pointer, and moves left or above near the window's edges. Its text is `nodeTip`, in all 17
+  languages. frcp.net places its tooltip with `element.style`, which this project's rules forbid. Here the script
+  only sets two custom properties, `--x` and `--y`, to numbers, and `style.css` does the rest; the rule test now
+  allows exactly that.
+- **Civilisation icons.** As decided, each civilisation in the list has its icon from `assets/images/icons/civs/`
+  before its name. Files are the English name in lower case, except Incas (`inca.png`) and Mayans (`maya.png`), which
+  `icons` in `data.json` records. The icons are `<img>` elements from a template, made only while Simple UI is off.
+  Turning Simple UI on or off redraws the list. The rule test now allows `<img>` inside templates only.
+- **`js/report.js`.** The new code would have taken `js/ui.js` past 400 lines of code. As `MAINTAINER.md` says, part
+  of it moved to a new script: the report window of the updater and the tests (`runUpdate()`, `openReport()`,
+  `report()`). The rule that only `ui.js` touches the page now names `report.js` too. `ui.js` has 383 lines of code.
+- **Fonts folder.** `assets/Fonts/` became `assets/fonts/`, so `style.css`, the rule test and the check of allowed
+  files now say `fonts`. GitHub serves file names case-sensitively, so the old paths would have broken there.
+- **CI.** The check of allowed files now also allows PNG files under `assets/images/`, for the icons.
+- **Tests.** 100, the most allowed; one new.
+  - Test 50, the buttons, checks the new picture, the unstretched ends, no ring, bold Georgia, `#f2d2b6` and the shadow.
+  - Test 52, the panels, checks the frames at 64/30 and 85/30, both repeated. It checks the hidden legend and label,
+    and the Find box above the buttons. It also marks an item many civilisations have and checks that every icon in
+    the list is the right file and loads.
+  - New Test 53 checks the Find box: its tiled frame, the search icon, the cross while there is text, and that the
+    cross empties the box. It also checks that the tooltip shows near the pointer over the tree, in the chosen
+    language, and hides elsewhere.
+  - Tests 83, 86 and 87, the rules, allow the custom properties, `report.js` and `<img>` in templates.
+  - The icon check first waited with `img.decode()`, which never finished in the phone-sized and tall test windows;
+    it now waits for each icon's `load` or `error`, at most 10 seconds.
+- **Checked.** In screenshots at 1920 by 1080 with a search, a mark, the tooltip, and a full list of icons. All 100
+  tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **Not used yet.** `assets/fonts/TrajanPro-Bold.ttf`, `assets/images/ui/backgrounds/options_sd.webp` and
+  `options_4k.webp`, and `assets/images/icons/nodes/colour_key.csv`. The check of allowed files would refuse the CSV
+  file.
+- **Documents.** `TESTS.md` has the new Test 53, everything after it renumbered, and the new wording of the tests
+  above. `MAINTAINER.md` has sections on the Find box, the tooltip and the civilisation icons, the new button and
+  panel drawing, `js/report.js`, and `icons` in `data.json`.
+
+## 2026-10-21: a Find box of fixed width, and the tooltip by the cursor
+
+### What changed
+
+- **The Find box keeps its width.** It grew and shrank while typing, because the number found took its room. As
+  decided, with the pictures on it is now always 325 pixels wide, or as wide as the pane if that is narrower. The
+  number found shows beside it in the space left.
+- **The tooltip at the cursor's corner.** As decided, the tooltip's top-left corner now sits at the bottom-right
+  corner of the cursor's picture instead of near the pointer. The cursor's point is the picture's top-left pixel, so
+  that corner is 32 pixels right of and below the pointer with the `x1` cursors, and 48 with the `x2` ones. The size
+  is `--reach` on `.tip`, set in `style.css` next to the cursor pictures and in the same media query. `js/ui.js` reads
+  it, so the window-size rule exists only once.
+- **Tests.** Test 53 now also checks that the box is 325 pixels, or the pane's width, and keeps it while typing. It
+  also checks that the tooltip starts at the pointer plus the cursor's size.
+- **Checked.** In a screenshot with a cursor picture drawn at the pointer, the tooltip starts at its bottom-right
+  corner, and the box measured 325 pixels both empty and with text. All 100 tests pass in Chrome, in light and dark
+  colours, in all four window sizes, and in a window of 2984 by 1849, which uses the `x2` cursors.
+- **Not changed.** With Simple UI on, the Find box still fills the row (see the next entry for its messages).
+- **Documents.** `TESTS.md` and `MAINTAINER.md` describe the width and where the tooltip sits.
+
+## 2026-10-21: search messages beside the box
+
+### What changed
+
+- **Always to the right.** As decided, the search's messages, such as "2 found" and "None found", always show to the
+  right of the Find box and never below it, with the pictures on or off. Before, the row was allowed to wrap, so in a
+  narrow pane, or with a long message such as Spanish "No se ha encontrado nada", the message dropped below the box.
+- **How.** The row no longer wraps. The message has a column of its own: 8em with Simple UI, and with the pictures on,
+  whatever is left beside the 325-pixel box, at least 6em. At 1920 by 1080 that keeps the box at 325 pixels. A long
+  message wraps onto a second line inside its column. The row keeps room for two lines (`min-height: 3em`), so a
+  message does not push the buttons or the tree down. Only the Spanish "none found" can need three lines, in a
+  narrow pane. With Simple UI, the box also no longer changes width while typing, as its column stays the same.
+- **A narrow pane.** A row that cannot wrap is as wide as its contents at their narrowest, and a search box is at
+  least about 170 pixels unless told otherwise. So the row first stuck out of the 320, 360 and 390 pixel test windows.
+  `min-width: 0` on the row lets the box narrow to 44 pixels instead.
+- **Tests.** Tests 32 and 33, in Simple UI, and Test 53, with the pictures on, now check that the message sits right
+  of the box and on its row, both when there are matches and when there are none. Test 53 also expects the box at
+  325 pixels, or the row less 6em and the gap.
+- **Checked.** In screenshots of the Spanish message, with the pictures on at 1920 by 1080 and with Simple UI at 600
+  pixels wide, it stays beside the box on two lines. All 100 tests pass in Chrome, in light and dark colours, in all
+  four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Tests 32, 33 and 53. `MAINTAINER.md` explains where the messages go.
+
+## 2026-10-21: no focus ring on the Find box
+
+### What changed
+
+- **No white ring.** As decided, the Find box no longer shows the white ring around it while you type, with the
+  pictures on. The ring was the focus outline, which is white in dark colours and black in light ones. The text
+  cursor still shows where you type. With Simple UI the ring stays, as WCAG 2.2 asks for a visible focus.
+- **Tests.** Test 53 checks that the box has no outline while it has focus, after the cross empties it.
+- **Checked.** All 100 tests pass in Chrome, in light and dark colours, in all four window sizes.
+
+## 2026-10-21: Civ view, and the search message by the pane's edge
+
+### What changed
+
+- **The Find box stays at 325 pixels.** The message column's reserve made the box narrower than 325 pixels at 1920 by
+  1080, as `100% - 6em - 12px` was less than 325 there. As decided, the box keeps its 325 pixels and the message makes
+  room. The message is now aligned right, and it reaches 6 pixels into the pane's padding, so it ends 16 pixels from
+  the pane's edge. The box now only gives way where the row is narrower than 325 pixels and 3em. In windows of 1904 by
+  929, 889 and 849 it measured 325 pixels, with "None found" on one line in the first and two in the others.
+  The request said 235 pixels; it was read as the 325 pixels decided before.
+- **Civ view.** As decided, the Options window has a choice, "Civ view:", between List and Tile, as radio buttons.
+  - Tile shows each civilisation as a 123-pixel box from `civ_box_sd.webp` or `civ_box_4k.webp`. The icon (88 pixels)
+    sits in its black part and the name on its red bar, in 12-pixel Trajan Pro Bold. The name fades from white to
+    `#ff9900` and has a black shadow at 50%, 2 pixels down and left. The black part and the red bar were measured from
+    the picture: rows 2 to 97 and 100 to 120 of 123. The name is in its own `<span class="civ-name">` now, in both views,
+    so the fade and the shadow can be drawn without touching the icon.
+  - The radio buttons come from `radiobutton_sd.webp` or `radiobutton_4k.webp`: not chosen on the top row (normal, under
+    the mouse), chosen on the bottom row (normal, pressed). They are real radio buttons, so arrow keys move between
+    them.
+  - The choice is remembered. It is hidden with Simple UI, which always shows the list, since the tiles are made of
+    pictures and Simple UI uses none. It sits below the Simple UI box, so hiding it does not move that box.
+  - Its texts, `civView`, `viewList` and `viewTile`, are in all 17 languages. Trajan Pro is used again, for the tiles'
+    names.
+- **Tests.** Still 100, as no more are allowed, so the new checks went into existing tests.
+  - Test 51 also checks the radio buttons' pictures.
+  - Test 52 also switches to Tile, with civilisations listed. It checks the box picture, the icon, the font, fade and
+    shadow of the name, and that the choice is remembered, then switches back. It also checks that Trajan Pro loads.
+  - Test 53 expects the box at 325 pixels, or the row less 3em, and the message aligned right.
+  - The tests put the visitor's Civ view back afterwards, as they do for the other choices.
+- **`js/ui.js`** has 393 lines of code, close to the limit of 400.
+- **Checked.** In screenshots of the tiles and of the Options window. All 100 tests pass in Chrome, in light and dark
+  colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Tests 51, 52 and 53. `MAINTAINER.md` has a section on Civ view and
+  the new width rule for the Find box.
+
+## 2026-10-21: one-line search messages, pinned filters, one cursor, seven tiles and a flatter tree
+
+### What changed
+
+- **Search messages on one line.** As decided, the search's message never takes more than one line. It no longer
+  wraps; a message too long for its room ends in "…", and screen readers still read all of it. The row no longer
+  keeps room for two lines. With the pictures on, the box keeps 325 pixels and the message at least 6em beside it,
+  which is room for "None found" in English. With Simple UI the message's column is up to 12em and at least 6em
+  wide, and keeps its width while typing.
+- **Filters are pinned.** As decided, the Filters section can no longer be scrolled away. It moved out of the list's
+  scrolling area, between the pane's header and the list, with the pictures on or off. Requirement 22 still holds: it
+  sits between the header and the list. Two things followed in narrow windows, both caught by the tests.
+  - The filter buttons' hidden labels are placed with `position: absolute`. Out of the scrolling area they were
+    placed against the page, which then scrolled in the 320 by 256 window. `.ticked` now has `position: relative`.
+  - In the phone-sized window, the civilisations pane is at least 10rem tall and no taller. Its header, the filters
+    and the list no longer fitted, and the list became shorter than 44 pixels. The list now has a minimum height of
+    44 pixels, and the pane may grow to fit (`min-height: auto`); the tree pane gives way.
+- **One cursor.** As decided, the pointing hand is gone: the sword is the cursor over everything, the Find box
+  included. `style.css` sets it on `html.pictures *`, which outranks the browser's own cursors. The rule test now
+  allows image rules that start with `html.pictures`. `cursor_pointing_x1.webp` and `cursor_pointing_x2.webp` are no
+  longer used.
+- **Seven tiles a row.** As decided, the tiles first came nine to a row and now seven. They are square, and
+  everything in them is sized as a share of the tile's width (`cqi`), as measured on the 123-pixel picture. At 1920
+  by 1080 a tile is about 80 pixels wide.
+- **The names' shadow goes right.** The tiles' names cast their shadow 2 pixels down and to the right, as fixed in
+  `style.css` by hand; the test and the documents now say so too.
+- **A flatter tree.** As decided, the groups Drop-off Sites, General Infantry and Shock Infantry are gone from
+  `tree` in `data.json`, and what was in them moved up one level: Mill, Lumber Camp and Mining Camp now sit in Economy,
+  and Militia and the rest straight under Barracks. Their headings are gone from all 17 languages. The change was
+  checked against the same change made on the parsed data.
+- **No footer panel.** As decided, with the pictures on, the footer has no background of its own. Its words are
+  `#391c1b`, link included, so they read on the parchment in light and dark colours.
+- **Tests.** Still 100.
+  - Test 48 expects the sword everywhere.
+  - Tests 32, 33 and 53 check that the message is on one line, right of the box. Test 53 expects the box at 325 pixels,
+    or the row less 6em.
+  - Test 52 checks seven square tiles a row, the shadow going right, and that the filters stay where they are when
+    the list scrolls.
+- **Checked.** In a screenshot with a filter, tiles and the list scrolled down. All 100 tests pass in Chrome, in
+  light and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Tests 32, 33, 48, 52 and 53. `MAINTAINER.md` describes the
+  one-line messages, the sword cursor, the seven tiles and the footer.
+
+## 2026-10-21: a full-width footer, civilisation links, the pointing hand and six tiles
+
+### What changed
+
+- **Microsoft's notice.** The footer now gives the notice the chief developer wrote, after the source. It moved from
+  the `source` text of the English language to `notice` in `source` in `data.json`, with a double space removed.
+  `{rules}` in it becomes a link to Microsoft's
+  [Game Content Usage Rules](https://www.xbox.com/en-US/developers/rules); their name and address are in `rules`.
+  The notice is a legal text, so it stays in English in every language, and the page marks it `lang="en"`. The
+  source's own text, "Data from {source}, {date}.", is as before.
+- **A full-width footer.** As decided, the footer spans the parchment between the panes' outer edges, so the notice
+  takes two lines at 1920 by 1080 rather than many.
+- **Civilisations link to aoe2techtree.net.** As decided, each civilisation, in the list and as a tile, is a link to its
+  page, such as `https://aoe2techtree.net/#Armenians`. The address is the source's `url` and `#` and the English name.
+  With Simple UI the links are 44 pixels tall, as WCAG asks of targets.
+- **The tooltip shows the address.** Over a civilisation, the tooltip shows where its link leads. The tooltip's width
+  no longer depends on where it was before: it is as wide as its text, at most 300 pixels or the window less 8, and an
+  address too long for that breaks anywhere. Before, the tooltip measured itself where it last stood, near an edge,
+  and came out narrower than it then was.
+- **The pointing hand is back.** As decided, the pointing hand (`cursor_pointing_x1.webp` and `_x2`) is the cursor
+  over the civilisations and the footer's links; the sword is the cursor everywhere else.
+- **Six tiles a row.** As decided, the tiles are a little bigger: six to a row instead of seven.
+- **`js/pictures.js`.** `js/ui.js` would have passed 400 lines of code, so Civ view and the tooltip moved to a new
+  script, `js/pictures.js`. It is the third script allowed to touch the page.
+- **Tests.** Still 100.
+  - Test 42 checks the notice, its link and that it is marked English.
+  - Test 48 expects the pointing hand over links, and the footer as wide as the panes.
+  - Test 52 checks that every civilisation links to its page and that the tooltip shows the address, with six tiles
+    a row.
+  - Test 72 now checks the centre of a focused element's first line. A link that wraps, as the rules' link does in
+    the 320 by 256 window, has the paragraph's text in the middle of its whole box.
+  - Test 86 allows `js/pictures.js` to touch the page.
+- **Checked.** In a screenshot of the tiles with the tooltip over a civilisation. All 100 tests pass in Chrome, in
+  light and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Tests 42, 48, 52, 72 and 86. `MAINTAINER.md` describes
+  `js/pictures.js`, the notice, the links, the pointing hand and the six tiles.
+
+## 2026-10-21: Simple UI: a full-width footer, and civilisations without links
+
+### What changed
+
+- **A full-width footer with Simple UI too.** As decided, the footer spans the page with Simple UI as well, so the
+  notice fits on one line at 1920 by 1080. Paragraphs are otherwise kept to 80 characters wide (`p { max-width: 80ch }`)
+  for WCAG 1.4.8 (AAA); the footer is the one exception. 1.4.8 still holds, because the text reflows when the window is
+  narrowed (technique G204).
+- **No civilisation links with Simple UI.** As decided, with Simple UI the civilisations link nowhere: `js/ui.js`
+  gives them an address only with the pictures on. Each one is still an `a` element, but without `href` it is plain
+  text to browsers and screen readers, and it can't be focused. The civilisations now take the text's colour in both
+  modes, as only real links should look like links. The 44-pixel height the links needed with Simple UI is gone again,
+  so the list looks as it did before.
+- **Tests.** Still 100.
+  - Test 42 also checks that the footer is as wide as the panes.
+  - Test 54 marks an item first, then checks that every civilisation is a link with the pictures, none is with
+    Simple UI, and all are again when Simple UI is unticked.
+- **Checked.** In a screenshot with Simple UI and a filter. All 100 tests pass in Chrome, in light and dark colours,
+  in all four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Tests 42 and 54. `MAINTAINER.md` says the footer spans the page in
+  both modes and that the civilisations link only with the pictures on.
+
+## 2026-10-21: the Options window on its own parchment
+
+### What changed
+
+- **A panel on a parchment.** As decided, with the pictures on, the Options window is a panel framed with
+  `nodes9slice.webp`, as the tree pane is. It lies on `options_sd.webp` (`options_4k.webp` on big or sharp screens),
+  and its title "Options" sits in bold Georgia in the parchment's title frame. The text is `#391c1b`, the highlight
+  under the mouse is the tree's light tint, and the open language list has a thin `#391c1b` border instead of its
+  own background.
+- **The Simple UI box stays put.** Rule 18 says a control must not move when it is used, and Test 54 checks that the
+  Simple UI box stays in place when ticked. So the window keeps exactly the size, padding and text it has with Simple
+  UI, and the pictures are drawn around it:
+  - the parchment on the window's `::backdrop`, scaled and placed from the window's size;
+  - the frame on `.options::before`, a grid item over the rows below the title, reaching out to the window's edges;
+  - the title keeps its row and is lifted into the title frame with `translate`, which moves nothing else.
+  The window's text keeps the page's usual font for the same reason: in Georgia, the hint under Include would wrap
+  differently and move the box.
+- **Short windows.** Below 588 pixels of height there is no room for the parchment above the panel. There the
+  parchment is left out and the title stays in the panel, which covers the whole window.
+- **Measured.** The title frame's inside runs from 223 to 441 across and 46 to 69 down in the 652 by 688 picture,
+  and the thin inner border is at about 43 and 609 across and 638 down. The panel goes in the box from 60 to 592
+  across and 95 to 622 down. The measurements were read from the picture's pixels in a canvas.
+- **Tests.** Still 100.
+  - Test 49 opens the Options window and checks that its title is in bold Georgia and centred in the parchment's
+    title frame, worked out from the same measurements, or in the panel in short windows.
+  - Test 52 checks the Options panel's frame with the other panels'.
+- **Checked.** In screenshots at 1920 by 1080, at 1280 by 800 with the language list open in dark colours, and at
+  1280 by 560. All 100 tests pass in Chrome, in light and dark colours, in all four window sizes.
+- **Documents.** `TESTS.md` has the new wording of Tests 49 and 52. `MAINTAINER.md` has a new section, "The Options
+  window", with the measurements behind the numbers in `style.css`.

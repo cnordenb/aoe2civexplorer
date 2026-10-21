@@ -1,5 +1,5 @@
 import {
-  data, attempt, recall, remember, fill, size, civsOf, preferredLanguage, loadLanguage, fetchUpdate,
+  data, attempt, recall, remember, fill, size, civsOf, preferredLanguage, loadLanguage,
   words, tag, collator, numbers, useLanguage, nameOf, civName, plural, plain,
 } from "./datahandler.js";
 import {
@@ -93,14 +93,25 @@ function paint() {
   }
 }
 
+function icon(civ) {
+  const img = clone("civIconTemplate");
+  img.src = `${data.icons.folder}${data.icons.names[civ] ?? civ.toLowerCase()}.png`;
+  return img;
+}
+
 function update() {
   const marked = fit();
   paint();
   const civs = marked.length ? civsOf(matching) : [];
   $("count").textContent = plural("compatible", civs.length);
-  $("civs").replaceChildren(...civs.map(civName).sort(collator.compare).map((name) => {
+  $("civs").replaceChildren(...civs.map((civ) => [civName(civ), civ]).sort(([a], [b]) => collator.compare(a, b)).map(([name, civ]) => {
     const li = clone("civTemplate");
-    li.textContent = name;
+    const link = li.firstElementChild;
+    link.lastElementChild.textContent = name;
+    if (!simple) {
+      link.href = `${data.source.url}#${civ}`;
+      link.prepend(icon(civ));
+    }
     return li;
   }));
   $("none").hidden = civs.length > 0;
@@ -134,7 +145,7 @@ function find() {
   found[0].node.scrollIntoView({ block: "nearest" });
 }
 
-const itemAt = (target) => items[target.closest?.(".node")?.dataset.i];
+export const itemAt = (target) => items[target.closest?.(".node")?.dataset.i];
 
 let press = null;
 let touchEnded = -Infinity;
@@ -220,6 +231,11 @@ function wireTree() {
     update();
   });
   $("find").addEventListener("input", find);
+  $("clearFind").addEventListener("click", () => {
+    $("find").value = "";
+    find();
+    $("find").focus();
+  });
   $("find").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && found.length) found[0].node.focus();
   });
@@ -249,7 +265,7 @@ function buildLanguages() {
     const option = li.querySelector("button");
     option.dataset.language = code;
     option.lang = languageTag;
-    option.textContent = name;
+    option.firstElementChild.textContent = name;
     return li;
   }));
 }
@@ -277,29 +293,41 @@ function label() {
   share();
 }
 
-function showInclude() {
-  $("include").setAttribute("aria-checked", String(include));
-  $("include").dataset.state = include ? "has" : "";
+export function tick(id, on) {
+  $(id).setAttribute("aria-checked", String(on));
+  $(id).dataset.state = on ? "has" : "";
 }
 
 export function setInclude(on) {
   setIncluded(on);
   remember("include", String(on));
-  showInclude();
+  tick("include", on);
   plant();
   label();
   update();
   if ($("find").value) find();
 }
 
+export let simple = false;
+
+export function setSimple(on) {
+  simple = on;
+  remember("simple", String(on));
+  tick("simple", on);
+  document.documentElement.classList.toggle("pictures", !on);
+  if (items.length) update();
+}
+
+export const flip = { include: () => setInclude(!include), simple: () => setSimple(!simple) };
+
 function wireOptions() {
   $("optionsButton").addEventListener("click", () => $("options").showModal());
   $("options").addEventListener("close", () => setMenu(false));
-  $("include").addEventListener("click", () => setInclude(!include));
-  $("include").addEventListener("keydown", (e) => {
-    if (e.key !== " ") return;
+  $("settings").addEventListener("click", (e) => flip[e.target.closest(".option")?.id]?.());
+  $("settings").addEventListener("keydown", (e) => {
+    if (e.key !== " " || !flip[e.target.id]) return;
     e.preventDefault();
-    setInclude(!include);
+    flip[e.target.id]();
   });
 }
 
@@ -361,58 +389,18 @@ function wireLanguages() {
   });
 }
 
-export function openReport(title, status) {
-  $("reportTitle").textContent = title;
-  $("reportStatus").textContent = status;
-  $("reportList").replaceChildren();
-  $("reportDownloads").replaceChildren();
-  $("reportDownloads").hidden = true;
-  if (!$("report").open) $("report").showModal();
-}
-
-export function report(line) {
-  const li = clone("reportTemplate");
-  li.textContent = line;
-  $("reportList").append(li);
-}
-
-export async function runUpdate() {
-  const tools = data.tools;
-  openReport(tools.updateTitle, fill(tools.updateLoading, { source: data.source.name }));
-  try {
-    const { messages, fresh, files } = await fetchUpdate();
-    messages.forEach(report);
-    if (!fresh) {
-      $("reportStatus").textContent = tools.updateBlocked;
-      return;
-    }
-    if (!messages.length) report(tools.updateSame);
-    $("reportStatus").textContent = fill(tools.updateReady, {
-      civs: fresh.civs.length, items: Object.keys(fresh.availability).length, languages: Object.keys(fresh.languages).length,
-    });
-    $("reportDownloads").replaceChildren(...files.map(({ path, json }) => {
-      const li = clone("downloadTemplate");
-      const link = li.querySelector("a");
-      link.href = URL.createObjectURL(new Blob([`${json}\n`], { type: "application/json" }));
-      link.download = path.split("/").pop();
-      link.textContent = fill(tools.download, { file: path });
-      return li;
-    }));
-    $("reportDownloads").hidden = false;
-  } catch (error) {
-    $("reportStatus").textContent = fill(tools.updateFailed, { error: error.message });
-  }
-}
-
 export function start() {
   setIncluded(recall("include") === "true");
-  showInclude();
+  tick("include", include);
   plant();
   buildLanguages();
   for (const node of document.querySelectorAll("[data-tool]")) node.textContent = data.tools[node.dataset.tool];
   wireTree();
   wireLanguages();
   wireOptions();
+  $("rulesLink").href = data.source.rules.url;
+  $("rulesLink").textContent = data.source.rules.name;
+  compose($("notice"), data.source.notice, { rules: $("rulesLink") });
   const code = preferredLanguage();
   setLanguage(data.text[code] ? code : Object.keys(data.languages)[0]);
   $("top").hidden = false;

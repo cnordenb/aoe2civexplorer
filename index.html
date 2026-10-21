@@ -12,7 +12,7 @@
 </head>
 <body>
 <header class="top" id="top" hidden>
-  <h1 data-text="title"></h1>
+  <h1><span class="title-long" data-text="title"></span><span class="title-short" data-text="titleShort"></span></h1>
   <button type="button" class="tool icon" id="optionsButton" aria-haspopup="dialog" aria-controls="options"><span class="cog" aria-hidden="true">⚙︎</span><span class="sr-only" data-text="options"></span></button>
 </header>
 <noscript><p>AoE2 Civ Explorer needs JavaScript.</p></noscript>
@@ -23,13 +23,13 @@
     <div class="pane-head">
       <h2 id="treeTitle" data-text="tree"></h2>
       <div class="tools">
-        <button type="button" class="tool" id="clear" data-text="clear"></button>
-        <button type="button" class="tool" id="expandAll" data-text="expandAll"></button>
-        <button type="button" class="tool" id="collapseAll" data-text="collapseAll"></button>
+        <button type="button" class="tool" id="clear"><span class="caption" data-text="clear"></span></button>
+        <button type="button" class="tool" id="expandAll"><span class="caption" data-text="expandAll"></span></button>
+        <button type="button" class="tool" id="collapseAll"><span class="caption" data-text="collapseAll"></span></button>
       </div>
       <div class="find">
         <label for="find" data-text="find"></label>
-        <input type="search" id="find" autocomplete="off" spellcheck="false">
+        <span class="field"><input type="search" id="find" autocomplete="off" spellcheck="false" placeholder=" "><button type="button" class="clear-find" id="clearFind"><span class="sr-only" data-text="clearFind"></span></button></span>
         <p id="found" role="status"></p>
       </div>
       <p class="legend">
@@ -44,43 +44,48 @@
       <h2 id="civTitle" tabindex="-1" data-text="civs"></h2>
       <p id="count" role="status"></p>
     </div>
+    <div class="ticked" id="ticked" hidden>
+      <span id="tickedLabel" data-text="filters"></span><ul role="list" aria-labelledby="tickedLabel" id="chips"></ul>
+    </div>
     <div class="scroll" id="civScroll" tabindex="0" role="group" aria-labelledby="civTitle">
-      <div class="ticked" id="ticked" hidden>
-        <span id="tickedLabel" data-text="filters"></span><ul role="list" aria-labelledby="tickedLabel" id="chips"></ul>
-      </div>
       <ul class="civs" id="civs" role="list"></ul>
       <p class="none" id="none" hidden></p>
     </div>
   </section>
 </main>
-<footer class="foot"><p id="source"><a id="sourceLink"></a></p></footer>
+<footer class="foot"><p><span id="source"><a id="sourceLink"></a></span> <span id="notice" lang="en"><a id="rulesLink"></a></span></p></footer>
 </div>
 <dialog class="options" id="options" aria-labelledby="optionsTitle">
   <h2 id="optionsTitle" data-text="options"></h2>
   <div class="language" id="language">
     <span id="languageLabel" data-text="language"></span>
-    <button type="button" class="tool language-button" id="languageButton" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span id="languageName"></span></button>
+    <button type="button" class="tool language-button" id="languageButton" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span class="caption" id="languageName"></span><span class="chevron" aria-hidden="true"></span></button>
     <ul class="language-list" id="languageList" role="list" hidden></ul>
   </div>
   <div class="settings" id="settings">
+    <div class="option" id="simple" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span data-text="simple"></span></div>
     <div class="option" id="include" role="checkbox" tabindex="0" aria-checked="false" aria-describedby="includeHint"><span class="box" aria-hidden="true"></span><span data-text="includeAll"></span></div>
     <p id="includeHint" data-text="includeHint"></p>
+    <div class="views" id="views" role="radiogroup" aria-labelledby="viewLabel"><span id="viewLabel" data-text="civView"></span><label class="view"><input type="radio" name="civView" value="list" checked><span data-text="viewList"></span></label><label class="view"><input type="radio" name="civView" value="tile"><span data-text="viewTile"></span></label></div>
+    <div class="option" id="tooltips" role="checkbox" tabindex="0" aria-checked="true" data-state="has"><span class="box" aria-hidden="true"></span><span data-text="tooltips"></span></div>
   </div>
-  <form method="dialog"><button class="tool" data-text="close"></button></form>
+  <form method="dialog"><button class="tool"><span class="caption" data-text="close"></span></button></form>
 </dialog>
 <dialog class="report" id="report" lang="en" aria-labelledby="reportTitle">
   <h2 id="reportTitle"></h2>
   <p id="reportStatus" role="status"></p>
   <ul class="report-list" id="reportList" role="list"></ul>
   <ul class="report-list downloads" id="reportDownloads" role="list" hidden></ul>
-  <form method="dialog"><button class="tool" data-tool="close"></button></form>
+  <form method="dialog"><button class="tool"><span class="caption" data-tool="close"></span></button></form>
 </dialog>
 <template id="itemTemplate"><li><div class="row"><button type="button" class="twisty" aria-expanded="false"></button><span class="gap"></span><div class="node" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span class="name"></span><span class="sr-only lacking"></span><span class="n"><span class="count" aria-hidden="true"></span><span class="sr-only civ-count"></span></span></div></div><ul role="list" hidden></ul></li></template>
 <template id="chipTemplate"><li><button type="button" class="chip"><span class="box" aria-hidden="true"></span><span class="sr-only chip-label"></span><span class="chip-name" aria-hidden="true"></span><span aria-hidden="true">×</span></button></li></template>
-<template id="civTemplate"><li></li></template>
-<template id="languageTemplate"><li><button type="button" class="tool language-option"></button></li></template>
+<template id="civTemplate"><li><a class="civ"><span class="civ-name"></span></a></li></template>
+<template id="civIconTemplate"><img class="civ-icon" alt=""></template>
+<template id="languageTemplate"><li><button type="button" class="tool language-option"><span class="caption"></span></button></li></template>
 <template id="reportTemplate"><li></li></template>
 <template id="downloadTemplate"><li><a download></a></li></template>
 <template id="frameTemplate"><iframe class="test-frame"></iframe></template>
+<div class="tip" id="tip" role="tooltip" hidden></div>
 </body>
 </html>

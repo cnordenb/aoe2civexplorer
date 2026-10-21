@@ -4,7 +4,9 @@
     "url": "https://aoe2techtree.net/",
     "data": "https://aoe2techtree.net/data/",
     "helpOffset": 79000,
-    "updated": "2026-10"
+    "updated": "2026-10",
+    "notice": "Age of Empires II © Microsoft Corporation. Civ Explorer was created under Microsoft's \"{rules}\" using assets from Age of Empires II: Definitive Edition, and it is not endorsed by or affiliated with Microsoft.",
+    "rules": {"name": "Game Content Usage Rules", "url": "https://www.xbox.com/en-US/developers/rules"}
   },
   "languages": {
     "en": {"name": "English", "tag": "en", "spaces": true, "mergeHyphens": true},
@@ -26,6 +28,10 @@
     "br": {"name": "Português (Brasil)", "tag": "pt-BR", "spaces": true, "mergeHyphens": false}
   },
   "civs": ["Armenians", "Aztecs", "Bengalis", "Berbers", "Bohemians", "Britons", "Bulgarians", "Burgundians", "Burmese", "Byzantines", "Celts", "Chinese", "Cumans", "Danes", "Dravidians", "Ethiopians", "Franks", "Georgians", "Goths", "Gurjaras", "Hindustanis", "Huns", "Incas", "Italians", "Japanese", "Jurchens", "Khitans", "Khmer", "Koreans", "Lithuanians", "Magyars", "Malay", "Malians", "Mapuche", "Mayans", "Mongols", "Muisca", "Persians", "Poles", "Portuguese", "Romans", "Saracens", "Saxons", "Shu", "Sicilians", "Slavs", "Spanish", "Tatars", "Teutons", "Tupi", "Turks", "Varangians", "Vietnamese", "Vikings", "Wei", "Wu"],
+  "icons": {
+    "folder": "assets/images/icons/civs/",
+    "names": {"Incas": "inca", "Mayans": "maya"}
+  },
   "tree": [
     {"group": "economy", "kids": [
       {"item": "Town Center", "kids": [
@@ -44,33 +50,31 @@
         ]}
       ]},
       {"item": "House"},
-      {"group": "dropOffSites", "kids": [
-        {"item": "Mill", "optional": true, "kids": [
-          {"item": "Horse Collar", "kids": [
-            {"item": "Heavy Plow", "kids": [
-              {"item": "Crop Rotation"}
-            ]}
-          ]},
-          {"item": "Domestication", "kids": [
-            {"item": "Pastoralism", "kids": [
-              {"item": "Transhumance"}
-            ]}
+      {"item": "Mill", "optional": true, "kids": [
+        {"item": "Horse Collar", "kids": [
+          {"item": "Heavy Plow", "kids": [
+            {"item": "Crop Rotation"}
           ]}
         ]},
-        {"item": "Lumber Camp", "optional": true, "kids": [
-          {"item": "Double-Bit Axe", "kids": [
-            {"item": "Bow Saw", "kids": [
-              {"item": "Two-Man Saw"}
-            ]}
+        {"item": "Domestication", "kids": [
+          {"item": "Pastoralism", "kids": [
+            {"item": "Transhumance"}
           ]}
+        ]}
+      ]},
+      {"item": "Lumber Camp", "optional": true, "kids": [
+        {"item": "Double-Bit Axe", "kids": [
+          {"item": "Bow Saw", "kids": [
+            {"item": "Two-Man Saw"}
+          ]}
+        ]}
+      ]},
+      {"item": "Mining Camp", "optional": true, "kids": [
+        {"item": "Gold Mining", "kids": [
+          {"item": "Gold Shaft Mining"}
         ]},
-        {"item": "Mining Camp", "optional": true, "kids": [
-          {"item": "Gold Mining", "kids": [
-            {"item": "Gold Shaft Mining"}
-          ]},
-          {"item": "Stone Mining", "kids": [
-            {"item": "Stone Shaft Mining"}
-          ]}
+        {"item": "Stone Mining", "kids": [
+          {"item": "Stone Shaft Mining"}
         ]}
       ]},
       {"item": "Farm"},
@@ -118,21 +122,19 @@
     ]},
     {"group": "military", "kids": [
       {"item": "Barracks", "kids": [
-        {"group": "generalInfantry", "kids": [
-          {"item": "Militia", "kids": [
-            {"item": "Man-at-Arms", "kids": [
-              {"item": "Long Swordsman", "kids": [
-                {"item": "Two-Handed Swordsman", "kids": [
-                  {"item": "Champion"}
-                ]}
+        {"item": "Militia", "kids": [
+          {"item": "Man-at-Arms", "kids": [
+            {"item": "Long Swordsman", "kids": [
+              {"item": "Two-Handed Swordsman", "kids": [
+                {"item": "Champion"}
               ]}
             ]}
-          ]},
-          {"item": "Champi Scout", "kids": [
-            {"item": "Champi Runner", "kids": [
-              {"item": "Champi Warrior", "kids": [
-                {"item": "Elite Champi Warrior"}
-              ]}
+          ]}
+        ]},
+        {"item": "Champi Scout", "kids": [
+          {"item": "Champi Runner", "kids": [
+            {"item": "Champi Warrior", "kids": [
+              {"item": "Elite Champi Warrior"}
             ]}
           ]}
         ]},
@@ -141,18 +143,16 @@
             {"item": "Halberdier"}
           ]}
         ]},
-        {"group": "shockInfantry", "kids": [
-          {"item": "Eagle Scout", "kids": [
-            {"item": "Eagle Warrior", "kids": [
-              {"item": "Elite Eagle Warrior"}
-            ]}
-          ]},
-          {"item": "Varangian Guard", "kids": [
-            {"item": "Elite Varangian Guard"}
-          ]},
-          {"item": "Fire Lancer", "kids": [
-            {"item": "Elite Fire Lancer"}
+        {"item": "Eagle Scout", "kids": [
+          {"item": "Eagle Warrior", "kids": [
+            {"item": "Elite Eagle Warrior"}
           ]}
+        ]},
+        {"item": "Varangian Guard", "kids": [
+          {"item": "Elite Varangian Guard"}
+        ]},
+        {"item": "Fire Lancer", "kids": [
+          {"item": "Elite Fire Lancer"}
         ]},
         {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Condottiero"},
@@ -1187,12 +1187,15 @@
   "text": {
     "ui": {
       "title": "Explore Age of Empires II civilisations by technology availability",
+      "titleShort": "Civ Explorer",
       "language": "Language",
       "tree": "Buildings, units and technologies",
       "clear": "Clear",
       "expandAll": "Expand all",
       "collapseAll": "Collapse all",
       "find": "Find",
+      "clearFind": "Clear search",
+      "nodeTip": "Left-click to enable, right-click to disable",
       "found": {"one": "{n} found", "other": "{n} found"},
       "noneFound": "None found",
       "mustHave": "Must have: left-click or Space.",
@@ -1214,14 +1217,16 @@
       "options": "Options",
       "includeAll": "Include Unique and Universal",
       "includeHint": "Also shows unique units, technologies and buildings, things every civilisation has, and things only one civilisation has.",
+      "simple": "Simple UI",
+      "civView": "Civ view:",
+      "viewList": "List",
+      "viewTile": "Tile",
+      "tooltips": "Tooltips",
       "close": "Close"
     },
     "groups": {
       "economy": "Economy",
-      "dropOffSites": "Drop-off Sites",
       "military": "Military",
-      "generalInfantry": "General Infantry",
-      "shockInfantry": "Shock Infantry",
       "uniqueUnits": "Unique Units",
       "uniqueTechnologies": "Unique Technologies",
       "uniqueBuildings": "Unique Buildings",

@@ -1,10 +1,12 @@
 import { data, params, load, fill, attempt, recall, remember, language } from "../datahandler.js";
 import { include } from "../model.js";
-import { clone, setLanguage, setInclude, openReport, report } from "../ui.js";
+import { clone, simple, setLanguage, setInclude, setSimple } from "../ui.js";
+import { view, setView, tips, setTips } from "../pictures.js";
+import { openReport, report } from "../report.js";
 import { root, results, check, codes, pick, reset, fixtures } from "./helpers.js";
 import { scripts, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static.js";
 import { behaviourTests, keyboardTests } from "./behaviour.js";
-import { menuTests, languageTests, optionTests, accessibilityTests } from "./interface.js";
+import { menuTests, languageTests, optionTests, pictureTests, accessibilityTests } from "./interface.js";
 
 const LIMIT = 100;
 
@@ -53,8 +55,13 @@ export function loadFailed(error) {
 }
 
 export async function runTests() {
-  const before = { language, include, url: location.href, stored: recall("language"), included: recall("include") };
+  const before = {
+    language, include, simple, view, url: location.href, stored: recall("language"), included: recall("include"), simplified: recall("simple"),
+    viewed: recall("civView"), tips, tipped: recall("tooltips"),
+  };
   if (include) setInclude(false);
+  if (!simple) setSimple(true);
+  if (!tips) setTips(true);
   const where = `${innerWidth} by ${innerHeight}`;
   try {
     const main = !params.has("frame");
@@ -66,6 +73,7 @@ export async function runTests() {
     menuTests(sample);
     codes().forEach((code) => languageTests(code, sample));
     optionTests();
+    await pictureTests();
     if (main) tagTests();
     pick(codes()[0]);
     const fresh = fixtures();
@@ -81,10 +89,16 @@ export async function runTests() {
   }
   reset();
   if (include !== before.include) setInclude(before.include);
+  setSimple(before.simple);
+  setView(before.view);
+  setTips(before.tips);
   setLanguage(before.language);
   attempt(() => history.replaceState(history.state, "", before.url));
   remember("language", before.stored);
   remember("include", before.included);
+  remember("simple", before.simplified);
+  remember("civView", before.viewed);
+  remember("tooltips", before.tipped);
   if (params.has("frame")) {
     root.dataset.tests = results.every((result) => result.ok) ? "passed" : "failed";
     parent.postMessage({ where, results }, "*");
