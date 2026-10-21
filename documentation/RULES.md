@@ -20,3 +20,7 @@ Rule 19: Tests will be documented, without excess clutter, text or story-telling
 Rule 20: The intended UI and behaviour of aoe2civexplorer is defined by REQUIREMENTS.md.  
 Rule 21: Only the chief developer (Carl Nordenbrink @cnordenb) may modify REQUIREMENTS.md. To others and to AI agents, REQUIREMENTS.md is read-only.  
 Rule 22: rules 3 and 9 are inhibited unless in Simple UI mode.
+Rule 23: No function may exceed 60 LOC.
+Rule 24: No LOC may exceed 120 characters.
+rule 25: No file may exceed 400 LOC.
+Rule 26: No folder may exceed 7 files (this rule does not apply to assets or locales)

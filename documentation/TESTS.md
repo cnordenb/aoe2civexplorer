@@ -69,7 +69,7 @@ Functional completeness & correctness tests:
 - [Test 51](#test-51): Every checkbox and radio button shows its picture from its sheet, and tree rows their outlined icons
 - [Test 52](#test-52): The panels, Options included, sit in their frames, with fonts, colours, civ icons and links, six tiles a row, pinned filters
 - [Test 53](#test-53): The Find box shows a search icon or a clearing cross; the tree and Include have tooltips unless turned off
-- [Test 54](#test-54): Simple UI takes away every image and the civ links, keeps its box in place and is remembered
+- [Test 54](#test-54): Simple UI takes away every image and the civ links and unticking brings them back, its box staying put
 
 Accessibility tests:
 
@@ -489,7 +489,7 @@ A search without matches says none found, on one line right of the search bar; e
 ## Test 34
 
 ### File residence:
-`js/tests/interface.js`, lines 26-29
+`js/tests/interface.js`, lines 27-30
 
 ### Purpose:
 Verify Req. 8 and 9: the Language menu is in the Options window and offers every language.
@@ -500,7 +500,7 @@ Options opens with focus on the menu, which opens to one option per language, ea
 ## Test 35
 
 ### File residence:
-`js/tests/interface.js`, lines 35-36
+`js/tests/interface.js`, lines 36-37
 
 ### Purpose:
 Verify Req. 12 and Rule 18: the language menu closes cleanly and nothing moves.
@@ -511,7 +511,7 @@ Escape closes the menu and refocuses its button; moving focus away closes it; th
 ## Test 36
 
 ### File residence:
-`js/tests/interface.js`, lines 40-42
+`js/tests/interface.js`, lines 41-43
 
 ### Purpose:
 Verify Req. 11: the page changes to the chosen language.
@@ -522,7 +522,7 @@ The page's lang and title change to the chosen language; the menu closes, refocu
 ## Test 37
 
 ### File residence:
-`js/tests/interface.js`, line 43
+`js/tests/interface.js`, line 44
 
 ### Purpose:
 Keep the chosen language when the link is shared or the page reloaded.
@@ -533,7 +533,7 @@ The address holds lng=<chosen language>. Always passes when the page is opened a
 ## Test 38
 
 ### File residence:
-`js/tests/interface.js`, line 44
+`js/tests/interface.js`, line 45
 
 ### Purpose:
 Ensure changing the language never loses the user's marks.
@@ -544,7 +544,7 @@ After a language change the marked item is still "has" and the civ list is uncha
 ## Test 39
 
 ### File residence:
-`js/tests/interface.js`, lines 57-58
+`js/tests/interface.js`, lines 58-59
 
 ### Purpose:
 Verify Req. 11 for all interface text, in every language.
@@ -555,7 +555,7 @@ Every element with data-text shows the chosen language's text for its key.
 ## Test 40
 
 ### File residence:
-`js/tests/interface.js`, lines 59-60
+`js/tests/interface.js`, lines 60-61
 
 ### Purpose:
 Verify Req. 11 for the tree, in every language.
@@ -566,7 +566,7 @@ Every tree label shows the chosen language's item or group name.
 ## Test 41
 
 ### File residence:
-`js/tests/interface.js`, line 61
+`js/tests/interface.js`, line 62
 
 ### Purpose:
 Catch unfilled {placeholders} shown to users.
@@ -577,7 +577,7 @@ No visible text on the page contains { or }.
 ## Test 42
 
 ### File residence:
-`js/tests/interface.js`, lines 62-65
+`js/tests/interface.js`, lines 63-66
 
 ### Purpose:
 Verify Req. 5: the footer credits the data source, and gives Microsoft's notice in English.
@@ -588,7 +588,7 @@ Links to source and rules from data.json; notice marked English; footer spans th
 ## Test 43
 
 ### File residence:
-`js/tests/interface.js`, line 68
+`js/tests/interface.js`, line 69
 
 ### Purpose:
 Verify that the civ list is translated and sorted alphabetically in every language (Req. 4).
@@ -599,7 +599,7 @@ With a must-have and a must-lack mark, the list holds the right civs' names, sor
 ## Test 44
 
 ### File residence:
-`js/tests/interface.js`, lines 76-79
+`js/tests/interface.js`, lines 77-80
 
 ### Purpose:
 Verify Req. 13 and 15: by default the tree leaves out unique and universal items, and shows regional ones.
@@ -610,7 +610,7 @@ No item from a unique group is shown, some regional one is, and every shown leaf
 ## Test 45
 
 ### File residence:
-`js/tests/interface.js`, lines 87-97
+`js/tests/interface.js`, lines 88-98
 
 ### Purpose:
 Verify Req. 14 and 15, and Include Regionals: each box adds or removes its items and keeps marks.
@@ -621,7 +621,7 @@ Include: every item shown. Unticked Regionals: no regional item or item under on
 ## Test 46
 
 ### File residence:
-`js/tests/interface.js`, line 98
+`js/tests/interface.js`, line 99
 
 ### Purpose:
 Keep the Include Unique and Universal and the Include Regionals choices for the next visit.
@@ -632,7 +632,7 @@ Browser storage holds include=true and regional=false after the clicks. Passes w
 ## Test 47
 
 ### File residence:
-`js/tests/interface.js`, lines 100-101
+`js/tests/interface.js`, lines 101-102
 
 ### Purpose:
 Verify Req. 7, 13 and 16, and that focus returns when the Options window closes (WCAG 2.4.3).
@@ -643,7 +643,7 @@ Options opens with Include unticked and Include Regionals ticked; Close closes i
 ## Test 48
 
 ### File residence:
-`js/tests/interface.js`, lines 106-135
+`js/tests/interface.js`, lines 107-136
 
 ### Purpose:
 Verify that without Simple UI the pictures and cursors suit the screen and everything sits on the parchment.
@@ -654,7 +654,7 @@ Right background; sword, pointing on links; Options (sd/4k, #EE9D05 ring); on th
 ## Test 49
 
 ### File residence:
-`js/tests/interface.js`, lines 136-157
+`js/tests/interface.js`, lines 137-158
 
 ### Purpose:
 Verify that without Simple UI the titles sit in their frames: Civ Explorer on the page, Options on its own parchment.
@@ -665,7 +665,7 @@ Short title, bold Georgia, #391C1B, centred in title_frame; Options in options_s
 ## Test 50
 
 ### File residence:
-`js/tests/interface.js`, lines 158-169
+`js/tests/interface.js`, lines 159-170
 
 ### Purpose:
 Verify that without Simple UI each text button shows the button picture, ends unstretched, in bold Georgia.
@@ -676,7 +676,7 @@ button_sd/4k, normal frame; ends at their own shape (12:50); no ring; Georgia 70
 ## Test 51
 
 ### File residence:
-`js/tests/interface.js`, lines 170-197
+`js/tests/interface.js`, lines 171-198
 
 ### Purpose:
 Verify that without Simple UI boxes show their sheets, and tree rows their icons, outlined as colour_key.csv says.
@@ -687,7 +687,7 @@ Boxes and radios: row by state, no drawn marks. Icons: right file, loaded, 44px,
 ## Test 52
 
 ### File residence:
-`js/tests/interface.js`, lines 199-249
+`js/tests/interface.js`, lines 200-250
 
 ### Purpose:
 Verify that without Simple UI the panels, Options too, have their frames, fonts and colours, civ icons, links and tiles.
@@ -698,7 +698,7 @@ Frames, fonts and colours, Options' too (bold Georgia, #2A0F14); icons; links in
 ## Test 53
 
 ### File residence:
-`js/tests/interface.js`, lines 250-290
+`js/tests/interface.js`, lines 251-291
 
 ### Purpose:
 Verify that without Simple UI Find clears with its cross, and tooltips show over the tree and Include unless turned off.
@@ -709,13 +709,13 @@ Verify that without Simple UI Find clears with its cross, and tooltips show over
 ## Test 54
 
 ### File residence:
-`js/tests/interface.js`, lines 293-314
+`js/tests/interface.js`, lines 294-317
 
 ### Purpose:
-Verify Req. 2, 32 and 33, and Rules 18 and 22: Simple UI turns every image and civ link off, and its box does not move.
+Verify Req. 2, 32 and 33, and Rules 18 and 22: Simple UI turns every image and civ link off and on; its box stays put.
 
 ### Assertion expectation:
-Ticking leaves no image, icon or civ link, shows the full title, keeps the box still, is saved; Space brings all back.
+Ticking: no image, icon or civ link, full title, box still, saved. Unticking: same pictures and links, box still.
 
 ## Test 55
 
@@ -962,7 +962,7 @@ No media elements, no images in CSS, the page's own background included, no runn
 ## Test 77
 
 ### File residence:
-`js/tests/interface.js`, lines 339-340
+`js/tests/interface.js`, lines 342-343
 
 ### Purpose:
 Verify keyboard use of the language menu (WCAG 2.1.1).
@@ -995,7 +995,7 @@ The centre of the visible part of each focused element's first line is that elem
 ## Test 80
 
 ### File residence:
-`js/tests/interface.js`, lines 362-365
+`js/tests/interface.js`, lines 365-368
 
 ### Purpose:
 WCAG 1.4.12: wider text spacing set by the user does not break the layout.
@@ -1006,7 +1006,7 @@ With WCAG's text spacing applied, the page and every element stay within the win
 ## Test 81
 
 ### File residence:
-`js/tests/interface.js`, lines 378-385
+`js/tests/interface.js`, lines 381-388
 
 ### Purpose:
 Verify that the Include Unique and Universal and Include Regionals boxes work from the keyboard (WCAG 2.1.1).

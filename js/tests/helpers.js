@@ -21,6 +21,8 @@ export const spans = () => (phone()
   ? getComputedStyle(document.querySelector(".foot")).display === "none"
   : Math.abs(document.querySelector(".foot").getBoundingClientRect().width - document.querySelector(".panes").getBoundingClientRect().width) < 1);
 
+export const need = (ok, problem) => (ok ? [] : [problem]);
+
 export const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 export const codes = () => Object.keys(data.languages);
@@ -38,6 +40,22 @@ export const styles = (el) => [getComputedStyle(el), getComputedStyle(el, "::bef
 
 export const pictured = (el) => styles(el).some((style) => style.backgroundImage !== "none" || style.listStyleImage !== "none"
   || style.borderImageSource !== "none" || /url\(/.test(style.content) || /url\(/.test(style.cursor));
+
+export const pictures = () => [...document.querySelectorAll("img"), root, document.body, ...everything()]
+  .filter((el) => el.tagName === "IMG" || pictured(el)).map(describe);
+
+export const picturesOn = () => [describe(root), "body", describe($("optionsButton"))]
+  .every((name) => pictures().includes(name));
+
+export const simpleSpot = () => {
+  const box = $("simple").querySelector(".box").getBoundingClientRect();
+  return `${box.left},${box.top}`;
+};
+
+export const simpleTicked = (on) => $("simple").getAttribute("aria-checked") === String(on)
+  && $("simple").dataset.state === (on ? "has" : "");
+
+export const civLinks = () => $("civs").children.length > 0 && $("civs").querySelectorAll("a[href]").length;
 
 export const focusables = () => [...document.querySelectorAll("a[href], button, input, select, textarea, [tabindex]")]
   .filter((el) => el.tabIndex >= 0 && !el.disabled && rendered(el));

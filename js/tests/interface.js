@@ -3,8 +3,9 @@ import { items, matching } from "../model.js";
 import { $, options, setInclude, setSimple } from "../ui.js";
 import { audit } from "./audit.js";
 import {
-  root, check, expect, loaded, same, tidy, codes, keys, describe, rendered, everything, pictured, nameFor, visibleTexts, keyDown, tap, type, pick,
+  root, check, expect, loaded, same, tidy, codes, keys, describe, rendered, everything, nameFor, visibleTexts, keyDown, tap, type, pick,
   reset, beside, listed, expected, fixtures, edges, shownKeys, uniqueKeys, regionalKeys, outside, keptPath, byPath, spans,
+  need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked,
 } from "./helpers.js";
 
 export function menuTests({ partial }) {
@@ -188,7 +189,7 @@ export async function pictureTests() {
     const look = img && getComputedStyle(img);
     return own ? !img || img.naturalWidth !== 48 || img.getAttribute("src") !== iconFile(own)
       || img.previousElementSibling !== item.node.querySelector(".box") || img.nextElementSibling !== item.label
-      || look.width !== "44px" || look.height !== "44px" || look.borderTopWidth !== "2px" || look.borderTopStyle !== "solid"
+      || look.width !== "44px" || look.height !== "44px" || Math.abs(parseFloat(look.borderTopWidth) - 2) >= 1 || look.borderTopStyle !== "solid"
       || look.borderTopColor !== (item.group ? "rgba(0, 0, 0, 0)" : outlines.get(`${own.kind} ${own.reach}`)) : !!img;
   }).map((item) => item.key);
   setInclude(false);
@@ -290,28 +291,30 @@ export async function pictureTests() {
     `empty ${empty}, typed ${typed}, cleared ${cleared}, tooltip ${tipped}, description ${hinted}, unticked ${silent}`);
   reset();
 
-  const pictures = () => [...document.querySelectorAll("img"), ...[root, document.body, ...everything()].filter(pictured)].map(describe);
-
-  const spot = () => JSON.stringify($("simple").querySelector(".box").getBoundingClientRect());
-
-  const shown = () => {
-    const now = pictures();
-    return [describe(root), "body", describe($("optionsButton"))].every((name) => now.includes(name));
-  };
-
-  const links = () => $("civs").children.length > 0 && $("civs").querySelectorAll("a[href]").length;
-
   tap(items.find((item) => !item.group && size(item.set) > 0).node);
   $("optionsButton").click();
-  const before = { shown: shown(), spot: spot(), links: links() === $("civs").children.length };
+  const before = { pictures: pictures(), spot: simpleSpot() };
+  before.basics = picturesOn() && civLinks() === $("civs").children.length;
   $("simple").click();
-  const ticked = $("simple").getAttribute("aria-checked") === "true" && $("simple").dataset.state === "has" && !pictures().length
-    && spot() === before.spot && links() === 0 && (recall("simple") === "true" || attempt(() => localStorage) === null)
-    && same([...heading.children].filter(rendered).map((el) => el.textContent), [data.text[language].ui.title]);
-  keyDown($("simple"), " ");
-  check("options: ticking Simple UI takes away every image and the civilisations' links without moving the box and is remembered, and Space unticks it",
-    before.shown && before.links && ticked && $("simple").getAttribute("aria-checked") === "false" && shown() && links() === $("civs").children.length,
-    `pictures: ${pictures().slice(0, 5).join(", ") || "none"}`);
+  const title = [...heading.children].filter(rendered).map((el) => el.textContent);
+  const problems = [
+    ...need(before.basics, "no pictures or links before ticking"),
+    ...need(simpleTicked(true), "the box is not ticked"),
+    ...pictures().slice(0, 3).map((name) => `${name} is left`),
+    ...need(simpleSpot() === before.spot, `ticking moved the box from ${before.spot} to ${simpleSpot()}`),
+    ...need(civLinks() === 0, "links are left"),
+    ...need(recall("simple") === "true" || attempt(() => localStorage) === null, "the choice is not remembered"),
+    ...need(same(title, [data.text[language].ui.title]), "the title is short"),
+  ];
+  $("simple").click();
+  problems.push(
+    ...need(simpleTicked(false), "the box is not unticked"),
+    ...need(same(pictures(), before.pictures), "not every image came back"),
+    ...need(simpleSpot() === before.spot, `unticking moved the box from ${before.spot} to ${simpleSpot()}`),
+    ...need(civLinks() === $("civs").children.length, "the links did not come back"),
+  );
+  expect("options: Simple UI takes away every image and civilisation link without moving its box, and gives them back",
+    problems);
   reset();
   setSimple(true);
 }

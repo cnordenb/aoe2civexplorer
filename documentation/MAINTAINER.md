@@ -394,8 +394,13 @@ move its box (Rule 18; the tests check it). Everything else is drawn around it:
 
 - The frame is drawn by `.options::before`, which covers the rows below the title and reaches 17 pixels past them,
   out to the window's edges. The title keeps its row, so nothing below it moves, and `translate` lifts it into the
-  parchment's title frame. The text keeps the page's usual font: in Georgia, the hint would wrap differently and
-  move the Simple UI box.
+  parchment's title frame.
+- The text is bold Georgia with the pictures and the page's usual font with Simple UI, so a line can be wider in
+  one than in the other. Only the title and the language row sit above the Simple UI box. The title's row has a fixed
+  height, and the language's name on its button never wraps, in either mode: in a very narrow window a long name ends
+  in "…", while the opened list shows it whole and screen readers read it whole. So the row is 44 pixels tall either
+  way. It once wrapped with Simple UI only, in the 320 by 256 test window with the wider fonts of Linux, and the box
+  moved 14 pixels, so the tests failed on GitHub but passed on Windows.
 - The parchment is drawn on the window's `::backdrop`, over the usual shade. It is scaled so that the panel fits in
   the box from 60 to 592 across and 95 to 622 down, in the picture's pixels: inside the thin inner border and below
   the title frame. The panel is centred in that box.

@@ -1375,3 +1375,42 @@ All of this applies with the pictures on. Simple UI is unchanged.
   four window sizes.
 - **Documents.** `TESTS.md` explains the numbers. `MAINTAINER.md` says how a failure reads in the report and in the
   GitHub log.
+
+## 2026-10-21: Test 54 failing on GitHub, and Test 51 at 125%
+
+### What changed
+
+- **Why Test 54 failed on GitHub and in a browser, but not on this computer.** Test 54 checks that the Simple UI box
+  does not move when Simple UI is ticked (Rule 18). When it runs, the page is in the last language tested, Brazilian
+  Portuguese, so the language button reads "Português (Brasil)". In the 320 by 256 test window, that name fitted on
+  one line with Windows' Segoe UI, with about 2 pixels to spare. With a wider font, such as the DejaVu Sans of
+  GitHub's Linux, it wrapped onto two lines with Simple UI, though never with the pictures, which forbade wrapping.
+  The button grew from 44 to 58 pixels and the Simple UI box moved 14 pixels down. The test was right: the box did
+  move. It was reproduced here by setting the page's font to Verdana, which is as wide as DejaVu Sans; then only
+  Test 54 failed, in the 320 by 256 window only.
+- **The fix.** The language's name on its button never wraps now, with Simple UI as with the pictures: in a very
+  narrow window a long name ends in "…". The opened list shows every name whole, and screen readers read the button
+  whole, as it is labelled by the name itself. So the language row is 44 pixels tall in both modes, whatever the
+  font, and the box stays put. With Verdana, all 100 tests pass.
+- **Test 54 says what went wrong.** Its report detail used to list the pictures on the page at its end, which are
+  always there, so it never told which step failed. It now names each problem, such as "320 by 256: ticking moved
+  the box from 44,132 to 44,146", "the links did not come back" or "img.civ-icon is left".
+- **Test 54 no longer presses Space.** As agreed, Space did not belong there: Space on the Options boxes goes through
+  one handler, already tested on Include and Include Regionals (Test 81) and on Tooltips (Test 53). Simple UI is now
+  unticked with a click, as it is ticked.
+- **Unticking is checked properly.** "All back" used to mean only that the page, its body and the Options button had
+  their pictures again. Now the test takes the full list of images before ticking, the icons of the tree and the
+  civilisations included, and expects the same list after unticking, and checks that unticking does not move the
+  box either. With the tree's icons kept from coming back, the new test fails; the old one did not look at them.
+- **Question asked: does Test 54 wait for the pictures to load back?** It does not, and need not: it checks that the
+  page asks for the pictures (the CSS pictures in the computed styles, and the `<img>` elements), which is true at
+  once, not that the files have arrived. Tests 51 and 52 wait for the icons and the fonts to load.
+- **Test 51 at 125% display scaling.** Chrome draws borders in whole screen pixels, so at 125% a 2-pixel border
+  is 1.6 pixels, and Test 51, which expected exactly 2, failed. It now accepts a border within a pixel of 2.
+- **Tests.** Still 100. The helpers Test 54 uses, and `need()`, which turns a failed condition into its message,
+  moved to `js/tests/helpers.js`, so that `js/tests/interface.js` stays under 400 lines of code (395). The new
+  lines keep to 120 characters, as Rule 24 now asks; many older lines in the project are longer.
+- **Checked.** All 100 tests pass in Chrome, in light and dark colours, in all four window sizes, with Verdana as the
+  page's font, and at 125% and 150% display scaling.
+- **Documents.** `TESTS.md` has the new wording of Test 54 and the new lines of the tests in
+  `js/tests/interface.js`. `MAINTAINER.md` explains, in "The Options window", why the language's name never wraps.

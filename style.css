@@ -113,8 +113,6 @@ html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
 }
 .pictures .tool:not(.icon)::before { left: 0; background-position-x: 0; }
 .pictures .tool:not(.icon)::after { right: 0; background-position-x: 100%; }
-.pictures .language-button { max-width: 100%; }
-.pictures .language-button .caption { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .pictures .tool:not(.icon):hover { background-position: 0 50%; }
 .pictures .tool:not(.icon):active { background-position: 0 100%; }
 @media (width > 2560px), (height > 1440px) {
@@ -133,7 +131,10 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .tool.icon { display: inline-flex; flex: none; align-items: center; justify-content: center; margin-left: auto; padding: 0; font-size: 1.5rem; line-height: 1; }
 .language { display: contents; }
 #languageLabel { grid-area: 2 / 1; align-self: center; }
-.language-button { display: inline-flex; grid-area: 2 / 2; justify-self: start; align-items: center; gap: 12px; }
+.language-button {
+  display: inline-flex; grid-area: 2 / 2; justify-self: start; align-items: center; gap: 12px; max-width: 100%;
+}
+.language-button .caption { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .chevron { width: 8px; height: 8px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-25%) rotate(45deg); }
 .language-button[aria-expanded="true"] .chevron { transform: translateY(25%) rotate(-135deg); }
 .language-list {
