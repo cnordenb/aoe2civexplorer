@@ -6,13 +6,37 @@ jobs:
   test:
     runs-on: ubuntu-26.04
     timeout-minutes: 30
+    env:
+      # The main branch only holds a page that sends visitors to the new domain, so it checks that alone.
+      # The app and its tests live on the development branch; the steps for them are kept but skipped here.
+      REDIRECT: ${{ github.ref_name == 'main' || github.base_ref == 'main' }}
     steps:
       - name: Get the code
         run: |
           git init --quiet .
           git fetch --quiet --depth=1 "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "${{ github.sha }}"
           git checkout --quiet FETCH_HEAD
+      - name: Check in Chrome that the page sends visitors to the new domain, with and without JavaScript
+        if: env.REDIRECT == 'true'
+        run: |
+          site="https://frcp.net/civexplorer/"
+          sed '/<script/,/<\/script>/d' index.html > nojs.html
+          status=0
+          for page in index.html nojs.html; do
+            google-chrome --headless=new --no-sandbox --disable-gpu --virtual-time-budget=60000 \
+              --dump-dom "file://$PWD/$page" > page.html 2> chrome.log || true
+            way="$([ $page = index.html ] && echo with || echo without) JavaScript"
+            if grep -q '<title>AoE2 Civ Explorer</title>' page.html; then
+              echo "The page opened $site $way"
+            else
+              echo "The page did not open $site $way. Chrome ended on:"
+              grep -oP '<title>\K[^<]*' page.html || echo "no page at all."
+              status=1
+            fi
+          done
+          exit $status
       - name: Check that the repository holds only the allowed files
+        if: env.REDIRECT != 'true'
         run: |
           extra="$(git ls-files | grep -vxE 'index\.html|style\.css|script\.js|js/([a-z]+/)*[a-z]+\.js|data\.json|favicon\.ico|locales/[a-z]+\.json|README\.md|documentation/[A-Za-z_]+\.(md|pdf)|LICENSE|\.gitignore|\.github/.*' || true)"
           if [ -n "$extra" ]; then
@@ -21,6 +45,7 @@ jobs:
             exit 1
           fi
       - name: Run the tests in Chrome, in light and dark colours and at several window sizes
+        if: env.REDIRECT != 'true'
         run: |
           status=0
           for scheme in 1 0; do
