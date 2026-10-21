@@ -6,7 +6,7 @@
 [![maintainable](https://img.shields.io/badge/maintainable-yes-00FF72)](https://github.com/cnordenb/aoe2civexplorer/blob/main/documentation/MAINTAINER.md)
 
 # aoe2civexplorer
-https://cnordenb.github.io/aoe2civexplorer/
+https://frcp.net/civexplorer/
 <img width="1527" height="786" alt="image" src="https://github.com/user-attachments/assets/7049a910-f68d-4f81-bbd6-48f89d837c41" />
 
 
