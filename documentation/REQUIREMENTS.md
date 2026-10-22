@@ -23,7 +23,7 @@
 21. There will be a label to the right of the search bar indicating how many nodes match the user's search input.
 22. A summary "Filters:" list will appear in the output panel between its header and civ list when one or more node checkboxes has been assigned a value.
 23. The Filters list will display a node and its checkbox value as either a green tick or a red x.
-24. Root nodes and building nodes except for will have adjective "Full " in their Filters list entry when enabled. This requirement does not apply to Fortifications descendant nodes.
+24. Root nodes and building nodes except for will have adjective "Full " in their Filters list entry when enabled. This requirement does not apply to Fortifications' descendant nodes.
 25. Unit nodes and technology nodes which possess descendant nodes will when enabled have their Filters list entry titled as the deepest descendant node. This requirement also applies to Fortifications.
 26. A node which possesses multiple descendant nodes of multiple assigned values will have its checkbox ticked with a white dash.
 27. (RESCINDED.)
