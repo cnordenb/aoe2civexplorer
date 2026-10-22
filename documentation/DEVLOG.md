@@ -1864,3 +1864,64 @@ deepest item marked must have, such as "Keep", instead of "Full Watch Tower".
 - **Documents.** `MAINTAINER.md`: Fortifications in How marking works, the `lines` flag in The data, and walls and
   towers as lines in step 5 of the update guide. `TESTS.md`: Tests 13 and 84, and the lines of the tests that moved
   in `js/tests/behaviour.js` and `js/tests/static.js`. `code_docu.pdf` rebuilt.
+
+## 2026-10-22: two tree buttons with the pictures
+
+Asked by the chief developer: with the pictures on, the three buttons under the Find box become two, Clear and
+Expand all, and Expand all turns into Collapse all while one or more nodes are expanded. The buttons use the whole
+button sprite, unstretched, side by side as wide as the input pane, and the same size in every language. Simple UI is
+unchanged. The request first said "while one or more nodes has an assigned value"; the chief developer corrected it
+while the work was under way: only whether nodes are expanded counts, and the marks have no effect on the button.
+
+### Carried out
+
+- **Three buttons in the page, two on screen.** `index.html` keeps all three, as Simple UI needs them (requirements
+  3, 18 and 19). With the pictures, `style.css` hides Collapse all while no branch at the top of the tree is open,
+  and Expand all while one is. It reads the arrows' `aria-expanded` with `:has()`, so the button follows the tree
+  itself and is never out of date: Expand all, Collapse all, the arrows, the keyboard, Find and marking (which opens
+  branches) all switch it. Marking a row that opens nothing leaves it alone. Both sit in the same place, so nothing
+  moves (Rule 18).
+- **What counts as expanded.** Only a branch at the top of the tree. A branch left open inside a closed one cannot be
+  seen, so the tree looks closed, and the button reads Expand all.
+- **Focus.** The button that is clicked disappears and the other takes its place, so `wireTools()` in
+  `js/nodetree.js` hands focus to the other one when the clicked one had it. Without that, a keyboard user would be
+  sent back to the top of the page. With Simple UI nothing is handed on.
+- **The whole sprite.** The tree's buttons no longer use the stretched middle and the two end caps of the other text
+  buttons. Each shows a whole frame of `button_sd.webp` or `button_4k.webp` in the sheet's own proportions, 290 by
+  50, with the hover and pressed rows as before. "Unscaled" was read as "not stretched": at 1920 by 1080 the pane is
+  499 pixels wide inside, too narrow for two buttons at the sprite's own 290 pixels, and the request asks for both
+  to fit in it. The Options window's buttons keep the end caps.
+- **Size.** Two equal columns across the pane's head. At 1920 by 1080 each button is 245 by 42 pixels, at 1280 by 800
+  174 by 30, at 800 by 1100 134 by 23, and on a 500 by 900 phone 200 by 35. Their text is 16 pixels, or 3.8% of the
+  pair's width when that is less, so that the longest caption, Malay's "Kembangkan semua", fits at every size. A
+  longer translation would end in an ellipsis instead of spilling off the picture.
+- **Rule 25.** `style.css` had 398 of its 400 lines of code. The rule for the end caps went onto one line to make
+  room, and the file now has 399.
+
+### Tests: 94
+
+- **New Test 48** runs without Simple UI. It checks that the tree shows Clear and Expand all, side by side across
+  the pane's head, each the whole button picture at 290 by 50, with no end caps and its text not cut. Marking a row or
+  opening a branch inside a closed one must leave Expand all. Expand all must turn into Collapse all in the same
+  place and hand focus to it, and Collapse all must hand it back. In every language, the buttons keep their size and
+  place across the pane, and no caption is cut.
+- Tests 48 to 93 are now 49 to 94.
+- **Undone in a scratch copy**, each of these fails Test 48 and nothing else: the end caps back on the tree's buttons;
+  all three buttons shown; no focus handed on; and a fixed 16-pixel text, which cuts the Brazilian Portuguese, German,
+  Italian and Japanese captions, among others, in a window of 1262 by 648 pixels.
+- **Checked.** All 94 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900, and with the page itself exactly 1920 by 1080 and 1280 by 800 pixels. No script breaks
+  Rules 23 to 26.
+
+### Documents
+
+- `MAINTAINER.md`: the two buttons in Simple UI and the pictures.
+- `TESTS.md`: Test 48, the renumbering, and the lines of Tests 45 to 49 in `js/tests/pictures.js`.
+- **`code_docu.pdf` was not rebuilt.** It does not yet describe `toolLooks()` in `js/tests/pictures.js`, or the
+  handing on of focus in `wireTools()`.
+
+### Not done
+
+- **Requirement 34**, "A prerequisite node must be automatically enabled if a descendant node is enabled", was added
+  to `REQUIREMENTS.md` during this work. It has not been carried out. It goes against how marking works now, where a
+  mark never passes up (marking Champion marks Champion only).

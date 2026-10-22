@@ -33,3 +33,4 @@
 31. A node will be expanded to if it is automatically assigned a value.
 32. Options window will contain a "Simple UI" checkbox.
 33. The page will not use any images upon the user enabling the Simple UI checkbox.
+34. A prerequisite node must be automatically enabled if a descendant node is enabled.

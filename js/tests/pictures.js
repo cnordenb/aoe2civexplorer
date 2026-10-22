@@ -1,10 +1,12 @@
-import { data, size, attempt, recall, nameOf, iconFile } from "../datahandler.js";
+import { data, size, attempt, recall, nameOf, iconFile, language } from "../datahandler.js";
 import { items } from "../model.js";
 import { $ } from "../stringbuilder.js";
+import { setOpen } from "../nodetree.js";
 import { setInclude, setSimple } from "../optionshandler.js";
 import {
-  root, check, expect, loaded, same, describe, rendered, everything, keyDown, tap, type, reset, beside, edges, spans,
-  need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, tabIcons, drawn, ui, box, fixtures,
+  root, check, expect, loaded, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges,
+  spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, tabIcons, drawn, ui, box, fixtures, codes,
+  pick,
 } from "./helpers.js";
 
 const rows = { has: 50, lacks: 100 };
@@ -149,6 +151,59 @@ function tipLooks() {
   return { tipped, hinted, silent: silent && $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "true" };
 }
 
+function toolLooks() {
+  const head = $("clear").parentElement.parentElement;
+  const sprite = `ui/buttons/button_${innerWidth > 2560 || innerHeight > 1440 ? "4k" : "sd"}`;
+  const left = box(head).left + parseFloat(getComputedStyle(head).paddingLeft);
+  const right = box(head).right - parseFloat(getComputedStyle(head).paddingRight);
+
+  const shown = () => [...$("clear").parentElement.children].filter(rendered);
+
+  const spots = (top = true) => shown().map((el) => [box(el).left, top ? box(el).top : 0, box(el).width, box(el).height]
+    .map(Math.round).join()).join(" ");
+
+  const cut = (el) => !picture(getComputedStyle(el), sprite) || getComputedStyle(el).backgroundSize !== "100% 300%"
+    || styles(el).slice(1, 3).some((style) => style.display !== "none")
+    || Math.abs(box(el).width * 50 / 290 - box(el).height) > 1;
+
+  const fits = (caption) => caption.scrollWidth <= caption.clientWidth;
+
+  const wrong = () => shown().flatMap((el) => [
+    ...need(!cut(el), `${language}: ${describe(el)} is not the whole button picture`),
+    ...need(fits(el.firstElementChild), `${language}: ${describe(el)} cuts its text`),
+  ]);
+
+  const showing = (ids, when) => need(same(shown().map((el) => el.id), ids), `${shown().map(describe)} ${when}`);
+
+  const [idle, sideways] = [spots(), spots(false)];
+  const [first, last] = shown();
+  const problems = [
+    ...showing(["clear", "expandAll"], "with every branch closed"), ...wrong(),
+    ...need(Math.abs(box(first).left - left) < 1 && Math.abs(box(last).right - right) < 1
+      && Math.abs(box(first).top - box(last).top) < 0.5 && Math.abs(box(first).width - box(last).width) < 0.5,
+    `the buttons are at ${idle}, not side by side from ${Math.round(left)} to ${Math.round(right)}`),
+  ];
+  tap(items.find((item) => !item.group && !item.kids.length).node);
+  setOpen(items.find((item) => item.twisty && item.parent), true);
+  problems.push(...showing(["clear", "expandAll"], "with a mark, or a branch open inside a closed one"));
+  $("expandAll").focus();
+  $("expandAll").click();
+  problems.push(...showing(["clear", "collapseAll"], "with branches open"), ...wrong(),
+    ...need(spots() === idle, `opening moved the buttons from ${idle} to ${spots()}`),
+    ...need(document.activeElement === $("collapseAll"), "Expand all did not hand focus to Collapse all"));
+  $("collapseAll").click();
+  problems.push(...need(document.activeElement === $("expandAll"), "Collapse all did not hand focus to Expand all"));
+  for (const code of [...codes().slice(1), codes()[0]]) {
+    pick(code);
+    $("options").close();
+    problems.push(...need(spots(false) === sideways, `${code}: the buttons are at ${spots()}`), ...wrong());
+    $("expandAll").click();
+    problems.push(...wrong());
+    $("collapseAll").click();
+  }
+  return problems;
+}
+
 function simpleSwitch() {
   tap(items.find((item) => !item.group && size(item.set) > 0).node);
   $("optionsButton").click();
@@ -192,6 +247,11 @@ export async function pictureTests() {
   check("options: without Simple UI, the Find box shows a search icon or a cross that clears it, and a tooltip "
     + "follows the mouse over the tree, and over Include with its description, unless Tooltips is unticked",
     Object.values(looks).every(Boolean), Object.entries(looks).map(([name, ok]) => `${name} ${ok}`).join(", "));
+  reset();
+  await document.fonts.ready;
+  expect("options: without Simple UI, the tree's buttons are Clear and Expand all, which is Collapse all while a top "
+    + "branch is open, side by side as wide as the pane, each the whole button picture, the same in every language",
+    toolLooks());
   reset();
   expect("options: Simple UI takes away every image and civilisation link without moving its box, and gives them back",
     simpleSwitch());

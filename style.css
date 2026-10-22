@@ -108,9 +108,7 @@ html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
   position: relative; border: 0; border-radius: 0; color: #f2d2b6; font-family: "Civ Georgia", Georgia, serif; font-weight: 700;
   text-shadow: 2px 2px 0 rgb(0 0 0 / 0.5); background: url("assets/images/ui/buttons/button_sd.webp") 0 0 / 100% 300% no-repeat;
 }
-.pictures .tool:not(.icon)::before, .pictures .tool:not(.icon)::after {
-  content: ""; position: absolute; top: 0; bottom: 0; aspect-ratio: 12 / 50; background: inherit; background-size: auto 300%;
-}
+.pictures .tool:not(.icon)::before, .pictures .tool:not(.icon)::after { content: ""; position: absolute; top: 0; bottom: 0; aspect-ratio: 12 / 50; background: inherit; background-size: auto 300%; }
 .pictures .tool:not(.icon)::before { left: 0; background-position-x: 0; }
 .pictures .tool:not(.icon)::after { right: 0; background-position-x: 100%; }
 .pictures .tool:not(.icon):hover { background-position: 0 50%; }
@@ -302,7 +300,10 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures .chip { border-color: #fda700; background: rgb(255 255 255 / 0.1); color: inherit; }
 .pictures .legend { display: none; }
 .pictures .pane:first-child .find { order: 1; }
-.pictures .pane:first-child .tools { order: 2; }
+.pictures .pane:first-child .tools { display: grid; flex-basis: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); order: 2; container-type: inline-size; }
+.pictures .tools .tool { width: 100%; min-height: 0; aspect-ratio: 290 / 50; padding: 0 6%; font-size: min(1rem, 3.8cqi); }
+.pictures .tools .tool::before, .pictures .tools .tool::after, .pictures .pane:has(.tree > li > .row > [aria-expanded="true"]) #expandAll, .pictures .pane:not(:has(.tree > li > .row > [aria-expanded="true"])) #collapseAll { display: none; }
+.pictures .tools .caption { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .pictures :is(.find label, #includeHint) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .pictures .field { flex: none; width: min(325px, 100% - 6em); }
 .pictures #found { flex: 1 1 0; min-width: 0; margin-right: -6px; text-align: right; }

@@ -212,8 +212,14 @@ function onChip(e) {
 }
 
 function wireTools() {
-  $("expandAll").addEventListener("click", () => items.forEach((item) => setOpen(item, true)));
-  $("collapseAll").addEventListener("click", () => items.forEach((item) => setOpen(item, false)));
+  const swap = (from, to, open) => $(from).addEventListener("click", () => {
+    const focused = document.activeElement === $(from);
+    items.forEach((item) => setOpen(item, open));
+    if (focused && !simple()) $(to).focus();
+  });
+
+  swap("expandAll", "collapseAll", true);
+  swap("collapseAll", "expandAll", false);
   $("clear").addEventListener("click", () => {
     roots.forEach((item) => setMark(item, null));
     update();

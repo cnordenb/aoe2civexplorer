@@ -305,6 +305,11 @@ With the pictures on, the page also looks a little different: the title is the s
 hidden as the tooltip explains the same, the Find box comes first, Include's description shows as a tooltip, the
 civilisations can be shown as tiles and link to their pages on aoe2techtree.net, and the mouse cursor is a sword.
 
+Under the Find box there are then two buttons instead of three: **Clear**, and **Expand all**, which turns into
+**Collapse all** in the same place while a branch at the top of the tree is open. Together they are as wide as the
+pane, whatever the language. Each shows the whole button picture in its own proportions, so in a narrow window the
+buttons and their text get smaller. Simple UI keeps the three buttons.
+
 ### Assets
 
 | Folder | Holds |
