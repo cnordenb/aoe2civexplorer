@@ -54,7 +54,7 @@ Functional completeness & correctness tests:
 - [Test 36](#test-36): The page's text is in the chosen language
 - [Test 37](#test-37): The tree is in the chosen language
 - [Test 38](#test-38): No placeholders are left in the text
-- [Test 39](#test-39): The footer links the source and Microsoft's rules, as wide as the page, hidden on phones
+- [Test 39](#test-39): The footer links the source, Microsoft's rules and the project, as wide as the page, hidden on phones
 - [Test 40](#test-40): The civ list is translated and sorted
 - [Test 41](#test-41): Unique and universal items are hidden by default, regional ones shown
 - [Test 42](#test-42): Ticking Include shows every item, unticking Include Regionals hides regional ones, keeping marks
@@ -543,10 +543,10 @@ No visible text on the page contains { or }.
 `js/tests/interface.js`, lines 84-89
 
 ### Purpose:
-Verify Req. 5: the footer credits the data source, and gives Microsoft's notice in English.
+Verify Req. 5: the footer credits the data source, gives Microsoft's notice in English, and links the project's code.
 
 ### Assertion expectation:
-Links to source and rules from data.json; notice marked English; footer spans the panes, or is hidden on a phone.
+Links to source, rules and project from data.json; notice marked English; footer spans the panes, or hidden on a phone.
 
 ## Test 40
 

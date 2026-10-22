@@ -236,7 +236,8 @@ A script only uses the scripts below it in this order: `datahandler.js`, `model.
 
 `data.json` is a text file in JSON format. Its parts:
 
-- `source`: where the data comes from and when it was fetched, and Microsoft's notice for the footer.
+- `source`: where the data comes from and when it was fetched, and Microsoft's notice for the footer, with the
+  addresses its two links lead to: Microsoft's rules, and, from "Civ Explorer", the project on GitHub.
 - `languages`: the 17 languages, English first. Each has its `name`, its `tag` (such as `pt-BR`) and two settings the
   updater uses to tidy the game's names.
 - `civs`: the civilisations, by their English names.

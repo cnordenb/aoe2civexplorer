@@ -1993,3 +1993,80 @@ not Simple UI is on, and its Close button is on the right instead of the left.
 - `MAINTAINER.md`: the description of `js/report.js`.
 - `TESTS.md`: Test 94.
 - `code_docu.pdf` was not rebuilt.
+
+## 2026-10-22: Cancel and OK in the Options window with the pictures
+
+Asked by the chief developer: instead of a Close button, the Options window has two buttons, Cancel and OK, using the
+button sprite in its own proportions and unstretched, on the right instead of the left. On Cancel the changes are
+discarded; on OK they are applied. Asked before the work began, the chief developer decided:
+
+- **Changes wait for OK.** Nothing on the page changes while the window is open, not even the language or Simple UI.
+  OK applies everything; Cancel or Escape throws it all away.
+- **Simple UI keeps Close**, as requirements 8 and 16 ask, and its changes still take effect at once (requirements 11,
+  15 and 33). Cancel and OK appear only with the pictures on.
+
+### Carried out
+
+- **Three buttons in the page.** The window's `form` in `index.html` holds Close, Cancel and OK, in that order.
+  `style.css` shows Close with Simple UI, and Cancel and OK with the pictures, side by side at the right. Each shows a
+  whole frame of the button sprite at 290 by 50, like the tree's buttons: 192 by 33 pixels, smaller in a narrow
+  window, with an ellipsis rather than text spilling off the picture.
+- **The settings as choices.** Each setting in the window is one of the `choices` in `js/optionshandler.js`: the
+  language, Include, Include Regionals and Simple UI, and, added by `js/pictures.js`, the civilisations' view and
+  Tooltips. Each choice knows its value on the page, how to apply a value, and, unless it is a plain box, what the
+  window shows and how to show a value. This replaces `flip`, and the view no longer changes the moment a radio
+  button is picked.
+- **With the pictures**, ticking a box, picking a language or picking a view only changes what the window shows. OK
+  applies every choice whose value in the window differs from the page's, then closes the window. Cancel, Escape or
+  any other way of closing it applies nothing, and the window always opens showing the page's own values.
+- **Set back when it opens, not when it closes.** The first try set the window back in its `close` event, which comes
+  a moment after the window closes. The tests reopened it sooner than that and found the old changes still showing;
+  a quick visitor could have too. The window is now set back as it opens, which cannot come too late.
+- **With Simple UI** a change takes effect at once, as before. Unticking Simple UI turns the pictures on at once, and
+  from then on, while the window stays open, it waits for OK: Cancel drops only what was changed after that.
+- **Requirement 33** says the page uses no images "upon the user enabling the Simple UI checkbox". With the pictures,
+  that is read as the moment OK applies it, as requirement 0 leaves the look with the pictures open.
+- **New texts.** `cancel` and `ok` are in `text.ui` of `data.json` and every language file, after `close`. They were
+  written by hand, without the game's own words, so a native speaker may want to check them.
+- **Rule 25.** The `.option` rule went onto one line, and `style.css` has 397 lines of code.
+
+### Tests: 96
+
+- **New Test 49**, without Simple UI: the window shows Cancel and OK and no Close, side by side at its right edge,
+  each the whole button picture. Ticking Include and picking another language must change nothing on the page; after
+  Cancel, and after closing the window without OK, the window must open showing the page's values again; OK must apply
+  both and close the window.
+- **Test 47** (tooltips) and **Test 50** (Simple UI) now confirm with OK. Test 50 also checks that ticking Simple UI
+  changes nothing before OK, and that unticking it with Simple UI on gives everything back at once without moving its
+  box. The tests' `pick()` confirms with OK when the pictures are on. The shared check for a whole button picture
+  moved to the top of `js/tests/pictures.js`, for Tests 48 and 49.
+- Tests 49 to 95 are now 50 to 96.
+- **Undone in a scratch copy**: the window not set back, Cancel and OK on the left, or the buttons stretched to the
+  old 44-pixel height each fail Test 49 and nothing else. Changes applied at once with the pictures fail Tests 49 and
+  50, and OK applying nothing fails Tests 47, 49 and 50.
+- **Checked.** All 96 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. No script breaks Rules 23 to 26.
+
+### Documents
+
+- `MAINTAINER.md`: Cancel and OK in Simple UI and the pictures, `choices` in the description of
+  `js/optionshandler.js` and in the UML diagram.
+- `TESTS.md`: Test 49, Tests 47 and 50, the renumbering, and the lines of Tests 45 to 50.
+- `code_docu.pdf` was not rebuilt.
+
+## 2026-10-22: the footer links to the project
+
+Asked by the chief developer: in the footer, "Civ Explorer" links to https://github.com/cnordenb/aoe2civexplorer.
+
+- **In the data.** `source.notice` in `data.json` now reads "{project} was created under Microsoft's ...", and
+  `source.project` holds the link's text, "Civ Explorer", and its address, beside `source.rules`. `index.html` has a
+  `projectLink` beside `rulesLink` in the notice, and `writeFixed()` in `js/stringbuilder.js` fills in both. The
+  notice stays in English in every language, as before, and the updater keeps `source` as it is, apart from the date.
+- **The look** is that of the footer's other links: underlined, in the footer's colour, with the pointing cursor with
+  the pictures.
+- **Test 39**, run in every language, now also checks that the notice holds the project's link with the address from
+  `data.json`, and reads the notice with "Civ Explorer" in it. Without the link's address in a scratch copy, it fails
+  and nothing else does.
+- **Checked.** All 96 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+- **Documents.** `MAINTAINER.md`: `source` in The data. `TESTS.md`: Test 39. `code_docu.pdf` was not rebuilt.

@@ -1,5 +1,5 @@
 import {
-  data, ALL, size, attempt, recall, remember, params, language, nameOf, preferredLanguage,
+  data, ALL, size, fill, attempt, recall, remember, params, language, nameOf, preferredLanguage,
 } from "../datahandler.js";
 import { items } from "../model.js";
 import { $ } from "../stringbuilder.js";
@@ -80,13 +80,13 @@ export function languageTests(code, { partial, other }) {
     || nameOf(item) !== (item.group ? text.groups[item.key] : text.items[item.key])).map((item) => item.key));
   note("languages: no placeholders are left in the text",
     visibleTexts(document.body).filter((value) => /[{}]/.test(value)));
-  const notice = data.source.notice.replace("{rules}", data.source.rules.name);
-  check("languages: the footer names and links the source, and gives Microsoft's notice in English with its link, as "
-    + "wide as the page, or hidden on a phone", $("source").contains($("sourceLink"))
+  const notice = fill(data.source.notice, { rules: data.source.rules.name, project: data.source.project.name });
+  check("languages: the footer names and links the source, and gives Microsoft's notice in English with its links to "
+    + "the rules and the project, as wide as the page, or hidden on a phone", $("source").contains($("sourceLink"))
     && $("sourceLink").textContent === data.source.name && $("sourceLink").getAttribute("href") === data.source.url
-    && $("notice").lang === "en" && $("notice").contains($("rulesLink"))
-    && $("rulesLink").getAttribute("href") === data.source.rules.url && tidy($("notice").textContent) === tidy(notice)
-    && spans(), code);
+    && tidy($("notice").textContent) === tidy(notice) && ["rules", "project"].every((key) =>
+      $("notice").contains($(`${key}Link`)) && $(`${key}Link`).getAttribute("href") === data.source[key].url)
+    && $("notice").lang === "en" && spans(), code);
   tap(partial.node);
   keyDown(other.node, "x");
   check("languages: the civilisations are listed in the language and in order",

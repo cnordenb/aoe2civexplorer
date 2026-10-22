@@ -20,7 +20,9 @@ export function writeFixed() {
   $("sourceLink").textContent = data.source.name;
   $("rulesLink").href = data.source.rules.url;
   $("rulesLink").textContent = data.source.rules.name;
-  compose($("notice"), data.source.notice, { rules: $("rulesLink") });
+  $("projectLink").href = data.source.project.url;
+  $("projectLink").textContent = data.source.project.name;
+  compose($("notice"), data.source.notice, { rules: $("rulesLink"), project: $("projectLink") });
 }
 
 export function writeTexts() {
