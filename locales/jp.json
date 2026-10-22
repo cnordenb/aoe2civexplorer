@@ -39,7 +39,9 @@
       "viewList": "リスト",
       "viewTile": "タイル",
       "tooltips": "ツールチップ",
-      "close": "閉じる"
+      "close": "閉じる",
+      "cancel": "キャンセル",
+      "ok": "OK"
     },
     "groups": {
       "economy": "経済",

@@ -39,7 +39,9 @@
       "viewList": "Lista",
       "viewTile": "Mosaico",
       "tooltips": "Descripciones emergentes",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "cancel": "Cancelar",
+      "ok": "Aceptar"
     },
     "groups": {
       "economy": "Economía",

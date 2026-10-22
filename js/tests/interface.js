@@ -3,7 +3,8 @@ import {
 } from "../datahandler.js";
 import { items } from "../model.js";
 import { $ } from "../stringbuilder.js";
-import { options, setInclude } from "../optionshandler.js";
+import { options, setInclude, setSimple } from "../optionshandler.js";
+import { openReport, report } from "../report.js";
 import { audit } from "./audit.js";
 import {
   root, check, expect, same, tidy, codes, keys, describe, everything, nameFor, visibleTexts, keyDown, tap, pick,
@@ -226,4 +227,33 @@ export function accessibilityTests(sample) {
   const fresh = fixtures();
   rest.forEach((code) => languageAudits(code, fresh));
   optionAudits();
+}
+
+export function reportTests() {
+  openReport("scrolling", "status");
+  for (let i = 0; i < 200; i++) report(String(i));
+  const list = $("reportList").parentElement;
+  const close = $("report").querySelector("form button");
+  const pinned = [$("reportTitle"), $("reportStatus"), close];
+
+  const tops = () => pinned.map((el) => Math.round(box(el).top)).join();
+
+  const look = () => [null, "::before", "::after"].map((part) => getComputedStyle(close, part))
+    .map((style) => [style.backgroundImage, style.backgroundColor, style.borderTopWidth, style.borderTopColor,
+      style.borderRadius, style.color, style.fontFamily, style.content].join()).join(" | ");
+
+  const [before, focused, plain] = [tops(), document.activeElement === close, look()];
+  list.scrollTop = list.scrollHeight;
+  const kept = list.contains($("reportDownloads")) && list.scrollTop > 0
+    && $("report").scrollHeight <= $("report").clientHeight && tops() === before
+    && pinned.every((el) => box(el).top >= 0 && box(el).bottom <= innerHeight);
+  const right = Math.abs(box(close).right - box(list).right) < 1;
+  setSimple(false);
+  const unchanged = look() === plain;
+  setSimple(true);
+  check("update: the report window keeps its title, its count and Close in view, and scrolls only its list; Close "
+    + "has focus, sits on the right and is the plain button, with or without Simple UI",
+    kept && focused && right && unchanged,
+    `title, count and Close at ${before}, then ${tops()}; focus ${focused}, right ${right}, plain ${unchanged}`);
+  $("report").close();
 }

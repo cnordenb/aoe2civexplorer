@@ -1,8 +1,8 @@
 import { data, size, attempt, recall, nameOf, iconFile, language } from "../datahandler.js";
-import { items } from "../model.js";
+import { items, include } from "../model.js";
 import { $ } from "../stringbuilder.js";
 import { setOpen } from "../nodetree.js";
-import { setInclude, setSimple } from "../optionshandler.js";
+import { options, setInclude, setSimple } from "../optionshandler.js";
 import {
   root, check, expect, loaded, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges,
   spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, tabIcons, drawn, ui, box, fixtures, codes,
@@ -16,6 +16,15 @@ const sharp = () => (innerWidth > 1920 || innerHeight > 1080 || devicePixelRatio
 const at = (url, path) => url.endsWith(`/assets/images/${path}.webp")`);
 
 const picture = (style, path) => at(style.backgroundImage, path);
+
+const big = () => (innerWidth > 2560 || innerHeight > 1440 ? "4k" : "sd");
+
+const cut = (el) => !picture(getComputedStyle(el), `ui/buttons/button_${big()}`)
+  || getComputedStyle(el).backgroundSize !== "100% 300%"
+  || styles(el).slice(1, 3).some((style) => style.display !== "none")
+  || Math.abs(box(el).width * 50 / 290 - box(el).height) > 1;
+
+const checked = (id) => $(id).getAttribute("aria-checked") === "true";
 
 function offParchment(style) {
   const [left, top, right, bottom] = ["--left", "--top", "--right", "--bottom"]
@@ -142,18 +151,19 @@ function tipLooks() {
   hover($("include"), box($("include")).left + 5, box($("include")).top + 5);
   const hinted = !$("tip").hidden && $("tip").textContent === ui().includeHint && $("options").contains($("tip"))
     && box($("includeHint")).width <= 1 && $("include").getAttribute("aria-describedby") === "includeHint";
-  $("options").close();
   $("tooltips").click();
+  $("optionsOk").click();
   hover(items[0].node, cx, cy);
   const silent = $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "false"
     && (recall("tooltips") === "false" || attempt(() => localStorage) === null);
+  $("optionsButton").click();
   keyDown($("tooltips"), " ");
+  $("optionsOk").click();
   return { tipped, hinted, silent: silent && $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "true" };
 }
 
 function toolLooks() {
   const head = $("clear").parentElement.parentElement;
-  const sprite = `ui/buttons/button_${innerWidth > 2560 || innerHeight > 1440 ? "4k" : "sd"}`;
   const left = box(head).left + parseFloat(getComputedStyle(head).paddingLeft);
   const right = box(head).right - parseFloat(getComputedStyle(head).paddingRight);
 
@@ -161,10 +171,6 @@ function toolLooks() {
 
   const spots = (top = true) => shown().map((el) => [box(el).left, top ? box(el).top : 0, box(el).width, box(el).height]
     .map(Math.round).join()).join(" ");
-
-  const cut = (el) => !picture(getComputedStyle(el), sprite) || getComputedStyle(el).backgroundSize !== "100% 300%"
-    || styles(el).slice(1, 3).some((style) => style.display !== "none")
-    || Math.abs(box(el).width * 50 / 290 - box(el).height) > 1;
 
   const fits = (caption) => caption.scrollWidth <= caption.clientWidth;
 
@@ -195,12 +201,53 @@ function toolLooks() {
   problems.push(...need(document.activeElement === $("expandAll"), "Collapse all did not hand focus to Expand all"));
   for (const code of [...codes().slice(1), codes()[0]]) {
     pick(code);
-    $("options").close();
     problems.push(...need(spots(false) === sideways, `${code}: the buttons are at ${spots()}`), ...wrong());
     $("expandAll").click();
     problems.push(...wrong());
     $("collapseAll").click();
   }
+  return problems;
+}
+
+function confirming() {
+  const [start, other] = [language, codes().find((code) => code !== language)];
+
+  const draft = () => {
+    if (!$("options").open) $("optionsButton").click();
+    $("include").click();
+    $("languageButton").click();
+    options().find((option) => option.dataset.language === other).click();
+    return checked("include") && $("languageName").textContent === data.languages[other].name;
+  };
+
+  const asBefore = () => !include && language === start && !checked("include")
+    && $("languageName").textContent === data.languages[start].name;
+
+  const reopen = () => {
+    $("optionsButton").click();
+    return asBefore();
+  };
+
+  $("optionsButton").click();
+  const buttons = [...$("optionsOk").parentElement.children].filter(rendered);
+  const [form, [cancel, ok]] = [box($("optionsOk").parentElement), buttons.map(box)];
+  const problems = [
+    ...need(same(buttons.map((el) => el.id), ["optionsCancel", "optionsOk"]), `${buttons.map(describe)} in the window`),
+    ...need(Math.abs(ok.right - form.right) < 1 && cancel.right <= ok.left && Math.abs(cancel.top - ok.top) < 0.5
+      && Math.abs(cancel.width - ok.width) < 0.5, "Cancel and OK are not side by side on the right"),
+    ...buttons.filter(cut).map((el) => `${describe(el)} is not the whole button picture`),
+    ...need(draft() && !include && language === start, "changes took effect before OK"),
+  ];
+  $("optionsCancel").click();
+  problems.push(...need(reopen(), "Cancel did not throw the changes away"));
+  draft();
+  $("options").close();
+  problems.push(...need(reopen(), "closing the window without OK did not throw the changes away"));
+  draft();
+  $("optionsOk").click();
+  problems.push(...need(include && language === other && !$("options").open, "OK did not apply the changes and close"));
+  setInclude(false);
+  pick(start);
   return problems;
 }
 
@@ -210,21 +257,25 @@ function simpleSwitch() {
   const before = { pictures: pictures(), spot: simpleSpot(), basics: picturesOn() };
   before.basics &&= civLinks() === $("civs").children.length;
   $("simple").click();
+  const waiting = simpleTicked(true) && same(pictures(), before.pictures) && simpleSpot() === before.spot;
+  $("optionsOk").click();
   const title = [...document.querySelector("h1").children].filter(rendered).map((el) => el.textContent);
   const problems = [
     ...need(before.basics, "no pictures or links before ticking"),
+    ...need(waiting, "ticking changed the page before OK, or moved the box"),
     ...need(simpleTicked(true), "the box is not ticked"),
     ...pictures().slice(0, 3).map((name) => `${name} is left`),
-    ...need(simpleSpot() === before.spot, `ticking moved the box from ${before.spot} to ${simpleSpot()}`),
     ...need(civLinks() === 0, "links are left"),
     ...need(recall("simple") === "true" || attempt(() => localStorage) === null, "the choice is not remembered"),
     ...need(same(title, [ui().title]), "the title is short"),
   ];
+  $("optionsButton").click();
+  const spot = simpleSpot();
   $("simple").click();
   problems.push(
     ...need(simpleTicked(false), "the box is not unticked"),
     ...need(same(pictures(), before.pictures), "not every image came back"),
-    ...need(simpleSpot() === before.spot, `unticking moved the box from ${before.spot} to ${simpleSpot()}`),
+    ...need(simpleSpot() === spot, `unticking moved the box from ${spot} to ${simpleSpot()}`),
     ...need(civLinks() === $("civs").children.length, "the links did not come back"),
   );
   return problems;
@@ -253,8 +304,11 @@ export async function pictureTests() {
     + "branch is open, side by side as wide as the pane, each the whole button picture, the same in every language",
     toolLooks());
   reset();
-  expect("options: Simple UI takes away every image and civilisation link without moving its box, and gives them back",
-    simpleSwitch());
+  expect("options: without Simple UI, Options has Cancel and OK on the right instead of Close, each the whole button "
+    + "picture; changes wait for OK, and Cancel or closing the window throws them away", confirming());
+  reset();
+  expect("options: Simple UI takes away every image and civilisation link on OK, and unticking it gives them back at "
+    + "once, without moving its box", simpleSwitch());
   reset();
   setSimple(true);
 }

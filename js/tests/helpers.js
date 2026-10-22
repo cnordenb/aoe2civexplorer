@@ -1,6 +1,6 @@
 import { data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language } from "../datahandler.js";
 import { items, whole, lineOf, lineEnd, shared } from "../model.js";
-import { $ } from "../stringbuilder.js";
+import { $, simple } from "../stringbuilder.js";
 import { setMenu, options } from "../optionshandler.js";
 
 export const TAG = /^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i;
@@ -148,6 +148,7 @@ export const pick = (code) => {
   if (!$("options").open) $("optionsButton").click();
   if ($("languageList").hidden) $("languageButton").click();
   options().find((option) => option.dataset.language === code).click();
+  if (!simple()) $("optionsOk").click();
 };
 
 export const reset = () => {

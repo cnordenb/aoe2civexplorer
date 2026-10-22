@@ -39,7 +39,9 @@
       "viewList": "Senarai",
       "viewTile": "Jubin",
       "tooltips": "Petua alat",
-      "close": "Tutup"
+      "close": "Tutup",
+      "cancel": "Batal",
+      "ok": "OK"
     },
     "groups": {
       "economy": "Ekonomi",

@@ -39,7 +39,9 @@
       "viewList": "清單",
       "viewTile": "圖塊",
       "tooltips": "工具提示",
-      "close": "關閉"
+      "close": "關閉",
+      "cancel": "取消",
+      "ok": "確定"
     },
     "groups": {
       "economy": "經濟",

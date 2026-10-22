@@ -39,7 +39,9 @@
       "viewList": "सूची",
       "viewTile": "टाइल",
       "tooltips": "टूलटिप",
-      "close": "बंद करें"
+      "close": "बंद करें",
+      "cancel": "रद्द करें",
+      "ok": "ठीक है"
     },
     "groups": {
       "economy": "अर्थव्यवस्था",

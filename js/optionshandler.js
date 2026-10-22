@@ -1,4 +1,6 @@
-import { data, attempt, recall, remember, preferredLanguage, loadLanguage, useLanguage } from "./datahandler.js";
+import {
+  data, language, attempt, recall, remember, preferredLanguage, loadLanguage, useLanguage,
+} from "./datahandler.js";
 import { items, include, regional, setIncluded, setRegionals } from "./model.js";
 import { $, clone, simple, writeFixed, writeTexts, label, showLoadError } from "./stringbuilder.js";
 import { dress, update, find, replant, startTree } from "./nodetree.js";
@@ -25,11 +27,15 @@ function buildLanguages() {
   }));
 }
 
+function showLanguage(code) {
+  $("languageName").textContent = data.languages[code].name;
+  for (const option of options()) option.setAttribute("aria-current", String(option.dataset.language === code));
+}
+
 export function setLanguage(code) {
   useLanguage(code);
   writeTexts();
-  $("languageName").textContent = data.languages[code].name;
-  for (const option of options()) option.setAttribute("aria-current", String(option.dataset.language === code));
+  showLanguage(code);
   label();
   update();
   if ($("find").value) find();
@@ -67,18 +73,46 @@ export function setSimple(on) {
   if (items.length) update();
 }
 
-export const flip = {
-  include: () => setInclude(!include), regional: () => setRegional(!regional), simple: () => setSimple(!simple()),
+const picked = () => options().find((option) => option.getAttribute("aria-current") === "true")?.dataset.language;
+
+export const choices = {
+  language: { now: () => language, set: choose, shown: picked, show: showLanguage },
+  include: { now: () => include, set: setInclude },
+  regional: { now: () => regional, set: setRegional },
+  simple: { now: simple, set: setSimple },
 };
 
+const checked = (id) => $(id).getAttribute("aria-checked") === "true";
+
+const shownOf = (id) => (choices[id].shown ? choices[id].shown() : checked(id));
+
+function toggle(id) {
+  if (simple()) choices[id].set(!checked(id));
+  else tick(id, !checked(id));
+}
+
+function apply() {
+  for (const [id, choice] of Object.entries(choices)) if (shownOf(id) !== choice.now()) choice.set(shownOf(id));
+}
+
+function discard() {
+  for (const [id, choice] of Object.entries(choices)) (choice.show ?? ((on) => tick(id, on)))(choice.now());
+}
+
 function wireOptions() {
-  $("optionsButton").addEventListener("click", () => $("options").showModal());
+  const optionOf = (target) => target.closest(".option")?.id;
+
+  $("optionsButton").addEventListener("click", () => {
+    discard();
+    $("options").showModal();
+  });
+  $("optionsOk").addEventListener("click", apply);
   $("options").addEventListener("close", () => setMenu(false));
-  $("settings").addEventListener("click", (e) => flip[e.target.closest(".option")?.id]?.());
+  $("settings").addEventListener("click", (e) => optionOf(e.target) && toggle(optionOf(e.target)));
   $("settings").addEventListener("keydown", (e) => {
-    if (e.key !== " " || !flip[e.target.id]) return;
+    if (e.key !== " " || !optionOf(e.target)) return;
     e.preventDefault();
-    flip[e.target.id]();
+    toggle(optionOf(e.target));
   });
 }
 
@@ -129,7 +163,7 @@ function wireLanguages() {
   $("languageList").addEventListener("click", (e) => {
     if (onScrollbar(e)) return;
     const option = e.target.closest("[data-language]");
-    if (option) choose(option.dataset.language);
+    if (option) (simple() ? choose : showLanguage)(option.dataset.language);
     setMenu(false, button);
   });
   picker.addEventListener("keydown", onMenuKey);

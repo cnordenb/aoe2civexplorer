@@ -39,7 +39,9 @@
       "viewList": "Lista",
       "viewTile": "Blocos",
       "tooltips": "Dicas",
-      "close": "Fechar"
+      "close": "Fechar",
+      "cancel": "Cancelar",
+      "ok": "OK"
     },
     "groups": {
       "economy": "Economia",

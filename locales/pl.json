@@ -49,7 +49,9 @@
       "viewList": "Lista",
       "viewTile": "Kafelki",
       "tooltips": "Podpowiedzi",
-      "close": "Zamknij"
+      "close": "Zamknij",
+      "cancel": "Anuluj",
+      "ok": "OK"
     },
     "groups": {
       "economy": "Gospodarka",

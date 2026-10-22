@@ -1702,7 +1702,9 @@
       "viewList": "List",
       "viewTile": "Tile",
       "tooltips": "Tooltips",
-      "close": "Close"
+      "close": "Close",
+      "cancel": "Cancel",
+      "ok": "OK"
     },
     "groups": {
       "economy": "Economy",

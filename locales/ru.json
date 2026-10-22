@@ -48,7 +48,9 @@
       "viewList": "Список",
       "viewTile": "Плитки",
       "tooltips": "Подсказки",
-      "close": "Закрыть"
+      "close": "Закрыть",
+      "cancel": "Отмена",
+      "ok": "ОК"
     },
     "groups": {
       "economy": "Экономика",

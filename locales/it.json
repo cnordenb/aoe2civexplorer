@@ -39,7 +39,9 @@
       "viewList": "Elenco",
       "viewTile": "Riquadri",
       "tooltips": "Suggerimenti",
-      "close": "Chiudi"
+      "close": "Chiudi",
+      "cancel": "Annulla",
+      "ok": "OK"
     },
     "groups": {
       "economy": "Economia",

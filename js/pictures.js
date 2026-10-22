@@ -1,15 +1,19 @@
 import { recall, remember, words } from "./datahandler.js";
 import { $, simple } from "./stringbuilder.js";
 import { itemAt } from "./nodetree.js";
-import { tick, flip } from "./optionshandler.js";
+import { tick, choices } from "./optionshandler.js";
 
 export let view = "list";
+
+const showView = (choice) => {
+  for (const input of $("views").querySelectorAll("input")) input.checked = input.value === choice;
+};
 
 export function setView(choice) {
   view = choice;
   remember("civView", choice);
   $("civs").classList.toggle("tiles", choice === "tile");
-  for (const input of $("views").querySelectorAll("input")) input.checked = input.value === choice;
+  showView(choice);
 }
 
 export let tips = true;
@@ -46,8 +50,10 @@ function wireTip() {
 
 export function startPictures() {
   setView(recall("civView") === "tile" ? "tile" : "list");
-  $("views").addEventListener("change", (e) => setView(e.target.value));
   setTips(recall("tooltips") !== "false");
-  flip.tooltips = () => setTips(!tips);
+  choices.civView = {
+    now: () => view, set: setView, shown: () => $("views").querySelector(":checked").value, show: showView,
+  };
+  choices.tooltips = { now: () => tips, set: setTips };
   wireTip();
 }

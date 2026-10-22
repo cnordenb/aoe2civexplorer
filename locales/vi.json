@@ -39,7 +39,9 @@
       "viewList": "Danh sách",
       "viewTile": "Ô",
       "tooltips": "Chú thích",
-      "close": "Đóng"
+      "close": "Đóng",
+      "cancel": "Hủy",
+      "ok": "OK"
     },
     "groups": {
       "economy": "Kinh tế",

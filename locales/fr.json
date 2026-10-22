@@ -39,7 +39,9 @@
       "viewList": "Liste",
       "viewTile": "Vignettes",
       "tooltips": "Infobulles",
-      "close": "Fermer"
+      "close": "Fermer",
+      "cancel": "Annuler",
+      "ok": "OK"
     },
     "groups": {
       "economy": "Économie",

@@ -1925,3 +1925,71 @@ while the work was under way: only whether nodes are expanded counts, and the ma
 - **Requirement 34**, "A prerequisite node must be automatically enabled if a descendant node is enabled", was added
   to `REQUIREMENTS.md` during this work. It has not been carried out. It goes against how marking works now, where a
   mark never passes up (marking Champion marks Champion only).
+
+## 2026-10-22: the report window keeps its title and Close button in view
+
+Asked by the chief developer: in the test results window, the title "Test results" and the summary of how many tests
+passed or failed stay at the top of the window, and the part with the Close button stays at the bottom, so that
+neither disappears when scrolling and Close is found without scrolling down. Only the list of the individual test
+results scrolls. Before, the whole window scrolled: with 94 results at 1920 by 1080, Close sat 3,400 pixels down.
+
+### Carried out
+
+- **One scrolling part.** In `index.html` the two lists of the report window, the results and the updater's download
+  links, are now inside `<div class="report-body">`. In `style.css` the open window is a column: the title, the
+  summary and the Close button keep their height, and the list part takes what is left of the window, at least 44
+  pixels, and scrolls. A line above and below it shows where the scrolling part begins and ends.
+- **The updater** shows its report in the same window, so the same applies to it: its messages and its download links
+  scroll together, with the download links at the end, as step 6 of the update guide says.
+- **The keyboard.** The list part can take focus, like the list of civilisations, so that it can be scrolled with the
+  keys. So that the window still opens with focus on Close, as before, Close now has `autofocus`.
+- **Rule 25.** `style.css` had 399 lines of code. The `dialog` rule went onto one line to make room for the three new
+  rules, and the file still has 399.
+
+### Tests: 95
+
+- **New Test 94**, in `js/tests/interface.js` and run last before the count of tests, fills the report window with
+  200 lines and scrolls its list to the end. The title, the summary and Close must not have moved and must still be
+  on screen, the window itself must not scroll, and focus must start on Close.
+- Test 94, at most 100 tests, is now Test 95.
+- **Undone in a scratch copy**, each of these fails Test 94 and nothing else: the window back to scrolling as a whole,
+  and Close without `autofocus`.
+- **Checked.** All 95 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. No script breaks Rules 23 to 26. The updater's window was checked by hand with 60
+  messages and two download links.
+
+### Documents
+
+- `MAINTAINER.md`: step 6 of the update guide, and the description of `js/report.js`.
+- `TESTS.md`: Test 94, Test 95, and the lines of every test in `js/tests/interface.js`, which moved down by one, and
+  of Test 95 in `js/tests/run.js`.
+- `code_docu.pdf` was not rebuilt, as in the entry above. It does not describe `reportTests()` either.
+
+## 2026-10-22: the report window's Close button, plain and on the right
+
+Asked by the chief developer: the test results window uses the plain button, without the button sprite, whether or
+not Simple UI is on, and its Close button is on the right instead of the left.
+
+### Carried out
+
+- **No sprite.** With the pictures on, the sprite rules in `style.css` now read `.pictures .tool:not(.icon, .report
+  .tool)`, so they no longer reach the report window's Close button, which keeps the plain look of `.tool`: a thin
+  border, the page's colours and the page's font. The rules for 4K screens and for the end caps are left out for it
+  in the same way. The updater's report is the same window, so its Close button is plain too.
+- **On the right.** The window's `form` aligns its button to the right.
+- **Rule 25.** The `.options[open]` rule went onto one line, and `style.css` now has 397 lines of code.
+
+### Tests: still 95
+
+- **Test 94** now also checks that Close sits on the right and that, with the pictures turned on, its background,
+  border, colours, font and end caps are the same as with Simple UI.
+- **Undone in a scratch copy**, each of these fails Test 94 and nothing else: the sprite back on the report's Close
+  button, and Close back on the left.
+- **Checked.** All 95 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. No script breaks Rules 23 to 26.
+
+### Documents
+
+- `MAINTAINER.md`: the description of `js/report.js`.
+- `TESTS.md`: Test 94.
+- `code_docu.pdf` was not rebuilt.

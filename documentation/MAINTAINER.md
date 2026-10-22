@@ -65,9 +65,9 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
    - Every entry in a list is followed by a comma, except the last one. Visual Studio Code underlines mistakes in red.
 
    Reload the `?update` page. The report should no longer mention those items.
-6. **Download the new files.** At the bottom of the report is a link for each file that changed: always
-   **Download data.json**, and one for each language file that changed, such as **Download locales/de.json**. Save
-   each over the old file of the same name.
+6. **Download the new files.** At the end of the report's list, which scrolls between the window's title and its
+   **Close** button, is a link for each file that changed: always **Download data.json**, and one for each language
+   file that changed, such as **Download locales/de.json**. Save each over the old file of the same name.
 7. **Run the tests.** Open the page with `?test` instead, such as `http://127.0.0.1:5501/index.html?test`, and wait
    about half a minute. A window then says **All … tests passed**, or names the tests that failed by their number in
    `TESTS.md`, each with what is wrong and where.
@@ -119,6 +119,7 @@ classDiagram
     +setRegional(on)
     +setSimple(on)
     +tick(id, on)
+    +choices
     -choose(code)
   }
   class nodetree {
@@ -221,9 +222,12 @@ classDiagram
   tree, the list of civilisations and **Filters**.
 - **`js/nodetree.js`** draws the tree and handles it: opening and closing, counts, marking by click, touch and key,
   **Find**, and the buttons above it.
-- **`js/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI.
+- **`js/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI. Each
+  setting is one of its `choices`; `js/pictures.js` adds the civilisations' view and Tooltips.
 - **`js/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, and the tooltip.
-- **`js/report.js`** shows the report window of the updater and the tests.
+- **`js/report.js`** shows the report window of the updater and the tests. Its title, its summary and its **Close**
+  button stay in view, and only the list between them scrolls. **Close** sits on the right and is the plain button
+  of Simple UI, even with the pictures on.
 
 A script only uses the scripts below it in this order: `datahandler.js`, `model.js`, `stringbuilder.js`,
 `nodetree.js`, `optionshandler.js`. Keep it so, so that the arrows never go round in a circle.
@@ -309,6 +313,12 @@ Under the Find box there are then two buttons instead of three: **Clear**, and *
 **Collapse all** in the same place while a branch at the top of the tree is open. Together they are as wide as the
 pane, whatever the language. Each shows the whole button picture in its own proportions, so in a narrow window the
 buttons and their text get smaller. Simple UI keeps the three buttons.
+
+The Options window then has **Cancel** and **OK** on the right instead of **Close**, also each the whole button
+picture. A change made in it only shows in the window until **OK** applies it; **Cancel**, Escape or closing the
+window in any other way drops it. With Simple UI, **Close** stays, and every change takes effect at once, as
+`REQUIREMENTS.md` asks. So unticking Simple UI turns the pictures on at once, and from then on the window waits for
+**OK**.
 
 ### Assets
 

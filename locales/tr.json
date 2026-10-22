@@ -39,7 +39,9 @@
       "viewList": "Liste",
       "viewTile": "Döşeme",
       "tooltips": "İpuçları",
-      "close": "Kapat"
+      "close": "Kapat",
+      "cancel": "İptal",
+      "ok": "Tamam"
     },
     "groups": {
       "economy": "Ekonomi",
