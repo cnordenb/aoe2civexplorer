@@ -677,7 +677,7 @@
       {"item": "Arrowslits"},
       {"item": "Shipwright"}
     ]},
-    {"group": "fortifications", "kids": [
+    {"group": "fortifications", "lines": true, "kids": [
       {"item": "Palisade Wall"},
       {"item": "Palisade Gate"},
       {"item": "Stone Wall", "kids": [

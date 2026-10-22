@@ -20,7 +20,7 @@ function collect(nodes, parent) {
     if (node.item && !(node.item in data.availability)) throw new Error(`no availability for ${node.item}`);
     const key = node.item ?? node.group;
     const item = {
-      i: items.length, key, path: parent ? `${parent.path}|${key}` : key, group: !node.item,
+      i: items.length, key, path: parent ? `${parent.path}|${key}` : key, group: !node.item, lines: !!node.lines,
       set: node.item ? setOf(data.availability[node.item]) : ALL, self: null, kids: [], parent,
     };
     (parent ? parent.kids : roots).push(item);
@@ -63,22 +63,16 @@ export function state(item) {
 }
 
 export const isUnitOrTech = (item) => {
-  for (let p = item.parent; p; p = p.parent) if (!p.group) return !item.group;
+  for (let p = item.parent; p; p = p.parent) if (!p.group || p.lines) return !item.group;
   return false;
 };
-
-const isTop = (item) => isUnitOrTech(item) && !isUnitOrTech(item.parent);
 
 const descendants = (item) => item.kids.flatMap((kid) => [kid, ...descendants(kid)]);
 
 function passedTo(item) {
   const line = [item];
-  const top = isTop(item);
-
-  const only = () => line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group && line.at(-1).kids[0];
-
-  while (only() && (top || size(only().set) === size(item.set))) line.push(only());
-  return line;
+  while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group) line.push(line.at(-1).kids[0]);
+  return line.filter((each) => size(each.set) === size(item.set));
 }
 
 export function mark(item, kind) {

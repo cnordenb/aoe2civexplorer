@@ -238,7 +238,7 @@ export function tagTests() {
     codes().filter((code) => !data.languages[code].name || !TAG.test(data.languages[code].tag)));
 }
 
-const KNOWN = ["item", "group", "kids", "unique"];
+const KNOWN = ["item", "group", "kids", "unique", "lines"];
 
 function treeTests(all) {
   expect("data: each item is in the tree once", all.filter((key, i) => all.indexOf(key) !== i));
@@ -246,9 +246,10 @@ function treeTests(all) {
   const nodes = (list) => list.flatMap((node) => [node, ...nodes(node.kids ?? [])]);
 
   const odd = (node) => Object.keys(node).some((key) => !KNOWN.includes(key))
-    || ("unique" in node && (node.unique !== true || !node.group));
+    || ["unique", "lines"].some((flag) => flag in node && (node[flag] !== true || !node.group));
 
-  expect("data: the tree uses only item, group, kids and unique, and only groups are unique, marked with true",
+  expect("data: the tree uses only item, group, kids, unique and lines, and only groups are unique or lines, marked "
+    + "with true",
     nodes(data.tree).filter(odd).map((node) => node.item ?? node.group));
   expect("data: each item says which civilisations have it, naming only known ones, and which icon it has",
     all.filter((key) => {

@@ -1759,3 +1759,108 @@ The three decisions above are in place. Nothing was committed, and `REQUIREMENTS
 
 Questions 5, 6 and 7 of the entry above: room in `js/` and `js/tests/` (Rule 26), the options that
 `REQUIREMENTS.md` does not mention, and the order the updater writes the Dock's items in.
+
+## 2026-10-22: requirement 27 rescinded
+
+Decided by the chief developer, recorded before any work on it:
+
+- Decision 3 above is withdrawn. Requirement 27 has been rescinded and is no longer complied with, and the
+  exception for the top of a line has been taken out of requirement 30. Every node now follows requirements 29 and
+  30 without exception: a mark passes down a line of only children only to items with as many civilisations as the
+  one marked, the top of a line included.
+- `MAINTAINER.md` is not to be edited for now.
+
+### Carried out
+
+- **Marking.** `passedTo()` in `js/model.js` no longer treats the top of a line differently, and `isTop()` is gone.
+  Marking any unit or technology, the top of a line included, passes the mark to the items in its line of only
+  children that have as many civilisations as the one marked, and to no other (Req. 29, 30). Marking Militia (52)
+  marks Man-at-Arms (52) again, but not Long Swordsman (51), so 52 civilisations fit, as before decision 3. Marks
+  still never pass up, buildings and groups still pass a mark to everything in them, and "Full" still needs
+  something under it.
+- **All items of the same count, not only the first run of them.** Req. 29 gives the mark to "all descendant
+  nodes of equal number" in the line, so an item further down with the same count again would get it, past one
+  with another count. No line in `data.json` has such an item today, so this changes nothing yet; it only decides
+  what happens if a game update makes one.
+- **Tests**, still 93, with the same numbers:
+  - Test 17 now checks that marking the top of a line passes the mark down only at the same count, must have and
+    must lack, and that marking it again clears it. The sample line is now one whose last item has another count
+    than its top, so that the test can tell the difference.
+  - Test 11 marks the top of the line first, then its end, as marking the top no longer reaches the end.
+  - Test 20 marks everything under the building itself, as marking the top of each line no longer does.
+  - Test 22 works out the items of the same count in the same way as Test 17.
+  - Undone in a scratch copy, the rescinded rule for the top of a line fails Tests 11 and 17; a mark passing down
+    the whole line from any item fails Tests 11, 17 and 22; no mark passing down at all fails Tests 17 and 22.
+    Stopping at the first other count passes every test, as no line in the data tells the two apart.
+- **Checked.** All 93 tests pass in Chrome 155 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. No script breaks Rules 23 to 26.
+- **Documents.** `TESTS.md`: the wording of Tests 11, 17, 20 and 22, and the lines of every test in
+  `js/tests/behaviour.js`. `code_docu.pdf` rebuilt (258 functions).
+- **`MAINTAINER.md` was not edited, as asked, so it is now out of date.** Step 4 still says that marking the top of
+  a line marks the whole line whatever the counts (requirement 27), with Militia marking up to Champion, and that
+  the first item of a line is the one that marks the whole line. Both need rewriting to requirements 29 and 30
+  when the guide may be edited again.
+
+## 2026-10-22: MAINTAINER.md rewritten for Rule 27
+
+Asked by the chief developer, following the new Rule 27: `MAINTAINER.md` had grown to 873 lines, and the update
+guide only started halfway down. It is rewritten from scratch, at 369 lines, 104 of them the UML diagram.
+
+- **Two chapters, as asked.** "Updating Civ Explorer after a game patch" comes first, with a short description and
+  eight steps, and no subchapters. Fixing a wrong name and adding a new civilisation's icon are now part of step 4,
+  where the report asks for them. "How the code works" has eight subchapters: Files and folders, UML diagram, The
+  data, How marking works, Simple UI and the pictures, Assets, Tests, and Rules for changing the code. Changing the
+  page's text and adding a language are now part of The data.
+- **Table of contents.** It sits right under the title, with no heading of its own, so that it is not a chapter
+  and nothing else comes before the update guide. Rule 27 asks for both a table of contents and nothing before the
+  guide; the title and the table of contents are read as not being content.
+- **Left out as detail.** The measurements behind the pictures (where the parchment, the title frame and the Options
+  window's parchment sit, the cut of each frame, the fonts' colours and shadows), the tables of picture sizes, the
+  layout rules for phones, the tooltip's placement, and the history of decisions and bugs. The numbers stay in
+  `style.css` and the history in this log. The guide keeps what a maintainer needs to change a picture safely.
+- **Marking** is described as requirements 29 and 30 now ask, with requirement 27 rescinded: the mark passes down a
+  line only at the same count, from any unit or technology. This ends the out-of-date text noted in the entry above.
+- The UML diagram is unchanged. No other file links to the old headings.
+
+## 2026-10-22: requirements 24, 25 and 30 amended for Fortifications
+
+Amended by the chief developer, recorded before any work on them:
+
+- Req. 24, "Full", no longer applies to the descendant nodes of Fortifications. The Fortifications row itself keeps
+  it.
+- Req. 25, a line's filter named after its deepest descendant, now also applies to Fortifications.
+- Req. 30, no mark passed to an item of another count, now also applies to Fortifications.
+
+So the walls and towers under Fortifications are marked and named like units and technologies: marking the Watch
+Tower no longer marks the Guard Tower and Keep, as their counts differ, and a marked tower line is named after its
+deepest item marked must have, such as "Keep", instead of "Full Watch Tower".
+
+### Carried out
+
+- **A flag in the data, not a name in the code.** The Fortifications group in `data.json` now reads
+  `{"group": "fortifications", "lines": true, ...}`. Every item in a group marked so counts as a unit or technology
+  (`isUnitOrTech()` in `js/model.js`), so requirements 25, 29 and 30 apply to it and requirement 24 does not. The
+  scripts still name no group, as the rule test against game data in the code asks; a future group of upgrade lines
+  needs only the flag.
+- **What visitors see.** Marking the Watch Tower (55 civilisations) marks only the Watch Tower, as the Guard Tower
+  has 51; marking the Stone Wall (54) does not mark the Fortified Wall (43). A marked tower line is listed as its
+  deepest item marked must have, such as "Keep", never "Full Watch Tower". A mark still never passes up.
+- **How the requirements were read.** Req. 24 exempts the descendant nodes of Fortifications, so the Fortifications
+  row itself is still a root: marking it marks everything in it, and Filters reads "Full Fortifications". Req. 30 is
+  read the same way, for the items under Fortifications, as passing nothing down from the Fortifications row would
+  leave nothing for "Full Fortifications" to describe.
+- **Tests**, still 93, with the same numbers:
+  - Test 13 now also marks a wall or tower line, picked from the data as the first line in a group marked lines
+    whose second item has another count. It checks that the mark stayed on the first item, and that the fully
+    marked line is named after its last item, without "Full". If no group is marked lines, Test 13 fails and says
+    so, instead of the run stopping.
+  - Test 84 knows the `lines` flag, and checks that it is `true` and only on groups.
+  - The tests' own `itemAbove()` knows the flag too, so the walls and towers are no longer picked as sample
+    buildings.
+  - Undone in a scratch copy: treating the walls and towers as buildings again, in the code or by removing the flag
+    from `data.json`, fails Test 13; a flag of `"yes"` fails Test 84.
+- **Checked.** All 93 tests pass in Chrome 155 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. No script breaks Rules 23 to 26.
+- **Documents.** `MAINTAINER.md`: Fortifications in How marking works, the `lines` flag in The data, and walls and
+  towers as lines in step 5 of the update guide. `TESTS.md`: Tests 13 and 84, and the lines of the tests that moved
+  in `js/tests/behaviour.js` and `js/tests/static.js`. `code_docu.pdf` rebuilt.

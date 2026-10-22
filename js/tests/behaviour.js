@@ -12,7 +12,13 @@ const chainOf = (item) => {
   return chain.filter((each) => each.twisty);
 };
 
-const chipNames = () => [...$("chips").querySelectorAll(".chip-name")].map((chip) => chip.textContent);
+const sameCount = (item) => {
+  const line = [item];
+  while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group) line.push(line.at(-1).kids[0]);
+  return line.filter((each) => size(each.set) === size(item.set));
+};
+
+const chipNames = () =>[...$("chips").querySelectorAll(".chip-name")].map((chip) => chip.textContent);
 
 const fullName = (item) => fill(words.ui.full, { name: nameOf(item) });
 
@@ -35,7 +41,7 @@ function marking({ partial, other, third }) {
   check("marking: Space on a marked item clears it", partial.self === null);
 }
 
-function branches({ branch, line, group, headed, lone }) {
+function branches({ branch, line, group, headed, lone, walled }) {
   reset();
   for (let p = branch.parent; p; p = p.parent) setOpen(p, true);
   const inBranch = items.filter((item) => below(item, branch));
@@ -51,9 +57,9 @@ function branches({ branch, line, group, headed, lone }) {
     && [branch.node, ...legend].every((el) => drawn(el.querySelector(".box")) === marks[el.dataset.state]),
     [branch.node, ...legend].map((el) => drawn(el.querySelector(".box"))).join(", "));
   $("clear").click();
-  tap(lineOf(line)[1].node);
-  const partLine = same(chipNames(), [nameOf(lineOf(line).findLast((item) => item.self === "has"))]);
   tap(line.node);
+  const partLine = same(chipNames(), [nameOf(lineOf(line).findLast((item) => item.self === "has"))]);
+  tap(lineEnd(line).node);
   check("filters: a line has one filter button, named after its deepest must-have item",
     partLine && same(chipNames(), [nameOf(lineEnd(line))]));
   keyDown(lineEnd(line).node, "x");
@@ -65,8 +71,15 @@ function branches({ branch, line, group, headed, lone }) {
     tap(item.node);
     return chipNames();
   });
-  check("filters: a fully marked building is named Full, also at the top of a line, but not with nothing under it",
-    same(named.flat(), [fullName(headed), nameOf(lone)]), named.flat().join(", "));
+  $("clear").click();
+  const walls = walled ? lineOf(walled) : [];
+  if (walled) tap(walled.node);
+  const alone = walled?.self === "has" && walled.kids[0].self === null;
+  walls.forEach((item) => item.self === "has" || tap(item.node));
+  check("filters: a fully marked building is named Full, also at the top of a line, but not with nothing under it, "
+    + "nor in a group of lines, where a mark passes down only at the same count and the line takes its deepest name",
+    same(named.flat(), [fullName(headed), nameOf(lone)]) && alone && same(chipNames(), [nameOf(walls.at(-1))]),
+    walled ? [...named.flat(), ...chipNames()].join(", ") : "no line in a group marked lines in data.json");
   $("clear").click();
   $("collapseAll").click();
   const inGroup = items.filter((item) => below(item, group));
@@ -148,21 +161,24 @@ async function gestures({ third }) {
     pressed && third.self === null);
 }
 
-function wholeLines({ line }) {
+function lineTops({ line }) {
   reset();
   const chain = lineOf(line);
+  const run = sameCount(line);
+
+  const only = (kind) => chain.every((item) => item.self === (run.includes(item) ? kind : null));
+
   tap(line.node);
-  const marked = chain.every((item) => item.self === "has") && line.node.getAttribute("aria-checked") === "true"
-    && same(listed(), expected(chain.reduce((s, item) => s & item.set, ALL)));
+  const marked = only("has") && line.node.getAttribute("aria-checked") === "true"
+    && same(listed(), expected(run.reduce((s, item) => s & item.set, ALL)));
   tap(line.node);
   const cleared = chain.every((item) => item.self === null);
   keyDown(line.node, "x");
-  const lacking = chain.every((item) => item.self === "lacks")
-    && same(listed(), expected(chain.reduce((s, item) => s & ~item.set, ALL)));
+  const lacking = only("lacks") && same(listed(), expected(run.reduce((s, item) => s & ~item.set, ALL)));
   keyDown(line.node, "x");
-  check("marking: marking the top of a line marks the whole line, whatever the counts, must have or must lack, and "
-    + "marking it again clears the line", marked && cleared && lacking && chain.every((item) => item.self === null),
-    `${marked}, ${cleared}, ${lacking}`);
+  check("marking: marking the top of a line passes the mark down only to items with as many civilisations, must "
+    + "have or must lack, and marking it again clears it", marked && cleared && lacking && run.length < chain.length
+    && chain.every((item) => item.self === null), `${run.length}/${chain.length}, ${marked}, ${cleared}, ${lacking}`);
   tap(lineEnd(line).node);
   check("marking: marking the last item of a line marks only that item", lineEnd(line).self === "has"
     && chain.slice(0, -1).every((item) => item.self === null) && same(listed(), expected(lineEnd(line).set)));
@@ -177,7 +193,7 @@ function parents({ branch, loose, without }) {
     && branch.self === null && branch.node.getAttribute("aria-checked") === "mixed");
   $("clear").click();
   keyDown(loose.node, "x");
-  loose.kids.forEach((kid) => tap(kid.node));
+  items.filter((item) => !item.group && below(item, loose)).forEach((item) => item.self === "has" || tap(item.node));
   check("marking: an item can be must lack while everything under it is must have", loose.self === "lacks"
     && listed().length > 0 && same(listed(), expected(without(loose))));
   $("clear").click();
@@ -191,15 +207,16 @@ function lines({ line, even, uneven }) {
   check("marking: marking a unit or technology opens it to its first fork or its end, showing all marked with it",
     closed && lineOf(line).every((item) => shown(item) && (!item.twisty || isOpen(item))));
   $("clear").click();
-  const run = [even];
-  while (run.at(-1).kids.length === 1 && size(run.at(-1).kids[0].set) === size(even.set)) run.push(run.at(-1).kids[0]);
+  const [run, lacking] = [sameCount(even), sameCount(uneven)];
   tap(even.node);
-  const passed = run.every((item) => item.self === "has") && items.filter((item) => item.self).length === run.length;
+  const passed = run.length > 1 && run.every((item) => item.self === "has")
+    && items.filter((item) => item.self).length === run.length;
   $("clear").click();
   keyDown(uneven.node, "x");
   check("marking: below the top of a line, a mark passes down only to items with as many civilisations, never up",
-    passed && uneven.self === "lacks" && items.filter((item) => item.self).length === 1
-    && same(listed(), expected(ALL & ~uneven.set)), `${run.length} passed: ${passed}`);
+    passed && lacking.every((item) => item.self === "lacks")
+    && items.filter((item) => item.self).length === lacking.length
+    && same(listed(), expected(lacking.reduce((s, item) => s & ~item.set, ALL))), `${run.length} passed: ${passed}`);
   $("clear").click();
 }
 
@@ -320,7 +337,7 @@ export async function behaviourTests(sample) {
   branches(sample);
   crowding();
   await gestures(sample);
-  wholeLines(sample);
+  lineTops(sample);
   parents(sample);
   lines(sample);
   counts(sample);

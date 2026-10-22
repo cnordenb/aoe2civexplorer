@@ -22,5 +22,6 @@ Rule 21: Only the chief developer (Carl Nordenbrink @cnordenb) may modify REQUIR
 Rule 22: rules 3 and 9 are inhibited unless in Simple UI mode.
 Rule 23: No function may exceed 60 LOC.
 Rule 24: No LOC may exceed 120 characters. This rule does not apply to HTML nor CSS.
-rule 25: No file may exceed 400 LOC.
+Rule 25: No file may exceed 400 LOC.
 Rule 26: No folder may exceed 7 files. This rule does not apply to assets or locales. Root may exceptionally contain up to 8 files.
+Rule 27: MAINTAINER.md should be beginner-friendly, stick to the essential stuff (don't clutter it with unnecessary details), and have a table of contents. The steps on how to update after game patch should always be the first chapter. Never insert content to before the game update guide.

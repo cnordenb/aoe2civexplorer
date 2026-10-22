@@ -1,693 +1,109 @@
-# Looking after AoE2 Civ Explorer
-
-This guide is for whoever keeps the page up to date. You do not need to be a programmer for the usual job, which is
-updating the page after Age of Empires II gets a patch. That takes a browser, a text editor and about ten minutes.
-
-The guide starts with how the page is put together, because the update steps make more sense once you know that.
-If you are in a hurry, jump to [After a game update](#after-a-game-update).
-
-## How the page is put together
-
-The page is a handful of files, a folder of scripts and a folder of language files. There is nothing to install and
-nothing to build: the files you see are exactly the files a visitor's browser downloads.
-
-| File | What it holds |
-| --- | --- |
-| `index.html` | The structure of the page: the header, the two panes, the options window with the language menu. It holds no text of its own. |
-| `style.css` | How the page looks: colours, sizes, the layout for big and small screens. |
-| `script.js` | Where the page starts. The rest of its behaviour is in `js/`, as listed below. |
-| `js/` | How the page behaves, split into the scripts listed below. |
-| `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in English, the default language. |
-| `assets/images/` | The pictures, which Simple UI turns off: the tab icon `favicon.ico`, the backgrounds of the page and the Options window in `ui/backgrounds/`, the buttons and the Find box in `ui/buttons/`, the checkboxes in `ui/checkboxes/`, the mouse cursors in `ui/cursors/`, the panes' frames in `ui/panels/`, the civilisations' icons in `icons/civs/` and the tree's icons in `icons/nodes/`. See [The background pictures](#the-background-pictures). |
-| `assets/fonts/` | The fonts used only with the pictures on: Georgia, Times New Roman Bold and Trajan Pro Bold. See [The panels](#the-panels) and [Civ view](#civ-view-list-or-tiles). |
-| `locales/` | One file per other language, such as `locales/de.json` for German, with every piece of text in that language. |
-| `documentation/` | This guide and the project's other documents: `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DEVLOG.md` and `code_docu.pdf`. |
-
-Two more files help you: `README.md`, which introduces the project, and `.github/workflows/tests.yml`, which tells
-GitHub to run the tests every time someone pushes a change.
-
-The scripts each have one job. They use the browser's own way of loading scripts from each other, called
-modules, so they need no build step and no extra tools:
-
-| Script | Its job |
-| --- | --- |
-| `script.js` | Where the page starts. It loads the data, starts the page, and loads the tests or the updater when asked. |
-| `js/datahandler.js` | Everything about data: loading `data.json` and the language files, the chosen language and its text, which civilisations have what, saved choices such as the language, and the updater that fetches new data and writes the files. |
-| `js/model.js` | The tree and its rules: which items are shown, which are marked, and when marking one item marks others. |
-| `js/stringbuilder.js` | The page's text: the texts in the chosen language, the footer, the names in the tree, the list of civilisations and **Filters**. It also holds `$()` and `clone()`, which every script that touches the page uses. |
-| `js/nodetree.js` | The tree on the left: drawing its rows, opening and closing them, their counts, marking with clicks, touch and keys, **Find**, and the buttons above the tree. |
-| `js/optionshandler.js` | The Options window and the choices in it: the language menu, Include Unique and Universal, Include Regionals and Simple UI. It also starts the page with the visitor's saved choices. |
-| `js/pictures.js` | What only the pictures need: Civ view (list or tiles) and the tooltip. |
-| `js/report.js` | The report window of the updater and the tests. |
-| `js/tests/` | The tests. They are only loaded when the address ends in `?test`, so visitors never download them. |
-
-Four rules keep the code small enough to read. No file may have over 400 lines of code (Rule 25), no function over
-60 (Rule 23), and no line over 120 characters (Rule 24); blank lines are not lines of code, and the line rule does not
-apply to `index.html` and `style.css`. Test 79 checks the first three in `index.html`, `style.css` and every script.
-No folder may hold more than 7 files, apart from `assets/` and `locales/`, and the main folder 8 (Rule 26); a page
-cannot see folders, so GitHub checks this one. `js/` and `js/tests/` hold 7 files each, so they are full.
-
-When a script grows too long, move part of it into another script that has room, or merge two small scripts, so that
-the folder stays at 7 files. A new folder inside `js/`, such as `js/screen/`, is the way out when that no longer
-works. Give a script a name in lower-case letters only, such as `menu.js`. Import it where it is needed, as the others
-do; the tests find every script by following those imports. Only `script.js`, `js/datahandler.js` and `js/model.js`
-must never touch the page; the tests check this too.
-
-The most important idea is that **all the facts live in `data.json` and the language files**. The other files never
-mention a unit, a civilisation or a sentence. So a game update only ever changes `data.json` and the language files,
-and you rarely need to open the other files at all.
-
-A visitor's browser downloads `data.json` and the file of the language it shows, not all 17.
-
-### Where the facts come from
-
-The facts come from [aoe2techtree.net](https://aoe2techtree.net/), the community tech tree site. That site reads the
-game's own files after every patch and publishes, for each civilisation, which buildings, units and technologies it
-has, and the game's names for them in every language the game supports. This page offers the same 17 languages.
-
-The page never contacts aoe2techtree.net while a visitor uses it. Instead, you copy the facts into `data.json` once
-per patch, with the updater described below. That keeps the page fast and keeps it working even if that site is
-down.
-
-### What is in `data.json` and the language files
-
-`data.json` is a text file in a format called JSON. You can open it in any text editor. Its main parts are:
-
-- `source`: where the data comes from, and `updated`, the month it was last fetched. The footer of the page shows it,
-  followed by `notice`, the notice Microsoft's [Game Content Usage Rules](https://www.xbox.com/en-US/developers/rules)
-  ask for. In it, `{rules}` becomes a link to those rules, whose name and address are in `rules`. The notice is a legal
-  text, so it stays in English in every language, and the page marks it as English for screen readers. The footer
-  spans the page, with Simple UI or without, so the notice takes few lines. On a phone it is hidden, to leave the
-  room to the panes; see [Phones and narrow windows](#phones-and-narrow-windows). With the pictures on, each civilisation
-  links to its page on aoe2techtree.net: `url`, then `#` and the civilisation's English name.
-- `languages`: the 17 languages. The first, English, is the default: its text is in `data.json` itself, and every
-  other language has its own file in `locales`, named after its code. Each language has a `name` (as it is written
-  in that language), a `tag` (the standard code that tells browsers and screen readers which language the text is
-  in), and two settings the updater uses when it tidies the game's names: `spaces` (does the language put spaces
-  between words?) and `mergeHyphens` (does a hyphen at the end of a line in the game's text split a single word, as
-  in German?).
-- `civs`: the civilisations, by their English names.
-- `icons`: where the civilisations' icons are, and the file names that differ from the civilisations' names. See
-  [The civilisation icons](#the-civilisation-icons). Also where the tree's icons are (`nodes`), and the icons of the
-  headings Economy, Military and Fortifications (`groups`). See [The tree's icons](#the-trees-icons). And the tab
-  icon (`favicon`); see [Simple UI](#simple-ui).
-- `tree`: what the left pane shows, in order. **You edit this by hand.**
-- `availability`: for each item in the tree, which civilisations have it. The updater writes this; never edit it.
-- `pictures`: for each item in the tree, its icon, and whether it is common, regional or unique, which
-  **Include Regionals** uses. The updater writes this; never edit it.
-- `ignore`: names from the game that you have decided not to show. **You edit this by hand.**
-- `overrides`: corrections to English names from the game. **You edit this by hand.**
-- `tools`: the English text of the updater and the tests.
-- `text`: the English text, in four parts: `ui` (the page's own sentences), `groups` (the headings in the tree, such
-  as Economy), and `civs` and `items` (the names of civilisations and items, which the updater writes).
-
-Each file in `locales` holds the same two parts, `overrides` and `text`, for one other language. For example,
-`locales/de.json` holds the corrections to German names and all the German text. Everything else is shared by all
-languages, so it is only in `data.json`.
-
-### The background pictures
-
-Behind the panes the page shows a picture of a parchment pinned to a wooden board. There are four versions of it, in
-`assets/images/ui/backgrounds/`, and a visitor's browser downloads only the one that suits their window:
-
-| Picture | Size | Used when the window is |
-| --- | --- | --- |
-| `fhd.webp` | 1920 by 1080 | at most 1920 by 1080 pixels |
-| `qhd.webp` | 2560 by 1440 | bigger than 1920 by 1080, up to 2560 by 1440 |
-| `uhd.webp` | 3840 by 2160 | bigger than 2560 by 1440 |
-| `ultrawide.webp` | 5120 by 2160 | wider than 16:9, whatever its size |
-
-"Window" means the part of the browser that shows the page, without its tabs and address bar. That part of a
-maximised browser on a 16:9 screen is usually wider than 16:9, so it gets `ultrawide.webp`.
-
-The choice is made in `style.css`, in the rules that start with `.pictures body`. The picture always fills the
-window and stays centred; whatever does not fit is cut off at the edges.
-
-The header, the panes and the footer sit on the parchment, between the two pins at its top corners. The panes have
-frames of their own; the footer's words sit straight on the parchment, in `#391c1b`, across the full width of the panes. Five numbers in the `.pictures body` rule say where that area is, each as a share of the
-picture:
-
-| Number | Means | `fhd`, `qhd`, `uhd` | `ultrawide` |
-| --- | --- | --- | --- |
-| `--ratio` | the picture's width divided by its height | `16 / 9` | `64 / 27` |
-| `--left` | how far from the picture's left edge the page starts | `0.155` | `0.2325` |
-| `--right` | how far from the picture's left edge the page ends | `0.87` | `0.7636` |
-| `--top` | how far from the picture's top edge the page starts | `0.03` | `0.031` |
-| `--bottom` | how far from the picture's top edge the page ends | `0.967` | `0.968` |
-
-For example, `fhd.webp` is 1920 pixels wide and the page starts at 0.155 of that, about 298 pixels from its left edge.
-From these numbers `style.css` works out, for any window, where the parchment lands and pads the page to fit it.
-When a window is so narrow or so tall that the parchment fills it, the page keeps its usual 16-pixel margin.
-
-### The title
-
-With the pictures on, the header has no panel of its own. The title reads **Civ Explorer**, in bold Georgia coloured
-`#391c1b`, centred in a decorated frame at the top centre of the parchment, with the Options button to its right.
-The frame is `title_frame_sd.webp` (784 by 116) or `title_frame_4k.webp` (twice the detail), from
-`assets/images/ui/backgrounds/`, chosen on the same terms as the Options button. It is at most 784 pixels wide and
-shrinks with narrow windows, and the title shrinks with it, down to 12 pixels. The frame's own edges fade out, and
-`style.css` fades them a little more with a `mask-image`, so that it blends into the parchment.
-
-The title sits in the frame's plain inner box, which spans 20.28% to 79.59% of its width and 36.21% to 70.69% of its
-height. The `padding` on `.pictures h1` is that box, written as shares of the frame's width, because CSS reads
-padding percentages that way. If the frame is replaced by one with a different inner box, measure it and change the
-padding.
-
-With Simple UI on, the title is the full sentence of requirement 2; requirement 0 applies the requirements' UI
-particulars to Simple UI only. Both texts are in the language files: `title` is the full sentence, and `titleShort`
-is "Civ Explorer", the same in every language. `index.html` holds both in the heading, and `style.css` shows the one
-that fits the mode.
-
-### The Options button
-
-With the pictures on, the cogwheel button at the top right is a picture too, from `assets/images/ui/buttons/`. Each
-file is a strip of three square pictures of the button side by side: on the left as it normally looks, in the middle
-when the mouse is over it, and on the right while it is pressed. `style.css` shows one third of the strip at a time,
-by moving it to the left (0%), the middle (50%) or the right (100%).
-
-| Picture | Size | Used when |
-| --- | --- | --- |
-| `options_sd.webp` | 156 by 52, three 52 by 52 pictures | the window is at most 1920 by 1080, on an ordinary screen |
-| `options_4k.webp` | 312 by 104, three 104 by 104 pictures | the window is bigger than 1920 by 1080, or the screen is sharper than usual |
-
-The button is 52 by 52 on the page either way; `options_4k.webp` has twice the detail, for sharp screens. A "sharper
-than usual" screen packs more than one of its own pixels into each of the page's pixels, as on most phones and on
-laptops set to 125% or more. Its real resolution is then larger than 1920 by 1080 even when the window is smaller.
-
-Around the button is a 2-pixel ring in the colour `#ee9d05`, the `box-shadow` in the same rule in `style.css`. It
-is not an `outline`, because the page uses `outline` to show which control has keyboard focus.
-
-### The text buttons
-
-With the pictures on, every button with words on it looks like a button from the game: Clear, Expand all, Collapse
-all, the language menu and its choices, and Close. Its picture is `button_sd.webp` or `button_4k.webp` from
-`assets/images/ui/buttons/`, a strip of three bars on top of each other: normal at the top, under the mouse in the
-middle, and pressed at the bottom. `button_4k.webp` is used when the window is bigger than 2560 by 1440, as for
-`uhd.webp`, and `button_sd.webp` otherwise.
-
-Each bar has gold ends, which must not be stretched. So the button is drawn in three parts. The bar fills the
-button, which stretches only its plain red middle. On top, `::before` and `::after` draw its left and right ends at
-their own shape, 12 by 50 of the picture's pixels, scaled to the button's height. All three follow the mouse
-together, from the top (0%) to the middle (50%) and the bottom (100%) of the strip. Because `::after` draws the right
-end, the language menu's arrow is a `<span class="chevron">` of its own.
-
-The words are bold Georgia in `#f2d2b6`, with a black shadow at 50% opacity, 2 pixels down and 2 to the right. Each
-button holds its words in a `<span class="caption">`. The language menu's button keeps its words on one line, so that
-the Simple UI box below it stays in place when Simple UI is turned on or off; in a very narrow window a long language
-name ends in "…".
-
-### The checkboxes
-
-With Simple UI, `style.css` draws the marks that requirements 14, 23 and 26 ask for: must have is a **green tick**,
-must lack a **red cross**, and a branch whose contents carry different marks a **white dash** on a dark box
-(`--dash`), so that it shows on a white page.
-
-With the pictures on, every checkbox is a picture from `assets/images/ui/checkboxes/`: in the tree, on the filter
-buttons and in the Options window; the legend is hidden then. Each file is a sheet of three rows and three columns:
-
-| | Normal | Under the mouse | Pressed |
-| --- | --- | --- | --- |
-| **Empty** | not marked | | |
-| **Ticked** | must have | | |
-| **Crossed** | must lack | | |
-
-`style.css` sizes the sheet to three times the box each way and picks the row by the box's state (0%, 50% or 100%
-down) and the column by the mouse (0%, 50% or 100% across). The column changes when the mouse is over the whole row
-of the item, the Options choice or the filter button, as that is what a click acts on. A branch that is partly
-marked has no picture of its own, so it shows the empty box with a black dash drawn over it.
-
-| Picture | Size | Used when |
-| --- | --- | --- |
-| `checkboxes_sd.webp` | 60 by 60, nine 20 by 20 pictures | the window is at most 1920 by 1080, on an ordinary screen |
-| `checkboxes_4k.webp` | 120 by 120, nine 40 by 40 pictures | the window is bigger than 1920 by 1080, or the screen is sharper than usual |
-
-The boxes are 20 by 20 on the page either way, as for the Options button.
-
-### The panels
-
-With the pictures on, each pane sits in a frame drawn from one picture in `assets/images/ui/panels/`, cut into nine
-pieces: four corners, four edges and the middle. `style.css` does this with `border-image`. None of the pieces is
-stretched: the corners keep their shape, and the edges and the middle are repeated (`repeat`) to fill the pane. The
-first number after the picture is where to cut, in the picture's pixels, and the length after the slash is how wide
-the corners and edges are on the page.
-
-| Pane | Picture | Cut | Frame on the page | Text |
-| --- | --- | --- | --- | --- |
-| Buildings, units and technologies | `nodes9slice.webp`, 192 by 192 | 64, a third | 30 pixels | Georgia, `#391c1b` |
-| Civilisations | `civs9slice.webp`, 256 by 256 | 85, about a third | 30 pixels | Times New Roman Bold, white |
-
-Cut at a third, each corner holds the whole of its ornament. A cut that runs through the gold corners would repeat
-slivers of them along the edges. The civilisations' frame's middle is 80% black, so a little of the parchment shows
-through.
-
-The panes' own grey headers are see-through with the pictures on, so the frames show. A few colours were changed to
-suit them. In the tree, the highlight under the mouse is a light tint and Find's highlight a gold tint; with Simple UI
-it is yellow, as requirement 20 asks. Among the civilisations, the filter buttons and the dividing lines are orange.
-Each civilisation has its icon before its name; see [The civilisation icons](#the-civilisation-icons).
-
-In the tree pane, the legend is left out with the pictures on, as the tooltip says the same. The Find box comes first
-and the three buttons below it, and its "Find" label is hidden from sight but still read out by screen readers. With
-Simple UI the pane keeps the order of requirement 3: title and buttons, Find with its label, the legend, the tree.
-
-The fonts come from `assets/fonts/`: `Georgia.ttf` and `timesbd.ttf` (Times New Roman Bold). `style.css` names them
-"Civ Georgia" and "Civ Times" and tries the copy installed on the visitor's computer first, so most visitors download
-neither file. They have their own names because a font loaded as plain "Georgia" would hide the installed Georgia's
-bold. The title and the buttons use "Civ Georgia" too.
-
-### Phones and narrow windows
-
-In a window narrower than 720 pixels, the tree pane sits above the civilisations pane instead of beside it. As
-long as the window is at least 640 pixels tall, the two share its height, with the pictures on or off:
-
-- The footer is hidden, so the panes reach the bottom of the window. Its source and notice are on the page in
-  every larger window, and on short phones at the end of the page.
-- Each pane's header always shows whole: the tree's title, Find box, buttons and legend, and the civilisations'
-  title, count and **Filters**.
-- The height left over goes to the two scrolling lists, the tree and the civilisations, equally. With everything
-  open and many civilisations listed, each pane takes about half the window and scrolls inside itself; the page
-  never scrolls.
-- A list that needs less than its share takes only what it needs, and the other gets the rest. On the first visit,
-  with the tree closed, the civilisations pane reaches down to the bottom of the window.
-- Each list is at least 44 pixels tall. On a phone too short for both headers and two such lists, as with the
-  pictures on at 360 by 640, the two panes scroll together below the header.
-
-`style.css` does this in the rule `@media (width < 720px) and (height > 639px)`. `.panes` is a grid of five rows:
-the tree's header and list, then the civilisations' header, filters and list. Each pane spans its rows as a
-*subgrid*, so it keeps its frame while its parts sit in the shared rows. The header rows are as tall as their
-contents (`max-content`); the two list rows start at 44 pixels and grow equally, the tree's up to its contents and
-the civilisations' to fill what is left. A window less than 640 pixels tall, or less than 500 at any width, shows
-everything in one column that scrolls as a whole instead, which is how the page reads when zoomed to 400%.
-
-Test 15 opens the whole tree, marks the item most civilisations have, and checks this in whatever window the tests
-run in. It was written after a bug: the civilisations pane once took the height of its whole list, so the page
-scrolled and the tree pane shrank to nothing. Tests 39 and 45 check that the footer is hidden on a phone and spans
-the panes everywhere else. On GitHub, the 500 by 900 window is the one with the phone layout; on your computer, make
-the browser window narrower than 720 pixels to try it.
-
-### The Find box
-
-With the pictures on, the Find box is drawn from `textfield_9slice.webp` in `assets/images/ui/buttons/`, 45 by 45,
-cut into nine pieces of 15 by 15 that are repeated, never stretched. While the box is empty, `search.webp` shows at
-its right end. While it holds text, `clear_search.webp` shows there instead, as a button that empties the box and puts
-the cursor back in it. `style.css` tells the two apart with `:placeholder-shown`, which is why the box has a
-placeholder of one space. The box has no focus ring with the pictures on; the text cursor shows where you type.
-With Simple UI it keeps the ring, as WCAG asks. The box is always 325 pixels wide, so it does not change size while
-you type. It narrows only in a pane too narrow for 325 pixels and 6em beside it, and then still not while you type.
-
-The search's messages, such as "2 found" and "None found", always show to the right of the box, never below it, with
-the pictures on or off, and on one line only. The row with the box never wraps, and the message never wraps either: if
-it does not fit, it ends in "…", though screen readers still read all of it. With the pictures on, the message has
-whatever the box leaves, at least 6em, is aligned right, and reaches 6 pixels into the pane's padding, so that it ends
-close to the pane's edge. With Simple UI its column is up to 12em wide and at least 6em, and stays the same width
-while typing.
-
-When Find opens the tree to its matches, it scrolls only the tree's own list to the first match, never the page
-around it, so the box you type in stays where it is (Rule 18). In very short windows, where the tree has no scrolling
-list of its own, nothing scrolls; Enter still takes you to the first match.
-
-### The tooltip
-
-With the pictures on, a small parchment note, "Left-click to enable, right-click to disable", follows the mouse over
-the items of the tree. Over a civilisation, it shows the address its link leads to instead. Its top-left corner sits
-at the bottom-right corner of the cursor's picture: 32 pixels right of and below the pointer with the `x1` cursors,
-48 with the `x2` ones. Near the window's right edge it moves left, and near its bottom it moves above the pointer. It
-looks like the tooltips of [frcp.net](https://github.com/cnordenb/frcp.net). Its text over the tree is `nodeTip` in
-the language files. It shows only for a mouse, not for touch or the keyboard, where the legend of Simple UI explains
-the same.
-
-Over **Include Unique and Universal** in the Options window, the tooltip shows what the box does: `includeHint` in
-the language files. With the pictures on, that sentence is no longer shown under the box, but screen readers still
-read it, as the box names it with `aria-describedby`. With Simple UI there are no tooltips, so the sentence stays
-under the box, as requirement 8 asks. The Options window lies
-in the browser's top layer, above everything else on the page, so while the mouse is over it, `js/pictures.js` moves
-the tooltip into the window; otherwise the window would cover it.
-
-`js/pictures.js` places it by setting the custom properties `--x` and `--y` to the pointer's position, as numbers.
-`style.css` turns them into `left` and `top`. The cursor's size is `--reach` on `.tip` in `style.css`, set next to the
-cursor pictures so the two always match; `js/pictures.js` reads it from there. This is the only way the scripts give
-CSS anything: plain numbers through custom properties, never a style of their own. The tests check this.
-
-### The civilisation icons
-
-With the pictures on, the list of civilisations shows each one's icon before its name, from
-`assets/images/icons/civs/`. The file is named after the civilisation's English name in lower case, such as
-`celts.png`. Where the game's file has another name, `icons` in `data.json` says so: Incas use `inca.png` and Mayans
-`maya.png`. `icons` also holds the folder.
-
-When a game update adds a civilisation, add its icon to that folder, named in lower case after its English name, or
-add its file's name to `icons`. No test checks these icons, so after adding one, mark an item and look at the list.
-
-### The tree's icons
-
-With the pictures on, each row of the tree shows an icon between its checkbox and its name. The icons are the 48 by 48
-pictures from the `img` folder of [aoe2techtree's repository](https://github.com/SiegeEngineers/aoe2techtree), drawn
-at 40 by 40 inside a 2-pixel outline: 44 by 44 in all, the height of a row.
-
-| Folder | Holds | Copied from aoe2techtree's |
-| --- | --- | --- |
-| `assets/images/icons/nodes/building/` | the buildings | `img/Building/` |
-| `assets/images/icons/nodes/unit/` | the units | `img/Unit/` |
-| `assets/images/icons/nodes/tech/` | the technologies | `img/Tech/` |
-| `assets/images/icons/nodes/misc/` | the headings Economy, Military and Fortifications | |
-
-The files keep aoe2techtree's numbers, which are each item's `picture_index` in its data, not the item's id. Only the
-folders are renamed to lower case, as the GitHub check of allowed files asks.
-
-`pictures` in `data.json` gives each item's folder (`kind`), file (`picture`) and whether the item is `common`,
-`regional` or `unique` (`reach`), for example `"Militia": {"kind": "unit", "picture": 8, "reach": "common"}`. The
-updater writes it from aoe2techtree's data: `kind` is the item's `use_type` in lower case, and `reach` comes from its
-`node_type`, such as `RegionalUnit` or `UniqueTech`; anything else is common. Two cases needed a choice:
-
-- The Monk and the Trade Cart look different for different civilisations. The updater takes the picture most
-  civilisations have.
-- The Fortified Wall, Guard Tower, Keep and Bombard Tower are both buildings and technologies in aoe2techtree. The
-  updater takes the building, which aoe2techtree lists first.
-
-The headings' icons are in `icons` in `data.json`, under `groups`, and are edited by hand. They have no outline. A
-heading without an icon there, such as Unique Units, shows none.
-
-The outline's colour depends on the kind and the reach, as set in `assets/images/icons/nodes/colour_key.csv`: one row
-per reach, one column per kind. The page may only take its looks from `style.css`, so the nine colours are copied
-there, into the rules that start with `.pictures .node-icon[data-kind=`. To change a colour, change it in both
-files. The tests read the CSV file and fail, naming the item, if an outline differs from it.
-
-When a game update adds an item, the updater's report says "New icon for …" and names the file the item needs, such
-as `assets/images/icons/nodes/unit/912.png`. If that file is not there yet, copy `img/Unit/912.png` from aoe2techtree's
-repository into the `unit` folder. The tests check that every item's icon loads, with **Include Unique and
-Universal** ticked so that every item is in the tree.
-
-### Links to the civilisations' pages
-
-With the pictures on, each civilisation in the list, and each tile, is a link to its page on aoe2techtree.net, such as
-[https://aoe2techtree.net/#Armenians](https://aoe2techtree.net/#Armenians) for the Armenians. `js/stringbuilder.js`
-builds the address from `url` in `source` in `data.json` and the civilisation's English name, so the links follow the
-source if it ever moves. With Simple UI the civilisations are plain text and link nowhere. The tests check that Simple
-UI takes the links away and gives them back, but not where they lead.
-
-### Civ view: list or tiles
-
-With the pictures on, the Options window has a choice, **Civ view:**, between **List** and **Tile**. The choice is
-remembered. List is the usual list of names, each with its icon. Tile shows each civilisation as a box from
-`assets/images/ui/panels/civ_box_sd.webp` (123 by 123) or `civ_box_4k.webp` (twice the detail, on the same terms as the
-Options button), with its icon in the black part and its name on the red bar.
-
-The boxes are square and come six to a row, whatever the pane's width; the 6 is in `.pictures .civs.tiles` in
-`style.css`. Everything in a box is sized as a share of the box's width (`cqi`), as measured on the 123-pixel
-picture: the black part spans rows 2 to 97, so the icon is 88/123 of the box and sits 6/123 from the top; the red bar
-spans rows 100 to 120, so the name sits there, centred, in Trajan Pro Bold from `assets/fonts/TrajanPro-Bold.ttf`, at
-12/123 of the box. The name fades from white at the top to `#ff9900` at the bottom and has a black shadow at 50%
-opacity, 2 pixels down and 2 to the right. A name too long for the bar ends in "…".
-
-The choice is radio buttons drawn from `assets/images/ui/checkboxes/radiobutton_sd.webp` (48 by 48) or
-`radiobutton_4k.webp`, a sheet of four 24 by 24 pictures: on the top row not chosen, normal and under the mouse; on the
-bottom row chosen, normal and pressed. With Simple UI the choice is hidden and the list is always shown, as the tiles
-are made of pictures. The choice sits below the Simple UI box, so hiding it does not move that box. Its texts are
-`civView`, `viewList` and `viewTile` in the language files.
-
-### The Options window
-
-With the pictures on, the Options window is a panel framed with `nodes9slice.webp`, as the tree pane is, lying on a
-sheet of parchment: `assets/images/ui/backgrounds/options_sd.webp` (652 by 688) or `options_4k.webp` (twice the
-detail, on the same terms as the Options button). The title "Options" sits in the parchment's title frame, in bold
-Georgia.
-
-The window itself keeps exactly the size, padding and text it has with Simple UI, so that ticking Simple UI does not
-move its box (Rule 18; the tests check it). Its height is fixed, `min(30rem, the window's height minus 32px)`, so
-that opening the language list never resizes it. Everything else is drawn around it:
-
-- The frame is drawn by `.options::before`, which covers the rows below the title and reaches 17 pixels past them,
-  out to the window's edges. The title keeps its row, so nothing below it moves, and `translate` lifts it into the
-  parchment's title frame.
-- The text is bold Georgia with the pictures and the page's usual font with Simple UI, so a line can be wider in
-  one than in the other. Only the title and the language row sit above the Simple UI box. The title's row has a fixed
-  height, and the language's name on its button never wraps, in either mode: in a very narrow window a long name ends
-  in "…", while the opened list shows it whole and screen readers read it whole. So the row is 44 pixels tall either
-  way. It once wrapped with Simple UI only, in a 320 by 256 window the tests used then, with the wider fonts of
-  Linux, and the box moved 14 pixels, so the tests failed on GitHub but passed on Windows.
-- The parchment is drawn on the window's `::backdrop`, over the usual shade. It is scaled so that the panel fits in
-  the box from 60 to 592 across and 95 to 622 down, in the picture's pixels: inside the thin inner border and below
-  the title frame. The panel is centred in that box.
-
-The numbers in `style.css` come from these measurements, in the picture's pixels:
-
-| Number | Means |
-| --- | --- |
-| 1.22556 (652 / 532) and 1.23719 (652 / 527) | The picture's width for each pixel of the panel's width or height; the larger of the two is used. |
-| 0.02224 (14.5 / 652) | How far the middle of the box (358.5 down) is below the middle of the picture (344 down). |
-| 0.0092 (6 / 652) and 0.46166 (301 / 652) | How far the middle of the title frame (332 across, 57.5 down) is right of and above the middle of the box. |
-| 0.3 | The title's width, a little less than the title frame's (218 of 652). |
-
-`--lid` is the height of the title's row and the gap below it, which the panel leaves out.
-
-In windows less than 588 pixels tall, there is no room for the parchment above the panel. The parchment is then left
-out, and the title stays in the panel, which covers the whole window. The language list, when open, lies on the
-panel with a thin `#391c1b` border instead of a background of its own.
-
-The language list closes when it is left: by Escape, by choosing a language, by a click anywhere in it or outside it
-(requirement 12), or when focus moves away. A click on its own scroll bar does not close it, so that it can still be
-scrolled; the list can take focus (`tabindex="-1"`) for that reason, though it is not in the Tab order.
-
-### The mouse cursor
-
-With the pictures on, the mouse cursor is the sword from `assets/images/ui/cursors/` (`cursor_normal_…`), over
-everything but links: the page, buttons, the tree, the Find box and the Options window. `style.css` sets it on
-`html.pictures *`, which outranks the browser's own cursors for buttons, labels and text boxes. Over the
-civilisations and the footer's links, it is the pointing hand (`cursor_pointing_…`) instead.
-
-| Picture | Size | Used when the window is |
-| --- | --- | --- |
-| `cursor_normal_x1.webp` | 32 by 32 | at most 2560 by 1440 |
-| `cursor_normal_x2.webp` | 48 by 48 | bigger than 2560 by 1440, as for `uhd.webp` |
-| `cursor_pointing_x1.webp` | 32 by 32 | at most 2560 by 1440 |
-| `cursor_pointing_x2.webp` | 48 by 48 | bigger than 2560 by 1440 |
-
-Each cursor's point, the sword's tip or the finger's, is its top-left pixel; that is the `0 0` after each picture in `style.css`. If a new
-cursor points somewhere else, change those two numbers to the point's position in pixels. Unlike the Options button,
-the cursors do not change on sharp screens: the browser already enlarges cursors there, so `x2` would come out too
-big. Chrome only shows a cursor bigger than 32 by 32 when it fits inside the page, so close to the window's right and
-bottom edges the `x2` cursors turn into the usual ones.
-
-### Simple UI
-
-**Simple UI**, a box in the Options window, turns the pictures off. The page then uses no images at all, as
-requirement 33 asks, not even the tab icon, and looks as it did before there were pictures, with the usual margins
-and the text cogwheel. The browser remembers the choice, and a visitor who has chosen Simple UI never downloads a
-picture.
-
-The tab icon is `assets/images/favicon.ico`, named in `icons` in `data.json` as `favicon`. `index.html` gives the tab
-the empty icon `data:,`, which is no picture, and `js/optionshandler.js` swaps in `favicon.ico` once the data has
-loaded, and only while Simple UI is off. The empty icon also stops browsers from asking the server for a
-`favicon.ico` of their own.
-
-**Accessibility applies to Simple UI.** As decided on 2026-10-21, the page must meet WCAG 2.2 AAA only with Simple UI
-on, so the tests run with Simple UI on. Tests 45 to 48 turn it off. They check that the right pictures show and
-that the header, panes and footer stay inside the area above; the pictures of the checkboxes and the tree's icons;
-the Find box and the tooltip; and that Simple UI takes every image away, the tab icon included, and gives it back.
-Requirement 0 likewise applies the requirements' UI particulars to Simple UI only; the behaviour of the tree's marks
-applies in every mode.
-
-### Changing the pictures
-
-To replace a picture, save the new one under the same name, in WebP format and with the same proportions. If the
-parchment is in a different place, measure where the page should go and change the numbers above: open the picture in
-an image editor, read off the pixel positions, and divide each by the picture's width or height. The tests take the
-numbers from `style.css`, so they cannot tell whether the numbers match the picture; look at the page to check. For
-the Options window's parchment, see [The Options window](#the-options-window).
-
-Pictures live in `assets/images/`, in folders and files named in lower-case letters, digits and underscores, such as
-`ui/buttons/options_sd.webp`. The GitHub check of allowed files lets only WebP, PNG and ICO files with such names into
-that folder. Only `style.css` may use a picture, and only in a rule that starts with `.pictures`, so that Simple UI
-turns it off; the tests check this. The icons of the civilisations and of the tree are the exception: they are
-`<img>` elements, made from templates in `index.html` only while Simple UI is off; so is the tab icon, see
-[Simple UI](#simple-ui). Fonts live in `assets/fonts/` as `.ttf` files, and `style.css` may only load them in an
-`@font-face` rule; use them only in `.pictures` rules, so that Simple UI never downloads them.
-
-## Opening the page on your own computer
-
-Browsers do not let a page read a file such as `data.json` straight from your disk, so you need a small local web
-server. The simplest is Visual Studio Code with its Live Server extension: open the project folder, right-click
-`index.html` and choose **Open with Live Server**. The page opens at an address like
-`http://127.0.0.1:5501/index.html`. Any other way of serving a folder works too.
-
-If the page is published, for example on GitHub Pages, you can also do everything below on the published address.
-
-## After a game update
-
-### Step 1: wait for aoe2techtree.net
-
-Check the footer of [aoe2techtree.net](https://aoe2techtree.net/). It says which game update its data comes from.
-Wait until that matches the new patch.
-
-### Step 2: run the updater
-
-Open the page with `?update` added to the address, for example `http://127.0.0.1:5501/index.html?update`.
-
-A window called **Update the data files** opens. It fetches the newest data from aoe2techtree.net, which takes a few
-seconds, and then lists what it found. It does not change anything yet.
-
-### Step 3: read the report
-
-Each line of the report is one finding. Most need nothing from you.
-
-| The report says | What it means | What to do |
-| --- | --- | --- |
-| New civilisation: … | The patch added a civilisation. | Nothing. Its name in every language is added for you. |
-| Civilisation no longer in the game: … | A civilisation disappeared. | Nothing. |
-| Different civilisations now have: … | The patch changed who has this item. | Nothing. This is just so you know. |
-| New name in … for …: … | The game renamed something in one language. | Nothing, unless the new name is wrong; see [Fixing a name](#fixing-a-name). |
-| In the source data, but not yet in the tree: … | The patch added a building, unit or technology. | Put it in the tree (step 4), or add it to `ignore`. |
-| In the tree, but not in the source data: … | Something in the tree was renamed or removed in the game. | Fix the tree (step 4). The updater stops until you do. |
-| In the tree more than once: … | The same name is in the tree twice. | Remove one (step 4). The updater stops until you do. |
-| No civilisation has: … | Probably removed from the game. | Consider removing it from the tree. |
-| New icon for …: … | An item is new, or aoe2techtree gave it another picture. | If the named file is not in the project yet, copy it in; see [The tree's icons](#the-trees-icons). |
-| … has no text for: … | A language is missing one of the page's sentences or a group heading. | Add it; see [Changing the page's own text](#changing-the-pages-own-text). |
-| Nothing has changed since the last update, apart from the date. | Exactly that. | Download anyway if you want the footer to show the new month. |
-
-### Step 4: change the tree, if the report asked you to
-
-Open `data.json` in your editor and find `"tree"`. It reads like an outline: each entry is one row of the left pane,
-and `"kids"` lists what sits under it. Here is the start of the Stable, as an example:
-
-```json
-{"item": "Stable", "kids": [
-  {"item": "Scout Cavalry", "kids": [
-    {"item": "Light Cavalry", "kids": [
-      {"item": "Hussar"}
-    ]}
-  ]},
-  {"item": "Knight", "kids": [
-```
-
-- `"item"` is the item's English name, **exactly** as the report wrote it. The updater uses this name to look the
-  item up, and fills in its names in all languages for you.
-- `"kids"` is a list of the rows under this row. Leave it out when there are none.
-- `"group"` instead of `"item"` makes a heading that is not a game item, such as Unique Units. The value is a short
-  key, such as `"uniqueUnits"`. The heading's text in each language lives in `text`, under `groups`. If you invent a
-  new group, add its text to every language's `groups`.
-
-So to add a new unique unit to the Castle, find the Castle's Unique Units group and add a line such as
-`{"item": "New Unit"},` in alphabetical order. Mind the commas: every entry in a list is followed by a comma, except
-the last one. Visual Studio Code underlines mistakes in red.
-
-Where you put an item matters, because marking works along the tree:
-
-- An item with no other item above it, only groups or nothing, counts as a building, such as the Barracks or the
-  Watch Tower. Marking a building marks everything in it, and opens it all, so every marked row shows.
-- An item under another item counts as a unit or technology. The first unit or technology under a building or a
-  group is the **top of its line**, such as Scout Cavalry, Knight or Militia. Marking the top of a line marks the
-  whole line, whatever the counts (requirement 27): marking Militia marks Man-at-Arms, Long Swordsman, Two-Handed
-  Swordsman and Champion too, so it asks for the fully upgraded line.
-- Marking any other unit or technology passes the mark down only to items below it that as many civilisations have
-  (requirements 29 and 30): marking Man-at-Arms (52 civilisations) does not mark Long Swordsman (51).
-- A mark never passes up (requirement 30): marking Champion marks Champion only, and marking everything in a building
-  does not mark the building, which then shows a dash.
-- Marking opens the item, down to its first fork or the end of its line, and every row the mark reached.
-- Under **Filters**, a fully marked building or top-level row with something under it reads "Full", such as "Full
-  Market" or "Full Watch Tower" (requirement 24). Something with nothing under it cannot be full, so the House
-  reads "House". A unit or technology is listed by the deepest item of its line that is marked must have, such as
-  "Champion" (requirement 25).
-
-So put buildings at the top or straight into a group, and their units and technologies under them, with the first of
-a line straight under its building: that item is the one that marks the whole line.
-
-Because marks never pass up, a visitor can mark a building must lack and the lines under it must have, for example
-to find the civilisations that have Two-Man Saw but no Lumber Camp: they research it at a Settlement.
-
-The tree also leaves some items out, unless a visitor ticks **Include Unique and Universal** in the page's
-**Options** window, which the cogwheel button at the top right opens:
-
-- Groups marked `"unique": true`, with everything in them. These are the Unique Units, Unique Technologies and
-  Unique Buildings groups:
-
-  ```json
-  {"group": "uniqueUnits", "unique": true, "kids": [
-  ```
-
-  If you add a new group of unique items, mark it the same way.
-- Items that every civilisation has, such as the Town Center, and items that only one civilisation has, such as the
-  Pasture. The page works these out for itself from the data, so there is nothing to mark. An item stays when
-  something under it is kept: the Barracks stays, because not every civilisation has the Champion.
-
-The **Include Regionals** box in the Options window, ticked unless a visitor unticks it, leaves out regional items,
-such as the Eagle Scout or the Camel Rider, with everything under them. A regional item is one aoe2techtree's data calls
-regional, which the updater copies into `reach` in `pictures`, so there is nothing to mark here either. The two boxes
-work together: with Include Unique and Universal ticked and Include Regionals unticked, everything but the regional
-items shows.
-
-When you have changed the tree, reload the `?update` page. The report should no longer mention those items.
-
-### Step 5: download the new files
-
-At the bottom of the report is one download link per file that changed: always **Download data.json**, and, for each
-language whose text changed, a link such as **Download locales/de.json**. Save each file in place of the old one with
-the same name: `data.json` in the project folder, and the language files in its `locales` folder.
-
-### Step 6: run the tests
-
-Open the page with `?test` added to the address, for example `http://127.0.0.1:5501/index.html?test`.
-
-Wait about half a minute. The tests run in the window as it is, so try a wide and a narrow window now and then. At
-the end a window says **All … tests passed**, or lists what failed first, each by its number in `TESTS.md`, such
-as "Test 64 failed". Each failure then says what is wrong and where, for example which text has too little contrast
-in which language.
-
-### Step 7: publish
-
-Commit the new files and push them, for example with GitHub Desktop or `git commit` and `git push`. GitHub runs
-the same tests again, in Chrome, in light and dark colours and at several window sizes. You can watch them in the
-**Actions** tab of the repository: a green tick means everything passed. If something failed, the log says how many
-tests failed in which colours and windows, and then names each by its number, such as `Test 15 failed`. Look the
-number up in `TESTS.md`, and open the page with `?test` to see what is wrong and where. After the tests, GitHub
-also checks that no folder holds more than 7 files (Rule 26), and names any that does.
-
-## Fixing a name
-
-The names in all languages come from the game's own text. Usually they are right, but the game sometimes shortens a
-name to fit its tech tree (such as "E." for "Elite") or uses a form that fits a sentence rather than a list. The
-updater already copes with most of this, and `overrides` holds the corrections it cannot work out on its own.
-
-To correct a name, add it to `overrides` in the language's file, with the item's English name on the left. For
-example, in `locales/de.json`:
-
-```json
-"overrides": {
-  "Heavy Mounted Crossbowman": "Schwerer berittener Armbrustschütze"
-},
-```
-
-English corrections go in `overrides` in `data.json`. Then run the updater again (step 2) and download the new files
-(step 5). An override wins over the game's name until you remove it.
-
-## Changing the page's own text
-
-The page's sentences, such as the button labels and the hints, are under `text`, then `ui`: in `data.json` for
-English, and in the language's file in `locales` for the others. You can change them in any editor.
-
-- Words in braces, such as `{n}`, `{name}`, `{parent}`, `{own}`, `{all}`, `{source}` and `{date}`, are filled in by the page. Keep them,
-  though you may move them. The tests check that every language uses the same ones as English.
-- A text with a count, such as `"compatible"`, has one form per kind of number: `"one"`, `"few"`, `"many"` and
-  `"other"`. Languages differ in which they need. English needs "one" (1 civilisation) and "other" (2 civilisations);
-  Polish and Russian also need "few" and "many". Every count needs `"other"`, which is used when no other form fits.
-  The [Unicode plural rules](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html)
-  list which forms each language uses.
-- The texts in `tools` are the updater's and the tests' messages. They are only in English.
-
-## Adding a language
-
-A new language works only if aoe2techtree.net has it, because the names come from there. Its code is the name of the
-language's folder there, such as `de` for German.
-
-1. Add the language to `languages` in `data.json` with its `name`, its `tag` (for example `pt-BR`), and `spaces` and
-   `mergeHyphens` (copy these from a similar language).
-2. Make the language's file in `locales`, named after its code, such as `locales/pt.json`. Start it as
-   `{"overrides": {}, "text": {"ui": …, "groups": …}}`, with the English `ui` and `groups` copied from `text` in
-   `data.json`, and translate them.
-3. Run the updater, download, and run the tests. The updater fills in the names of every item and civilisation.
+# AoE2 Civ Explorer: maintainer's guide
+
+1. [Updating Civ Explorer after a game patch](#updating-civ-explorer-after-a-game-patch)
+2. [How the code works](#how-the-code-works)
+   - [Files and folders](#files-and-folders)
+   - [UML diagram](#uml-diagram)
+   - [The data](#the-data)
+   - [How marking works](#how-marking-works)
+   - [Simple UI and the pictures](#simple-ui-and-the-pictures)
+   - [Assets](#assets)
+   - [Tests](#tests)
+   - [Rules for changing the code](#rules-for-changing-the-code)
+
+## Updating Civ Explorer after a game patch
+
+After a patch, [aoe2techtree.net](https://aoe2techtree.net/) publishes the game's new data. The page has an updater
+built in: it fetches that data, tells you what changed, and gives you new data files to save. You need a browser, a
+text editor such as Visual Studio Code, and about ten minutes. You do not need to know how to program.
+
+1. **Wait for aoe2techtree.net.** Its footer says which game update its data comes from. Wait until that matches the
+   new patch.
+2. **Open the page on your computer.** A browser will not let a page read files straight from your disk, so the
+   folder has to be served. In Visual Studio Code with the Live Server extension, open the project folder, right-click
+   `index.html` and choose **Open with Live Server**. The page opens at an address such as
+   `http://127.0.0.1:5501/index.html`. You can also use the published page's address instead.
+3. **Run the updater.** Add `?update` to the address, for example `http://127.0.0.1:5501/index.html?update`. A window
+   called **Update the data files** fetches the new data, which takes a few seconds, and lists what it found. Nothing
+   is changed yet.
+4. **Read the report.** Most lines need nothing from you. These do:
+   - *In the source data, but not yet in the tree: …* The patch added a building, unit or technology. Put it in the
+     tree (step 5), or add its name to `ignore` in `data.json` to leave it out.
+   - *In the tree, but not in the source data: …* or *In the tree more than once: …* Fix the tree (step 5). The
+     updater stops until you do.
+   - *No civilisation has: …* It was probably removed from the game. Consider removing it from the tree.
+   - *New icon for …: …* If the file it names is not in the project yet, copy it from the `img` folder of
+     [aoe2techtree's repository](https://github.com/SiegeEngineers/aoe2techtree): `img/Unit/912.png` goes to
+     `assets/images/icons/nodes/unit/912.png`, and the same for `Building` and `Tech`.
+   - *New civilisation: …* Its names are added for you. Add its icon to `assets/images/icons/civs/`, named after its
+     English name in lower case, such as `celts.png`.
+   - *… has no text for: …* A language file is missing a sentence or a heading. Add it under `text` in that file (see
+     [The data](#the-data)).
+   - *New name in … for …: …* Nothing, unless the new name is wrong. Then add the right one to `overrides` in that
+     language's file, with the English name on the left, such as
+     `"Heavy Mounted Crossbowman": "Schwerer berittener Armbrustschütze"` in `locales/de.json`. English corrections
+     go in `overrides` in `data.json`. Reload the `?update` page afterwards.
+5. **Change the tree, if the report asked you to.** Open `data.json` and find `"tree"`. It reads like an outline:
+   each entry is a row of the left pane, and `"kids"` lists the rows under it.
+
+   ```json
+   {"item": "Stable", "kids": [
+     {"item": "Scout Cavalry", "kids": [
+       {"item": "Light Cavalry", "kids": [
+         {"item": "Hussar"}
+       ]}
+     ]},
+   ```
+
+   - `"item"` is the English name, **exactly** as the report wrote it.
+   - Put a building at the top or in a group, its units and technologies under it, and each upgrade under the unit
+     or technology it upgrades, as Light Cavalry is under Scout Cavalry. Walls and towers in Fortifications are
+     lines too, as the Keep is under the Guard Tower. Marking works along these lines (see
+     [How marking works](#how-marking-works)).
+   - A new unique item goes into a Unique group, in alphabetical order: a unique unit under the building that
+     trains it, a unique technology under the Castle, and a unique building into Economy or Military.
+   - Every entry in a list is followed by a comma, except the last one. Visual Studio Code underlines mistakes in red.
+
+   Reload the `?update` page. The report should no longer mention those items.
+6. **Download the new files.** At the bottom of the report is a link for each file that changed: always
+   **Download data.json**, and one for each language file that changed, such as **Download locales/de.json**. Save
+   each over the old file of the same name.
+7. **Run the tests.** Open the page with `?test` instead, such as `http://127.0.0.1:5501/index.html?test`, and wait
+   about half a minute. A window then says **All … tests passed**, or names the tests that failed by their number in
+   `TESTS.md`, each with what is wrong and where.
+8. **Publish.** Commit the changed files and push them, for example with GitHub Desktop. GitHub runs the tests again
+   in several window sizes, in light and dark colours; a green tick in the repository's **Actions** tab means they
+   all passed.
 
 ## How the code works
 
-This chapter is for anyone changing the scripts. In the diagram, each arrow points from a script to a script it
-uses. `+` marks what a script shares with others, and `-` what it keeps to itself.
+The page is plain HTML, CSS and JavaScript. There is nothing to install and nothing to build: the files in the
+project are exactly what a visitor's browser downloads. The most important idea is that **all facts and all text
+live in `data.json` and the language files**. The code never names a unit, a civilisation or a sentence, which is
+why a game update changes only those files, and sometimes adds an icon.
+
+### Files and folders
+
+| File or folder | What it holds |
+| --- | --- |
+| `index.html` | The structure of the page. It holds no text of its own. |
+| `style.css` | How the page looks, for big and small screens, light and dark colours, with or without pictures. |
+| `script.js` | Where the page starts. The rest of the code is in `js/`. |
+| `js/` | The scripts; see [UML diagram](#uml-diagram). |
+| `js/tests/` | The tests, loaded only when the address ends in `?test`; see [Tests](#tests). |
+| `data.json` | The data and the English text; see [The data](#the-data). |
+| `locales/` | One file per other language, such as `de.json` for German. |
+| `assets/` | Pictures and fonts, used only when Simple UI is off; see [Assets](#assets). |
+| `documentation/` | This guide, `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DEVLOG.md` and `code_docu.pdf`. |
+| `README.md` | Introduces the project. |
+| `.github/workflows/tests.yml` | Tells GitHub to run the tests on every push. |
+
+`code_docu.pdf` describes every function in the code, one by one.
+
+### UML diagram
+
+Each arrow points from a script to a script it uses. `+` marks what a script shares with others, `-` what it keeps to
+itself.
 
 ```mermaid
 classDiagram
@@ -794,80 +210,165 @@ classDiagram
   note for datahandler "reads data.json and locales/"
 ```
 
-The arrows never go round in a circle: `datahandler.js` uses no other script, `model.js` only `datahandler.js`,
-`stringbuilder.js` only those two, `nodetree.js` those three, and `optionshandler.js` those four. Keep it so: a
-script should only use scripts below it in that order.
+- **`script.js`** turns Simple UI on or off as the visitor last chose, loads `data.json` and the visitor's language,
+  and starts the page. With `?test` it loads the tests, and with `?update` the updater.
+- **`js/datahandler.js`** looks after the data: loading `data.json` and the language files, the chosen language,
+  which civilisations have what, the visitor's saved choices, and the updater's fetching and file writing.
+- **`js/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
+  [How marking works](#how-marking-works)), which civilisations fit, and what **Filters** shows. It never touches the
+  page.
+- **`js/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the names in the
+  tree, the list of civilisations and **Filters**.
+- **`js/nodetree.js`** draws the tree and handles it: opening and closing, counts, marking by click, touch and key,
+  **Find**, and the buttons above it.
+- **`js/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI.
+- **`js/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, and the tooltip.
+- **`js/report.js`** shows the report window of the updater and the tests.
 
-- **`script.js`**, in the main folder, starts the page. It first calls `setSimple()` with the visitor's saved choice,
-  so the pictures start loading at once, or never load with Simple UI. Then it loads `data.json` and the visitor's
-  language, and calls `start()` and then `startPictures()`. With `?test` it loads the tests, and with `?update` it
-  calls `runUpdate()` in `js/report.js`.
-- **`js/datahandler.js`** looks after the data. `useData()` reads `data.json`, and `useLanguage()` switches the text.
-  `preferredLanguage()` picks the language to start in: the one in the address (`?lng=`), else the visitor's last
-  choice, else English (requirement 10). A set of civilisations is a bit mask: `setOf()` makes one from `data.json`,
-  and `civsOf()` turns one back into names. `recall()` and `remember()` keep choices in the browser.
-  `fetchUpdate()` fetches new data for the updater.
-- **`js/model.js`** looks after the tree, and never touches the screen. `rebuild()` builds the items, leaving out
-  unique and universal ones unless they are included, and regional ones while Include Regionals is unticked.
-  `mark()` marks an item and passes the mark down its line, never up, `fit()` finds the civilisations that fit
-  every mark, and `filtersOf()` and `chipName()` decide what **Filters** shows.
-- **`js/stringbuilder.js`** writes the page's text. `$()` finds an element by its id, and `clone()` copies a template
-  from `index.html`. `simple()` tells whether Simple UI is on, from the `pictures` class on the page.
-  `writeFixed()` writes the texts that never change, `writeTexts()` those of the chosen language, `label()` the names
-  in the tree, `listCivs()` the list of civilisations and its count, and `listFilters()` the filter buttons.
-- **`js/nodetree.js`** looks after the tree. `startTree()` builds it and listens for clicks, touch and keys. A click
-  on an item runs `toggle()`, which calls `mark()`, opens the rows the mark reached, and then calls `update()` to
-  redraw the boxes, the numbers, **Filters** and the list of civilisations. `setOpen()` opens or closes a row,
-  `find()` runs Find, `dress()` gives a row its icon, or takes it away with Simple UI on, and `replant()` builds the
-  tree again, keeping marks and open rows.
-- **`js/optionshandler.js`** looks after the Options window. `start()` applies the visitor's saved choices, builds
-  the page and shows it. `setLanguage()` switches the language, the language menu's clicks and keys go through
-  `choose()`, and `setInclude()` and `setRegional()` tick or untick the two Include boxes and build the tree again.
-  `setSimple()` ticks or unticks Simple UI: it adds or removes the `pictures` class on the page, which is what shows
-  the pictures, and sets the tab icon.
-- **`js/pictures.js`** looks after what only the pictures need. `setView()` switches the list of civilisations
-  between list and tiles and remembers the choice, and the tooltip follows the mouse. `startPictures()` sets both up.
-- **`js/report.js`** shows the report window: `runUpdate()` for the updater, and `openReport()` and `report()`,
-  which the tests use too.
-- **`js/tests/`** holds the tests. `runTests()` in `js/tests/run.js` runs them, in three rounds (see below). The
-  tests of the pictures are in `js/tests/pictures.js`.
+A script only uses the scripts below it in this order: `datahandler.js`, `model.js`, `stringbuilder.js`,
+`nodetree.js`, `optionshandler.js`. Keep it so, so that the arrows never go round in a circle.
 
-## Keeping to the project's rules
+### The data
 
-The project follows a few rules that keep it simple to look after. If you change the code, keep to them; the tests
-check most of them.
+`data.json` is a text file in JSON format. Its parts:
 
-- All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
-  `index.html`, all looks in `style.css`, all behaviour in `script.js` and `js/`: the start in `script.js`, data
-  handling in `js/datahandler.js`, the tree's rules in `js/model.js`, the page's text in `js/stringbuilder.js`, the
-  tree on the screen in `js/nodetree.js`, the Options window in `js/optionshandler.js`, what only the pictures need
-  in `js/pictures.js`, the report window in `js/report.js`, and the tests in `js/tests/`. No file is over 400 lines
-  of code, no function over 60, and no line of a script over 120 characters; blank lines do not count. No folder
-  holds more than 7 files, apart from `assets/` and `locales/`, and the main folder 8.
-- No comments in the code. Explanations belong in this guide.
-- A blank line before and after every function, so that each one stands on its own. A function that opens or closes
-  its block needs none on that side.
-- No images but the pictures in `assets/images/`, the tab icon among them, and Simple UI turns them all off. No
-  sounds or animations, and no extra libraries, build steps or other programming languages.
-- The page looks and behaves as `REQUIREMENTS.md` says. Its rules for how the tree marks items apply in every mode;
-  its rules for how the page looks apply with Simple UI on (requirement 0). Only the chief developer changes that
-  file; if a change to the page needs a requirement changed, ask first.
-- With Simple UI on, the page must meet WCAG 2.2 at level AAA, the strictest level of the web's accessibility
-  guidelines. Among other things, that means text contrast of at least 7 to 1, every control at least 44 by 44
-  pixels, everything usable by keyboard alone, and a page that still works when zoomed to 400%. With the background
-  picture on, it need not, so the tests run with Simple UI on.
-- The page itself never scrolls. When it first opens, with every branch closed, it fits on the screen. When a screen
-  is too small for that, the panes or the content area scroll instead.
-- The tests must pass before a change is published.
-- There are at most 100 tests. A test is one line in the test report, such as "keyboard: Right opens a branch and goes
-  into it, and Left goes back out and closes it"; it may check several things at once. To add a test when there are
-  already 100, fold it into a related test, or replace a test that matters less. The tests check this limit too.
+- `source`: where the data comes from and when it was fetched, and Microsoft's notice for the footer.
+- `languages`: the 17 languages, English first. Each has its `name`, its `tag` (such as `pt-BR`) and two settings the
+  updater uses to tidy the game's names.
+- `civs`: the civilisations, by their English names.
+- `icons`: where the icons are, the tab icon, and the civilisations whose icon has another name than theirs.
+- `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true` (see
+  [How marking works](#how-marking-works)). **Edited by hand.**
+- `availability`: which civilisations have each item. **Written by the updater; never edit it.**
+- `pictures`: each item's icon, and whether it is common, regional or unique. **Written by the updater.**
+- `ignore`: names from the game that the page leaves out. **Edited by hand.**
+- `overrides`: corrections to English names. **Edited by hand.**
+- `tools`: the updater's and the tests' messages, in English only.
+- `text`: the English text: `ui` holds the page's sentences, `groups` the headings in the tree, and `civs` and `items`
+  the names, which the updater writes.
+
+Each file in `locales/` holds `overrides` and `text` for one more language. A visitor's browser only downloads
+`data.json` and the file of the language it shows.
+
+When you change a sentence under `text` → `ui`:
+
+- Keep the words in braces, such as `{n}` or `{name}`. The page fills them in, and the tests check that every
+  language has the same ones as English.
+- A text with a count, such as `"compatible"`, has a form for each kind of number: `"one"`, `"few"`, `"many"` and
+  `"other"`. English needs `"one"` and `"other"`; Polish and Russian also need `"few"` and `"many"`. Every count
+  needs `"other"`.
+
+To add a language, it must exist on aoe2techtree.net, as the names come from there:
+
+1. Add it to `languages` in `data.json`, copying `spaces` and `mergeHyphens` from a similar language.
+2. Create `locales/<code>.json`, such as `locales/pt.json`, as `{"overrides": {}, "text": {"ui": …, "groups": …}}`,
+   with `ui` and `groups` copied from `data.json` and translated.
+3. Run the updater, download its files, and run the tests. The updater fills in all the names.
+
+### How marking works
+
+A visitor marks an item **must have** with a click and **must lack** with a right-click, a long press or X. Where an
+item sits in the tree decides what else its mark reaches:
+
+- An item with no other item above it, only groups or nothing, is a **building**, such as the Barracks. Marking a
+  building or a group marks everything in it, and opens it all.
+- An item under another item is a **unit or technology**, often the start of a line of upgrades. Its mark passes
+  down that line, until it forks, but only to the items that as many civilisations have (requirements 29 and 30):
+  marking Militia (52 civilisations) also marks Man-at-Arms (52), but not Long Swordsman (51).
+- The items in a group marked `"lines": true` count as units and technologies too. That group is Fortifications,
+  whose walls and towers are lines of upgrades (requirements 24, 25 and 30): marking the Watch Tower (55) does not
+  mark the Guard Tower (51).
+- A mark never passes up: marking Champion marks Champion only, and marking everything in a building leaves the
+  building itself unmarked, with a dash in its box.
+- Marking opens the item down to its first fork, and every row the mark reached.
+- In **Filters**, a fully marked building or group with something under it reads "Full", such as "Full Market". A
+  line is named after its deepest item marked must have, such as "Champion" or "Keep".
+
+Some items are left out of the tree unless the visitor ticks **Include Unique and Universal** in Options: the groups
+marked `"unique": true` (Unique Units, Unique Technologies and Unique Buildings), and the items that every
+civilisation has or only one has, which the page works out by itself. Unticking **Include Regionals** also leaves out
+the items aoe2techtree calls regional, such as the Eagle Scout.
+
+### Simple UI and the pictures
+
+**Simple UI**, a box in the Options window, turns every picture off: the page then uses no images at all, not even
+the tab icon, and a visitor who chose it never downloads a picture or a font. The page's look and its accessibility
+rules are the ones `REQUIREMENTS.md` and WCAG 2.2 AAA ask for with Simple UI on (requirement 0, Rule 22); the way
+marking works is the same in both modes.
+
+It works through one class: with Simple UI off, `<html>` has the class `pictures`. Every rule in `style.css` that
+uses a picture or a font starts with `.pictures`, so none of them applies with Simple UI on. The icons in the tree and
+the list are only made while the class is there, and the tab icon in `index.html` is empty (`data:,`) until
+`js/optionshandler.js` sets it with Simple UI off.
+
+With the pictures on, the page also looks a little different: the title is the short "Civ Explorer", the legend is
+hidden as the tooltip explains the same, the Find box comes first, Include's description shows as a tooltip, the
+civilisations can be shown as tiles and link to their pages on aoe2techtree.net, and the mouse cursor is a sword.
+
+### Assets
+
+| Folder | Holds |
+| --- | --- |
+| `assets/images/ui/backgrounds/` | The parchment behind the page in four sizes, the Options window's parchment and the title's frame. |
+| `assets/images/ui/buttons/` | The cogwheel, the text buttons, the Find box and its search and clear icons. |
+| `assets/images/ui/checkboxes/` | The checkboxes and the radio buttons. |
+| `assets/images/ui/cursors/` | The mouse cursors. |
+| `assets/images/ui/panels/` | The panes' frames and the box of a civilisation tile. |
+| `assets/images/icons/civs/` | The civilisations' icons. |
+| `assets/images/icons/nodes/` | The tree's icons, in `building/`, `unit/`, `tech/` and `misc/`, and `colour_key.csv`. |
+| `assets/images/favicon.ico` | The tab icon. |
+| `assets/fonts/` | Georgia, Times New Roman Bold and Trajan Pro Bold, used only with the pictures. |
+
+- Most pictures come in two sizes: `_sd` for windows up to 1920 by 1080, and `_4k` for bigger windows and sharp
+  screens. The parchment comes as `fhd`, `qhd`, `uhd` and `ultrawide`, and the browser downloads only the one that
+  suits the window.
+- A picture with several states, such as a checkbox, holds them all in one sheet: rows for empty, ticked and
+  crossed, and columns for normal, under the mouse and pressed. `style.css` shows the right part.
+- To replace a picture, save the new one under the same name, as WebP and with the same proportions. Names use only
+  lower-case letters, digits and underscores, and GitHub refuses other names and formats than WebP, PNG and ICO. If
+  the parchment's frame is in another place, change `--left`, `--right`, `--top` and `--bottom` in the
+  `.pictures body` rule of `style.css`: each is a position in the picture, divided by its width or height. Look at
+  the page to check.
+- The tree's icons are copied from aoe2techtree's repository and keep its file numbers. `pictures` in `data.json`
+  says which file each item uses. The colour of an icon's outline depends on the item's kind and reach, as
+  `colour_key.csv` says, and the same colours are copied into `style.css`: change both together. The tests compare
+  them.
+- The civilisations' icons are named after the civilisation in lower case. Where the file has another name, such as
+  `inca.png`, `icons` in `data.json` says so.
+
+### Tests
+
+Open the page with `?test` to run the tests in your browser. They run in three rounds: functional tests,
+accessibility tests and maintainability tests, in the order `TESTS.md` lists them, and the report names each by its
+number there. GitHub runs them on every push, at four window sizes in light and dark colours, and also checks the
+file names and that no folder holds too many files.
+
+| File in `js/tests/` | Tests |
+| --- | --- |
+| `run.js` | Runs the rounds, shows the report, and checks that there are at most 100 tests. |
+| `helpers.js` | No tests: shared helpers, and the sample items the tests use, picked from the data so that the tests survive game updates. |
+| `behaviour.js` | Marking, **Filters**, counts, opening and closing, the keyboard, and **Find**. |
+| `interface.js` | The language menu, every language, the Options window, and the runs of the accessibility audit. |
+| `pictures.js` | The pictures, with Simple UI off. |
+| `audit.js` | The accessibility audit (contrast, focus, sizes, names and more), which the other files run in many states. |
+| `static.js` | The files themselves: the rules for the code, and mistakes in `data.json` and the language files. |
+
+There may be at most 100 tests. When you add, change or remove one, update `TESTS.md`. Tests cannot prove everything
+about accessibility, so after bigger changes also try the page with Simple UI on, with only a keyboard, at 400% zoom
+and with a screen reader.
+
+### Rules for changing the code
+
+`RULES.md` has the full list, and the tests check most of it.
+
+- HTML only in `index.html`, CSS only in `style.css`, JavaScript only in `script.js` and `js/`, and facts and text
+  only in `data.json` and `locales/`.
+- No file over 400 lines of code, no function over 60, and no line of a script over 120 characters. No folder over
+  7 files, except `assets/` and `locales/`; the main folder may hold 8. `js/` and `js/tests/` are full, so move code
+  into a script with room, merge two scripts, or start a folder inside `js/`.
+- No comments in the code, and a blank line before and after every function.
+- No pictures outside `assets/` and `.pictures` rules, and no sounds, animations, libraries, build steps or Python.
+- No button, box or other control may move on the screen while the visitor uses it, and the page itself never
+  scrolls with every branch closed.
+- `REQUIREMENTS.md` defines the page, and only the chief developer may change it.
 - Record what you change, and why, in `DEVLOG.md`.
-- Every test is listed in `TESTS.md`, with its purpose and its file. When you add, change or remove a test, update
-  that list.
-- The tests run in three rounds, in the order `TESTS.md` lists them: functional tests, then accessibility tests, then
-  maintainability tests. `runTests()` in `js/tests/run.js` runs the rounds. Put a new test in its own round, so
-  that the order stays the same.
-
-Automated tests cannot prove everything about accessibility. After bigger changes, turn on Simple UI and try the page
-with only a keyboard, at 400% zoom, and with a screen reader, such as NVDA on Windows or VoiceOver on a Mac or iPhone.

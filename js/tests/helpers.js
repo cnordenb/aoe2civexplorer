@@ -176,7 +176,7 @@ export const below = (item, top) => {
 };
 
 export const itemAbove = (item) => {
-  for (let p = item.parent; p; p = p.parent) if (!p.group) return true;
+  for (let p = item.parent; p; p = p.parent) if (!p.group || p.lines) return true;
   return false;
 };
 
@@ -239,7 +239,8 @@ export function fixtures() {
     leaves, partial, other, third, underAll, without,
     branch: items.find((item) => building(item) && item.kids.length > 1 && !shared.has(nameOf(item))),
     group: items.find((item) => item.group && !item.parent && item.kids.length),
-    line: lines().find((item) => onTop(item) && lineOf(item).length > 2 && plainLine(item)),
+    line: lines().find((item) => onTop(item) && lineOf(item).length > 2 && plainLine(item)
+      && size(lineEnd(item).set) !== size(item.set)),
     even: items.find((item) => inner(item) && size(item.kids[0].set) === size(item.set)),
     uneven: items.find((item) => inner(item) && size(item.kids[0].set) !== size(item.set)),
     upgraded: lines().find((item) => lineEnd(item) && size(item.set) > size(item.all)
@@ -247,5 +248,7 @@ export function fixtures() {
     loose: items.find((item) => building(item) && item.kids.length && size(without(item)) > 0),
     headed: items.find((item) => building(item) && item.kids.length === 1 && lineEnd(item)),
     lone: items.find((item) => building(item) && !item.kids.length),
+    walled: lines().find((item) => item.parent?.group && itemAbove(item) && lineOf(item).length > 1 && plainLine(item)
+      && size(item.kids[0].set) !== size(item.set)),
   };
 }
