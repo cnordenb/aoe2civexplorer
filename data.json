@@ -29,6 +29,7 @@
   },
   "civs": ["Armenians", "Aztecs", "Bengalis", "Berbers", "Bohemians", "Britons", "Bulgarians", "Burgundians", "Burmese", "Byzantines", "Celts", "Chinese", "Cumans", "Danes", "Dravidians", "Ethiopians", "Franks", "Georgians", "Goths", "Gurjaras", "Hindustanis", "Huns", "Incas", "Italians", "Japanese", "Jurchens", "Khitans", "Khmer", "Koreans", "Lithuanians", "Magyars", "Malay", "Malians", "Mapuche", "Mayans", "Mongols", "Muisca", "Persians", "Poles", "Portuguese", "Romans", "Saracens", "Saxons", "Shu", "Sicilians", "Slavs", "Spanish", "Tatars", "Teutons", "Tupi", "Turks", "Varangians", "Vietnamese", "Vikings", "Wei", "Wu"],
   "icons": {
+    "favicon": "assets/images/favicon.ico",
     "folder": "assets/images/icons/civs/",
     "names": {"Incas": "inca", "Mayans": "maya"},
     "nodes": "assets/images/icons/nodes/",
@@ -56,7 +57,7 @@
         ]}
       ]},
       {"item": "House"},
-      {"item": "Mill", "optional": true, "kids": [
+      {"item": "Mill", "kids": [
         {"item": "Horse Collar", "kids": [
           {"item": "Heavy Plow", "kids": [
             {"item": "Crop Rotation"}
@@ -68,14 +69,14 @@
           ]}
         ]}
       ]},
-      {"item": "Lumber Camp", "optional": true, "kids": [
+      {"item": "Lumber Camp", "kids": [
         {"item": "Double-Bit Axe", "kids": [
           {"item": "Bow Saw", "kids": [
             {"item": "Two-Man Saw"}
           ]}
         ]}
       ]},
-      {"item": "Mining Camp", "optional": true, "kids": [
+      {"item": "Mining Camp", "kids": [
         {"item": "Gold Mining", "kids": [
           {"item": "Gold Shaft Mining"}
         ]},
@@ -96,7 +97,7 @@
         {"item": "Guilds"}
       ]},
       {"item": "Caravanserai"},
-      {"item": "Monastery", "optional": true, "kids": [
+      {"item": "Monastery", "kids": [
         {"item": "Monk"},
         {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Missionary"}
@@ -679,12 +680,12 @@
     {"group": "fortifications", "kids": [
       {"item": "Palisade Wall"},
       {"item": "Palisade Gate"},
-      {"item": "Stone Wall", "upgrades": true, "kids": [
+      {"item": "Stone Wall", "kids": [
         {"item": "Fortified Wall"}
       ]},
       {"item": "Gate"},
       {"item": "Outpost"},
-      {"item": "Watch Tower", "upgrades": true, "kids": [
+      {"item": "Watch Tower", "kids": [
         {"item": "Guard Tower", "kids": [
           {"item": "Keep"}
         ]}

@@ -1,5 +1,5 @@
 # Requirements
-0. These requirements will apply to desktop at 16:9 in English.
+0. These requirements will apply to desktop at 16:9 in English. The UI particulars apply to simple UI mode. Node behaviour requirements always apply.
 1. aoe2civexplorer's user interface (henceforth: "the page") will have four discernable sections: header non the page's top side, input panel (node tree) on the page's left side, output panel (civ list) on the page's right side, and footer on the page's bottom side.
 2. The header will contain, in left-to-right order: a title consisting of the phrase "Explore Age of Empires II civilisations by technology availability" and an options button.
 3. The input panel will contain, in top-down order: a header section titled "Buildings, units and technologies" and three buttons "clear", "Expand all", "Collapse all", a search bar labelled "Find", a checkbox legend "[v] Must have: left-click or Space. [x] Must lack: right-click, long press or X.", a node tree expandible rightwards with each node having a checkbox before its name and compatible civilisations count label on the right side of the input panel.
@@ -26,10 +26,10 @@
 24. Root nodes and building nodes will have adjective "Full " in their Filters list entry when enabled.
 25. Unit nodes and technology nodes which possess descendant nodes will when enabled have their Filters list entry titled as the deepest descendant node.
 26. A node which possesses multiple descendant nodes of multiple assigned values will have its checkbox ticked with a white dash.
-27. A line of single descendant nodes will all be assigned the same value as their deepest descendant node when the user assigns it a value.
+27. A line of single descendant nodes will all be assigned the same value as their deepest descendant node when the user assigns the top parent node a value.
 28. A node will automatically expand to either the first level of multiple child nodes or to the deepest descendant node when the user assigns its checkbox a value.
 29. All descendant nodes of equal number of compatible civilisattions in a line of single descendant nodes will be assigned the same value as the one the user assigns to a node.
-30. A node will not be automatically assigned a value if the assigned value is given to a unit node or technology node of different number of compatible civilisations.
+30. A node will not be automatically assigned a value if the assigned value is given to a unit node or technology node of different number of compatible civilisations. This does not apply if the assigned node is the top parent (as specified in Req. 27).
 31. A node will be expanded to if it is automatically assigned a value.
 32. Options window will contain a "Simple UI" checkbox.
 33. The page will not use any images upon the user enabling the Simple UI checkbox.

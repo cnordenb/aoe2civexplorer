@@ -9,6 +9,7 @@
   --found: #fff0a0;
   --yes: #1a7f37;
   --no: #c62828;
+  --dash: #444;
   --shade: rgb(0 0 0 / 0.6);
   --target: 44px;
   --pad: 16px;
@@ -24,7 +25,6 @@
     --mark: #9ccaff;
     --face: #23282e;
     --hover: #233243;
-    --found: #3d3400;
     --yes: #2ea043;
     --no: #e5534b;
     --shade: rgb(0 0 0 / 0.75);
@@ -203,26 +203,26 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
   cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 .node:is(:hover, .pressed) { background: var(--hover); }
-.node.found { background: var(--found); box-shadow: inset 4px 0 0 var(--mark); }
+.node.found { --bg: var(--found); --ink: #000; --muted: #444; --line: #767676; --mark: #00478a; --yes: #1a7f37; --no: #c62828; background: var(--bg); color: var(--ink); box-shadow: inset 4px 0 0 var(--mark); }
 .node .name { min-width: 0; overflow-wrap: anywhere; }
 .box { position: relative; flex: none; width: 20px; height: 20px; border: 2px solid var(--line); border-radius: 3px; background: var(--bg); }
 .box::before, .box::after { content: ""; position: absolute; left: 50%; top: 50%; }
-[data-state="has"] > .box { border-color: var(--yes); background: var(--yes); }
-[data-state="lacks"] > .box { border-color: var(--no); background: var(--no); }
-[data-state="mixed"] > .box { border-color: var(--ink); }
+[data-state="has"] > .box { border-color: var(--yes); }
+[data-state="lacks"] > .box { border-color: var(--no); }
+[data-state="mixed"] > .box { border-color: var(--ink); background: var(--dash); }
 [data-state="has"] > .box::after {
-  width: 6px; height: 11px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: translate(-50%, -60%) rotate(45deg);
+  width: 7px; height: 12px; border: solid var(--yes); border-width: 0 3px 3px 0; transform: translate(-50%, -60%) rotate(45deg);
 }
 [data-state="lacks"] > .box::before, [data-state="lacks"] > .box::after {
-  width: 0; height: 13px; border-left: 2.5px solid #fff; transform: translate(-50%, -50%) rotate(45deg);
+  width: 0; height: 14px; border-left: 3px solid var(--no); transform: translate(-50%, -50%) rotate(45deg);
 }
 [data-state="lacks"] > .box::after { transform: translate(-50%, -50%) rotate(-45deg); }
-[data-state="mixed"] > .box::after { width: 10px; height: 0; border-top: 2.5px solid var(--ink); transform: translate(-50%, -50%); }
+[data-state="mixed"] > .box::after { width: 10px; height: 0; border-top: 3px solid #fff; transform: translate(-50%, -50%); }
 @media (forced-colors: active) {
   .box { forced-color-adjust: none; border-color: CanvasText; background: Canvas; }
-  :is([data-state="has"], [data-state="lacks"]) > .box { border-color: Highlight; background: Highlight; }
-  [data-state] > .box::before, [data-state] > .box::after { border-color: HighlightText; }
-  [data-state="mixed"] > .box::after { border-color: CanvasText; }
+  [data-state] > .box::before, [data-state] > .box::after { border-color: CanvasText; }
+  [data-state="mixed"] > .box { background: CanvasText; }
+  [data-state="mixed"] > .box::after { border-color: Canvas; }
 }
 .pictures .box { border: 0; border-radius: 0; background: url("assets/images/ui/checkboxes/checkboxes_sd.webp") 0 0 / 300% 300% no-repeat; }
 .pictures [data-state="has"] > .box { background-position-y: 50%; }
@@ -230,7 +230,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures :is(.node, .option, .chip):hover > .box { background-position-x: 50%; }
 .pictures :is(.node, .option, .chip):active > .box, .pictures .node.pressed > .box { background-position-x: 100%; }
 .pictures .box::before, .pictures :not([data-state="mixed"]) > .box::after { content: none; }
-.pictures [data-state="mixed"] > .box::after { border-top-color: #000; }
+.pictures [data-state="mixed"] > .box::after { border-top: 2.5px solid #000; }
 .views, #tooltips { display: none; }
 .pictures #tooltips { display: flex; }
 .pictures .views { display: flex; flex-wrap: wrap; align-items: center; gap: 0 16px; margin-top: 8px; }
@@ -288,7 +288,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures .pane:first-child :is(.n, .twisty) { color: inherit; }
 .pictures .tree ul { border-left-color: #391c1b; }
 .pictures .pane:first-child :is(.node:is(:hover, .pressed), .twisty:hover) { background: rgb(255 255 255 / 0.25); }
-.pictures .node.found { background: rgb(255 178 13 / 0.45); box-shadow: inset 4px 0 0 #391c1b; }
+.pictures .node.found { background: rgb(255 178 13 / 0.45); color: inherit; box-shadow: inset 4px 0 0 #391c1b; }
 .pictures .node-icon { flex: none; width: 44px; height: 44px; border: 2px solid transparent; }
 .pictures .node-icon[data-kind="unit"][data-reach="common"] { border-color: #00739c; }
 .pictures .node-icon[data-kind="unit"][data-reach="regional"] { border-color: #515ae3; }
@@ -303,9 +303,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures .legend { display: none; }
 .pictures .pane:first-child .find { order: 1; }
 .pictures .pane:first-child .tools { order: 2; }
-.pictures :is(.find label, #includeHint) {
-  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
-}
+.pictures :is(.find label, #includeHint) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .pictures .field { flex: none; width: min(325px, 100% - 6em); }
 .pictures #found { flex: 1 1 0; min-width: 0; margin-right: -6px; text-align: right; }
 .pictures .find input {

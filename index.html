@@ -7,7 +7,7 @@
 <title>AoE2 Civ Explorer</title>
 <meta name="description" content="Find the Age of Empires II civilisations that have, or lack, the buildings, units and technologies you choose.">
 <link rel="stylesheet" href="style.css">
-<link rel="icon" href="favicon.ico">
+<link rel="icon" href="data:," id="icon">
 <script type="module" src="script.js"></script>
 </head>
 <body>
@@ -60,7 +60,7 @@
   <div class="language" id="language">
     <span id="languageLabel" data-text="language"></span>
     <button type="button" class="tool language-button" id="languageButton" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span class="caption" id="languageName"></span><span class="chevron" aria-hidden="true"></span></button>
-    <ul class="language-list" id="languageList" role="list" hidden></ul>
+    <ul class="language-list" id="languageList" role="list" tabindex="-1" hidden></ul>
   </div>
   <div class="settings" id="settings">
     <div class="option" id="simple" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span data-text="simple"></span></div>

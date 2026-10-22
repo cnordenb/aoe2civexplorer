@@ -1,12 +1,14 @@
 import { params, load, recall, useData, loadLanguage, loadLanguages, preferredLanguage } from "./js/datahandler.js";
-import { start, setSimple, showLoadError } from "./js/ui.js";
+import { showLoadError } from "./js/stringbuilder.js";
+import { start, setSimple } from "./js/optionshandler.js";
 import { runUpdate } from "./js/report.js";
 import { startPictures } from "./js/pictures.js";
 
 setSimple(recall("simple") === "true");
 load("data.json").then((raw) => {
   useData(raw);
-  return params.has("test") || params.has("update") ? loadLanguages() : loadLanguage(preferredLanguage()).catch(() => null);
+  if (params.has("test") || params.has("update")) return loadLanguages();
+  return loadLanguage(preferredLanguage()).catch(() => null);
 }).then(() => {
   start();
   startPictures();

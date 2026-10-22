@@ -1,5 +1,5 @@
 import { data, fill, fetchUpdate } from "./datahandler.js";
-import { $, clone } from "./ui.js";
+import { $, clone } from "./stringbuilder.js";
 
 export function openReport(title, status) {
   $("reportTitle").textContent = title;
@@ -28,7 +28,9 @@ export async function runUpdate() {
     }
     if (!messages.length) report(tools.updateSame);
     $("reportStatus").textContent = fill(tools.updateReady, {
-      civs: fresh.civs.length, items: Object.keys(fresh.availability).length, languages: Object.keys(fresh.languages).length,
+      civs: fresh.civs.length,
+      items: Object.keys(fresh.availability).length,
+      languages: Object.keys(fresh.languages).length,
     });
     $("reportDownloads").replaceChildren(...files.map(({ path, json }) => {
       const li = clone("downloadTemplate");

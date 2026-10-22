@@ -21,8 +21,7 @@ function collect(nodes, parent) {
     const key = node.item ?? node.group;
     const item = {
       i: items.length, key, path: parent ? `${parent.path}|${key}` : key, group: !node.item,
-      set: node.item ? setOf(data.availability[node.item]) : ALL, optional: node.optional === true, upgrades: node.upgrades === true,
-      self: null, chosen: null, kids: [], parent,
+      set: node.item ? setOf(data.availability[node.item]) : ALL, self: null, kids: [], parent,
     };
     (parent ? parent.kids : roots).push(item);
     items.push(item);
@@ -32,7 +31,7 @@ function collect(nodes, parent) {
 
 export const whole = (item) => (item.all ??= item.kids.reduce((s, kid) => s & whole(kid), item.set));
 
-export function prune(nodes, every = false, regionals = true) {
+function prune(nodes, every = false, regionals = true) {
   return nodes.flatMap((node) => {
     if ((node.unique && !every) || (!regionals && data.pictures[node.item]?.reach === "regional")) return [];
     const kids = prune(node.kids ?? [], every, regionals);
@@ -44,26 +43,17 @@ export function prune(nodes, every = false, regionals = true) {
 }
 
 export function rebuild() {
-  const chosen = new Map(items.map((item) => [item.path, item.chosen]));
+  const marks = new Map(items.map((item) => [item.path, item.self]));
   items.length = 0;
   roots.length = 0;
   collect(prune(data.tree, include, regional), null);
   items.forEach(whole);
-  for (const item of items) item.chosen = chosen.get(item.path) ?? null;
+  for (const item of items) item.self = marks.get(item.path) ?? null;
 }
 
 export function setMark(item, mark) {
-  if (!item.group) item.chosen = mark;
+  if (!item.group) item.self = mark;
   for (const kid of item.kids) setMark(kid, mark);
-}
-
-export function settle() {
-  const full = new Set();
-  for (const item of [...items].reverse()) {
-    const under = item.kids.every((kid) => full.has(kid));
-    if (!item.group) item.self = item.kids.length && under && !item.optional ? "has" : item.chosen;
-    if (under && (item.group || item.self === "has")) full.add(item);
-  }
 }
 
 export function state(item) {
@@ -77,11 +67,17 @@ export const isUnitOrTech = (item) => {
   return false;
 };
 
+const isTop = (item) => isUnitOrTech(item) && !isUnitOrTech(item.parent);
+
 const descendants = (item) => item.kids.flatMap((kid) => [kid, ...descendants(kid)]);
 
-function sameCount(item) {
+function passedTo(item) {
   const line = [item];
-  while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group && size(line.at(-1).kids[0].set) === size(item.set)) line.push(line.at(-1).kids[0]);
+  const top = isTop(item);
+
+  const only = () => line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group && line.at(-1).kids[0];
+
+  while (only() && (top || size(only().set) === size(item.set))) line.push(only());
   return line;
 }
 
@@ -89,12 +85,12 @@ export function mark(item, kind) {
   const unit = isUnitOrTech(item);
   const next = (unit ? item.self : state(item)) === kind ? null : kind;
   if (unit && next) {
-    if (next === "lacks") descendants(item).filter((each) => each.chosen === "has").forEach((each) => { each.chosen = null; });
-    sameCount(item).forEach((each) => { each.chosen = next; });
+    if (next === "lacks") {
+      descendants(item).filter((each) => each.self === "has").forEach((each) => { each.self = null; });
+    }
+    passedTo(item).forEach((each) => { each.self = next; });
   } else setMark(item, next);
-  settle();
-  for (let p = item.parent; p; p = p.parent) if (p.self === "has" && p.chosen === "lacks") p.chosen = null;
-  return next ? [...chainOf(item), ...(unit ? sameCount(item) : descendants(item))] : [];
+  return next ? [...chainOf(item), ...(unit ? passedTo(item) : descendants(item))] : [];
 }
 
 export function boxState(item) {
@@ -103,7 +99,6 @@ export function boxState(item) {
 }
 
 export function fit() {
-  settle();
   const marked = items.filter((item) => item.self);
   matching = marked.reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
   return marked;
@@ -138,8 +133,10 @@ export function filtersOf() {
 
   const depth = ({ item, line }) => line.indexOf(item);
 
-  return marked.filter((filter) => !marked.some((other) => other !== filter && other.mark === filter.mark && other.line[0] === filter.line[0]
-    && (filter.mark === "has" ? depth(other) > depth(filter) : depth(other) < depth(filter))));
+  const outranks = (other, filter) => other !== filter && other.mark === filter.mark && other.line[0] === filter.line[0]
+    && (filter.mark === "has" ? depth(other) > depth(filter) : depth(other) < depth(filter));
+
+  return marked.filter((filter) => !marked.some((other) => outranks(other, filter)));
 }
 
 export function share() {
@@ -149,13 +146,16 @@ export function share() {
 }
 
 export function chipName(item, kind) {
-  const named = (kind === "has" && (isUnitOrTech(item) || item.upgrades) && lineOf(item).findLast((each) => each.self === "has")) || item;
-  const name = shared.has(nameOf(named)) && named.parent ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) }) : nameOf(named);
-  return named.kids.length && state(item) === "has" ? fill(words.ui.full, { name }) : name;
+  const unit = isUnitOrTech(item);
+  const named = (kind === "has" && unit && lineOf(item).findLast((each) => each.self === "has")) || item;
+  const name = shared.has(nameOf(named)) && named.parent
+    ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) })
+    : nameOf(named);
+  return !unit && item.kids.length && state(item) === "has" ? fill(words.ui.full, { name }) : name;
 }
 
 export function unmarkLine(item, kind) {
   const line = lineOf(item);
-  if (line.length > 1) line.filter((each) => each.self === kind).forEach((each) => { each.chosen = null; });
+  if (line.length > 1) line.filter((each) => each.self === kind).forEach((each) => { each.self = null; });
   else setMark(item, null);
 }

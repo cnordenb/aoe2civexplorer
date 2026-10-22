@@ -16,7 +16,9 @@ export const attempt = (action) => {
 
 export const recall = (key) => attempt(() => localStorage.getItem(key));
 
-export const remember = (key, value) => attempt(() => (value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value)));
+export const remember = (key, value) => attempt(() => (value === null
+  ? localStorage.removeItem(key)
+  : localStorage.setItem(key, value)));
 
 export const load = (url) => new Promise((resolve, reject) => {
   const request = new XMLHttpRequest();
@@ -28,9 +30,12 @@ export const load = (url) => new Promise((resolve, reject) => {
   request.send();
 });
 
-export const fill = (template, values) => template.replace(/\{(\w+)\}/g, (whole, key) => (key in values ? String(values[key]) : whole));
+export const fill = (template, values) => template.replace(/\{(\w+)\}/g,
+  (whole, key) => (key in values ? String(values[key]) : whole));
 
-export const treeKeys = (nodes, key) => nodes.flatMap((node) => [...(node[key] ? [node[key]] : []), ...treeKeys(node.kids ?? [], key)]);
+export const treeKeys = (nodes, key) => nodes.flatMap((node) => [
+  ...(node[key] ? [node[key]] : []), ...treeKeys(node.kids ?? [], key),
+]);
 
 export let language;
 export let words;
@@ -59,7 +64,8 @@ export const plural = (key, n) => {
   return fill(forms[plurals.select(n)] ?? forms.other, { n: numbers.format(n) });
 };
 
-export const plain = (text) => text.toLocaleLowerCase(tag).normalize("NFD").replace(/\p{M}/gu, "").replace(/[^\p{L}\p{N}]/gu, "");
+export const plain = (text) => text.toLocaleLowerCase(tag).normalize("NFD")
+  .replace(/\p{M}/gu, "").replace(/[^\p{L}\p{N}]/gu, "");
 
 export const localeFile = (code) => `locales/${code}.json`;
 
@@ -90,24 +96,17 @@ export function pack(set) {
 
   const own = (key, code) => set[key][code] ?? {};
 
+  const local = (code) => ({ overrides: own("overrides", code), text: own("text", code) });
+
   return [
-    { path: "data.json", value: Object.fromEntries(Object.entries(set)
-      .map(([key, value]) => [key, ["overrides", "text"].includes(key) ? own(key, first) : value])) },
-    ...others.map((code) => ({ path: localeFile(code), value: { overrides: own("overrides", code), text: own("text", code) } })),
+    { path: "data.json", value: { ...set, ...local(first) } },
+    ...others.map((code) => ({ path: localeFile(code), value: local(code) })),
   ];
 }
 
 export function preferredLanguage() {
   const codes = Object.keys(data.languages);
-  const tags = codes.map((code) => data.languages[code].tag.toLowerCase());
-  const asked = [params.get("lng"), recall("language")].find((code) => codes.includes(code));
-  if (asked) return asked;
-  for (const wanted of navigator.languages ?? []) {
-    const lower = wanted.toLowerCase();
-    const at = tags.indexOf(lower) >= 0 ? tags.indexOf(lower) : tags.findIndex((t) => t.split("-")[0] === lower.split("-")[0]);
-    if (at >= 0) return codes[at];
-  }
-  return codes[0];
+  return [params.get("lng"), recall("language")].find((code) => codes.includes(code)) ?? codes[0];
 }
 
 const bit = (civ) => {
@@ -141,8 +140,11 @@ const flat = (value) => (Array.isArray(value)
 
 export function toJson(value, indent = "") {
   const inner = `${indent}  `;
+
+  const rows = (list) => `[\n${list.map((item) => inner + toJson(item, inner)).join(",\n")}\n${indent}]`;
+
   if (isScalar(value) || isFlatList(value)) return flat(value);
-  if (Array.isArray(value)) return `[\n${value.map((item) => inner + toJson(item, inner)).join(",\n")}\n${indent}]`;
+  if (Array.isArray(value)) return rows(value);
   const entries = Object.entries(value);
   const simple = entries.every(([, item]) => isScalar(item) || isFlatList(item));
   if (simple && (entries.length === 1 || indent.length + flat(value).length <= LINE_WIDTH)) return flat(value);
@@ -150,7 +152,7 @@ export function toJson(value, indent = "") {
   const [lastKey, last] = entries[entries.length - 1];
   if (Array.isArray(last) && head.every(([, item]) => isScalar(item))) {
     const opening = head.map(([key, item]) => `${flat(key)}: ${flat(item)}, `).join("");
-    return `{${opening}${flat(lastKey)}: [\n${last.map((item) => inner + toJson(item, inner)).join(",\n")}\n${indent}]}`;
+    return `{${opening}${flat(lastKey)}: ${rows(last)}}`;
   }
   return `{\n${entries.map(([key, item]) => `${inner}${flat(key)}: ${toJson(item, inner)}`).join(",\n")}\n${indent}}`;
 }
@@ -188,7 +190,8 @@ export function availabilityOf(owners, civs) {
 
 export function pictureOf(node, counts) {
   const [picture] = [...counts].reduce((best, each) => (each[1] > best[1] ? each : best));
-  return { kind: node.use_type.toLowerCase(), picture, reach: /^(Regional|Unique)/.exec(node.node_type)?.[1].toLowerCase() ?? "common" };
+  const reach = /^(Regional|Unique)/.exec(node.node_type)?.[1].toLowerCase() ?? "common";
+  return { kind: node.use_type.toLowerCase(), picture, reach };
 }
 
 export function missingText(set) {
@@ -204,13 +207,7 @@ export function missingText(set) {
   });
 }
 
-function refresh(current, techtree, trees, strings) {
-  const tools = current.tools;
-  const messages = [];
-
-  const say = (key, values) => messages.push(fill(tools[key], values));
-
-  const civs = Object.keys(techtree.civs).sort();
+function gather(civs, trees) {
   const nodes = new Map();
   const owners = new Map();
   const pictures = new Map();
@@ -223,37 +220,35 @@ function refresh(current, techtree, trees, strings) {
       }
       if (node.node_status !== "NotAvailable") owners.get(node.name).add(civ);
       const counts = pictures.get(node.name);
-      if (node.use_type === nodes.get(node.name).use_type) counts.set(node.picture_index, (counts.get(node.picture_index) ?? 0) + 1);
+      const seen = counts.get(node.picture_index) ?? 0;
+      if (node.use_type === nodes.get(node.name).use_type) counts.set(node.picture_index, seen + 1);
     }
   });
-  const keys = treeKeys(current.tree, "item");
-  const duplicates = [...new Set(keys.filter((key, i) => keys.indexOf(key) !== i))].sort();
-  const unknown = keys.filter((key) => !nodes.has(key));
-  duplicates.forEach((name) => say("duplicate", { name }));
-  unknown.forEach((name) => say("unknown", { name }));
-  if (duplicates.length || unknown.length) return { messages, fresh: null };
+  return { nodes, owners, pictures };
+}
 
-  const fresh = structuredClone(current);
-  fresh.civs = civs;
-  fresh.availability = Object.fromEntries(keys.map((key) => [key, availabilityOf(owners.get(key), civs)]));
-  fresh.pictures = Object.fromEntries(keys.map((key) => [key, pictureOf(nodes.get(key), pictures.get(key))]));
+function translate(current, fresh, { keys, nodes, techtree, strings }) {
   Object.entries(current.languages).forEach(([code, settings], i) => {
     const overrides = current.overrides[code] ?? {};
     const text = (fresh.text[code] ??= {});
-    text.civs = Object.fromEntries(civs.map((civ) => [civ,
-      overrides[civ] || capitalise(joinLines(strings[i][techtree.civs[civ].name_string_id] ?? "", settings)) || civ]));
+
+    const gameName = (civ) => capitalise(joinLines(strings[i][techtree.civs[civ].name_string_id] ?? "", settings));
+
+    text.civs = Object.fromEntries(fresh.civs.map((civ) => [civ, overrides[civ] || gameName(civ) || civ]));
     text.items = Object.fromEntries(keys.map((key) => [key,
       overrides[key] || localName(strings[i], nodes.get(key), settings, current.source.helpOffset) || key]));
   });
-  const now = new Date();
-  fresh.source.updated = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
 
-  civs.filter((civ) => !current.civs.includes(civ)).forEach((name) => say("civAdded", { name }));
-  current.civs.filter((civ) => !civs.includes(civ)).forEach((name) => say("civRemoved", { name }));
-  keys.filter((key) => key in current.availability && JSON.stringify(current.availability[key]) !== JSON.stringify(fresh.availability[key]))
+function compare(current, fresh, { keys, nodes, owners, say }) {
+  const differs = (key, section) => JSON.stringify(current[section][key]) !== JSON.stringify(fresh[section][key]);
+
+  fresh.civs.filter((civ) => !current.civs.includes(civ)).forEach((name) => say("civAdded", { name }));
+  current.civs.filter((civ) => !fresh.civs.includes(civ)).forEach((name) => say("civRemoved", { name }));
+  keys.filter((key) => key in current.availability && differs(key, "availability"))
     .forEach((name) => say("changed", { name }));
   keys.filter((key) => !owners.get(key).size).forEach((name) => say("nobody", { name }));
-  keys.filter((key) => JSON.stringify(current.pictures[key]) !== JSON.stringify(fresh.pictures[key]))
+  keys.filter((key) => differs(key, "pictures"))
     .forEach((name) => say("icon", { name, file: iconFile(fresh.pictures[name]) }));
   for (const [code, settings] of Object.entries(current.languages)) {
     for (const section of ["civs", "items"]) {
@@ -266,6 +261,30 @@ function refresh(current, techtree, trees, strings) {
   [...nodes.keys()].filter((name) => !keys.includes(name) && !current.ignore.includes(name)).sort()
     .forEach((name) => say("unplaced", { name }));
   missingText(fresh).forEach((problem) => say("missingText", problem));
+}
+
+function refresh(current, techtree, trees, strings) {
+  const messages = [];
+
+  const say = (key, values) => messages.push(fill(current.tools[key], values));
+
+  const civs = Object.keys(techtree.civs).sort();
+  const { nodes, owners, pictures } = gather(civs, trees);
+  const keys = treeKeys(current.tree, "item");
+  const duplicates = [...new Set(keys.filter((key, i) => keys.indexOf(key) !== i))].sort();
+  const unknown = keys.filter((key) => !nodes.has(key));
+  duplicates.forEach((name) => say("duplicate", { name }));
+  unknown.forEach((name) => say("unknown", { name }));
+  if (duplicates.length || unknown.length) return { messages, fresh: null };
+
+  const fresh = structuredClone(current);
+  fresh.civs = civs;
+  fresh.availability = Object.fromEntries(keys.map((key) => [key, availabilityOf(owners.get(key), civs)]));
+  fresh.pictures = Object.fromEntries(keys.map((key) => [key, pictureOf(nodes.get(key), pictures.get(key))]));
+  translate(current, fresh, { keys, nodes, techtree, strings });
+  const now = new Date();
+  fresh.source.updated = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  compare(current, fresh, { keys, nodes, owners, say });
   return { messages, fresh };
 }
 

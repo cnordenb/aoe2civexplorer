@@ -1,5 +1,7 @@
 import { recall, remember, words } from "./datahandler.js";
-import { $, simple, itemAt, tick, flip } from "./ui.js";
+import { $, simple } from "./stringbuilder.js";
+import { itemAt } from "./nodetree.js";
+import { tick, flip } from "./optionshandler.js";
 
 export let view = "list";
 
@@ -29,7 +31,7 @@ function wireTip() {
   document.addEventListener("pointermove", (e) => {
     const host = e.target.closest?.("dialog[open]") ?? document.body;
     if (tip.parentElement !== host) host.append(tip);
-    tip.textContent = simple || !tips || e.pointerType !== "mouse" ? "" : tipFor(e.target);
+    tip.textContent = simple() || !tips || e.pointerType !== "mouse" ? "" : tipFor(e.target);
     tip.hidden = !tip.textContent;
     if (tip.hidden) return;
     const reach = Number(getComputedStyle(tip).getPropertyValue("--reach"));

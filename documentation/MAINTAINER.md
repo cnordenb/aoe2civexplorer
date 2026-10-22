@@ -18,8 +18,7 @@ nothing to build: the files you see are exactly the files a visitor's browser do
 | `script.js` | Where the page starts. The rest of its behaviour is in `js/`, as listed below. |
 | `js/` | How the page behaves, split into the scripts listed below. |
 | `data.json` | Everything the page knows: the civilisations, the tree, which civilisation has what, and every piece of text in English, the default language. |
-| `favicon.ico` | The small icon browsers show in the tab and in bookmarks. |
-| `assets/images/` | The pictures, which Simple UI turns off: the backgrounds of the page and the Options window in `ui/backgrounds/`, the buttons and the Find box in `ui/buttons/`, the checkboxes in `ui/checkboxes/`, the mouse cursors in `ui/cursors/`, the panes' frames in `ui/panels/`, the civilisations' icons in `icons/civs/` and the tree's icons in `icons/nodes/`. See [The background pictures](#the-background-pictures). |
+| `assets/images/` | The pictures, which Simple UI turns off: the tab icon `favicon.ico`, the backgrounds of the page and the Options window in `ui/backgrounds/`, the buttons and the Find box in `ui/buttons/`, the checkboxes in `ui/checkboxes/`, the mouse cursors in `ui/cursors/`, the panes' frames in `ui/panels/`, the civilisations' icons in `icons/civs/` and the tree's icons in `icons/nodes/`. See [The background pictures](#the-background-pictures). |
 | `assets/fonts/` | The fonts used only with the pictures on: Georgia, Times New Roman Bold and Trajan Pro Bold. See [The panels](#the-panels) and [Civ view](#civ-view-list-or-tiles). |
 | `locales/` | One file per other language, such as `locales/de.json` for German, with every piece of text in that language. |
 | `documentation/` | This guide and the project's other documents: `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DEVLOG.md` and `code_docu.pdf`. |
@@ -35,17 +34,24 @@ modules, so they need no build step and no extra tools:
 | `script.js` | Where the page starts. It loads the data, starts the page, and loads the tests or the updater when asked. |
 | `js/datahandler.js` | Everything about data: loading `data.json` and the language files, the chosen language and its text, which civilisations have what, saved choices such as the language, and the updater that fetches new data and writes the files. |
 | `js/model.js` | The tree and its rules: which items are shown, which are marked, and when marking one item marks others. |
-| `js/ui.js` | Everything on the screen: drawing the tree and the list, clicks and keys, the language menu, the options window and Simple UI. |
-| `js/pictures.js` | What only the pictures need: Civ view (list or tiles) and the tooltip. It was split off when `js/ui.js` neared 400 lines of code. |
-| `js/report.js` | The report window of the updater and the tests, split off from `js/ui.js` for the same reason. With `js/ui.js` and `js/pictures.js`, it is one of the three scripts that touch the screen. |
+| `js/stringbuilder.js` | The page's text: the texts in the chosen language, the footer, the names in the tree, the list of civilisations and **Filters**. It also holds `$()` and `clone()`, which every script that touches the page uses. |
+| `js/nodetree.js` | The tree on the left: drawing its rows, opening and closing them, their counts, marking with clicks, touch and keys, **Find**, and the buttons above the tree. |
+| `js/optionshandler.js` | The Options window and the choices in it: the language menu, Include Unique and Universal, Include Regionals and Simple UI. It also starts the page with the visitor's saved choices. |
+| `js/pictures.js` | What only the pictures need: Civ view (list or tiles) and the tooltip. |
+| `js/report.js` | The report window of the updater and the tests. |
 | `js/tests/` | The tests. They are only loaded when the address ends in `?test`, so visitors never download them. |
 
 Four rules keep the code small enough to read. No file may have over 400 lines of code (Rule 25), no function over
-60 (Rule 23), and no line over 120 characters (Rule 24); blank lines are not lines of code. Test 82 checks these in
-`index.html`, `style.css` and every script. No folder may hold more than 7 files, apart from `assets/` and
-`locales/` (Rule 26); a page cannot see folders, so GitHub checks this one. When a script grows too long, move part
-of it into a new script in `js/`, or into a new test file in `js/tests/`. Give it a name in lower-case letters only, such as `menu.js`. Import the new script where it is needed, as the others do; the
-tests find every script by following those imports.
+60 (Rule 23), and no line over 120 characters (Rule 24); blank lines are not lines of code, and the line rule does not
+apply to `index.html` and `style.css`. Test 79 checks the first three in `index.html`, `style.css` and every script.
+No folder may hold more than 7 files, apart from `assets/` and `locales/`, and the main folder 8 (Rule 26); a page
+cannot see folders, so GitHub checks this one. `js/` and `js/tests/` hold 7 files each, so they are full.
+
+When a script grows too long, move part of it into another script that has room, or merge two small scripts, so that
+the folder stays at 7 files. A new folder inside `js/`, such as `js/screen/`, is the way out when that no longer
+works. Give a script a name in lower-case letters only, such as `menu.js`. Import it where it is needed, as the others
+do; the tests find every script by following those imports. Only `script.js`, `js/datahandler.js` and `js/model.js`
+must never touch the page; the tests check this too.
 
 The most important idea is that **all the facts live in `data.json` and the language files**. The other files never
 mention a unit, a civilisation or a sentence. So a game update only ever changes `data.json` and the language files,
@@ -83,7 +89,8 @@ down.
 - `civs`: the civilisations, by their English names.
 - `icons`: where the civilisations' icons are, and the file names that differ from the civilisations' names. See
   [The civilisation icons](#the-civilisation-icons). Also where the tree's icons are (`nodes`), and the icons of the
-  headings Economy, Military and Fortifications (`groups`). See [The tree's icons](#the-trees-icons).
+  headings Economy, Military and Fortifications (`groups`). See [The tree's icons](#the-trees-icons). And the tab
+  icon (`favicon`); see [Simple UI](#simple-ui).
 - `tree`: what the left pane shows, in order. **You edit this by hand.**
 - `availability`: for each item in the tree, which civilisations have it. The updater writes this; never edit it.
 - `pictures`: for each item in the tree, its icon, and whether it is common, regional or unique, which
@@ -146,9 +153,10 @@ height. The `padding` on `.pictures h1` is that box, written as shares of the fr
 padding percentages that way. If the frame is replaced by one with a different inner box, measure it and change the
 padding.
 
-With Simple UI on, the title stays the full sentence of requirement 2. Both texts are in the language files:
-`title` is the full sentence, and `titleShort` is "Civ Explorer", the same in every language. `index.html` holds both
-in the heading, and `style.css` shows the one that fits the mode.
+With Simple UI on, the title is the full sentence of requirement 2; requirement 0 applies the requirements' UI
+particulars to Simple UI only. Both texts are in the language files: `title` is the full sentence, and `titleShort`
+is "Civ Explorer", the same in every language. `index.html` holds both in the heading, and `style.css` shows the one
+that fits the mode.
 
 ### The Options button
 
@@ -190,8 +198,12 @@ name ends in "…".
 
 ### The checkboxes
 
-With the pictures on, every checkbox is a picture from `assets/images/ui/checkboxes/`: in the tree, in the legend, on
-the filter buttons and in the Options window. Each file is a sheet of three rows and three columns:
+With Simple UI, `style.css` draws the marks that requirements 14, 23 and 26 ask for: must have is a **green tick**,
+must lack a **red cross**, and a branch whose contents carry different marks a **white dash** on a dark box
+(`--dash`), so that it shows on a white page.
+
+With the pictures on, every checkbox is a picture from `assets/images/ui/checkboxes/`: in the tree, on the filter
+buttons and in the Options window; the legend is hidden then. Each file is a sheet of three rows and three columns:
 
 | | Normal | Under the mouse | Pressed |
 | --- | --- | --- | --- |
@@ -229,12 +241,13 @@ slivers of them along the edges. The civilisations' frame's middle is 80% black,
 through.
 
 The panes' own grey headers are see-through with the pictures on, so the frames show. A few colours were changed to
-suit them. In the tree, the highlight under the mouse is a light tint and Find's highlight a gold tint. Among the
-civilisations, the filter buttons and the dividing lines are orange. Each civilisation has its icon before its name;
-see [The civilisation icons](#the-civilisation-icons).
+suit them. In the tree, the highlight under the mouse is a light tint and Find's highlight a gold tint; with Simple UI
+it is yellow, as requirement 20 asks. Among the civilisations, the filter buttons and the dividing lines are orange.
+Each civilisation has its icon before its name; see [The civilisation icons](#the-civilisation-icons).
 
 In the tree pane, the legend is left out with the pictures on, as the tooltip says the same. The Find box comes first
-and the three buttons below it, and its "Find" label is hidden from sight but still read out by screen readers.
+and the three buttons below it, and its "Find" label is hidden from sight but still read out by screen readers. With
+Simple UI the pane keeps the order of requirement 3: title and buttons, Find with its label, the legend, the tree.
 
 The fonts come from `assets/fonts/`: `Georgia.ttf` and `timesbd.ttf` (Times New Roman Bold). `style.css` names them
 "Civ Georgia" and "Civ Times" and tries the copy installed on the visitor's computer first, so most visitors download
@@ -267,7 +280,7 @@ everything in one column that scrolls as a whole instead, which is how the page 
 
 Test 15 opens the whole tree, marks the item most civilisations have, and checks this in whatever window the tests
 run in. It was written after a bug: the civilisations pane once took the height of its whole list, so the page
-scrolled and the tree pane shrank to nothing. Tests 42 and 48 check that the footer is hidden on a phone and spans
+scrolled and the tree pane shrank to nothing. Tests 39 and 45 check that the footer is hidden on a phone and spans
 the panes everywhere else. On GitHub, the 500 by 900 window is the one with the phone layout; on your computer, make
 the browser window narrower than 720 pixels to try it.
 
@@ -278,8 +291,8 @@ cut into nine pieces of 15 by 15 that are repeated, never stretched. While the b
 its right end. While it holds text, `clear_search.webp` shows there instead, as a button that empties the box and puts
 the cursor back in it. `style.css` tells the two apart with `:placeholder-shown`, which is why the box has a
 placeholder of one space. The box has no focus ring with the pictures on; the text cursor shows where you type.
-With Simple UI it keeps the ring, as WCAG asks. The box is always 325 pixels wide, so it does not change size while you type. It narrows only in a pane too narrow
-for 325 pixels and 6em beside it, and then still not while you type.
+With Simple UI it keeps the ring, as WCAG asks. The box is always 325 pixels wide, so it does not change size while
+you type. It narrows only in a pane too narrow for 325 pixels and 6em beside it, and then still not while you type.
 
 The search's messages, such as "2 found" and "None found", always show to the right of the box, never below it, with
 the pictures on or off, and on one line only. The row with the box never wraps, and the message never wraps either: if
@@ -288,25 +301,31 @@ whatever the box leaves, at least 6em, is aligned right, and reaches 6 pixels in
 close to the pane's edge. With Simple UI its column is up to 12em wide and at least 6em, and stays the same width
 while typing.
 
+When Find opens the tree to its matches, it scrolls only the tree's own list to the first match, never the page
+around it, so the box you type in stays where it is (Rule 18). In very short windows, where the tree has no scrolling
+list of its own, nothing scrolls; Enter still takes you to the first match.
+
 ### The tooltip
 
 With the pictures on, a small parchment note, "Left-click to enable, right-click to disable", follows the mouse over
-the items of the tree. Over a civilisation, it shows the address its link leads to instead. Its top-left corner sits at the bottom-right corner of the cursor's picture: 32 pixels right of
-and below the pointer with the `x1` cursors, 48 with the `x2` ones. Near the window's right edge it moves left, and
-near its bottom it moves above the pointer. It looks like the tooltips of
-[frcp.net](https://github.com/cnordenb/frcp.net). Its text over the tree is `nodeTip` in the language files. It shows only for a
-mouse, not for touch or the keyboard, where the legend of Simple UI explains the same.
+the items of the tree. Over a civilisation, it shows the address its link leads to instead. Its top-left corner sits
+at the bottom-right corner of the cursor's picture: 32 pixels right of and below the pointer with the `x1` cursors,
+48 with the `x2` ones. Near the window's right edge it moves left, and near its bottom it moves above the pointer. It
+looks like the tooltips of [frcp.net](https://github.com/cnordenb/frcp.net). Its text over the tree is `nodeTip` in
+the language files. It shows only for a mouse, not for touch or the keyboard, where the legend of Simple UI explains
+the same.
 
 Over **Include Unique and Universal** in the Options window, the tooltip shows what the box does: `includeHint` in
 the language files. With the pictures on, that sentence is no longer shown under the box, but screen readers still
 read it, as the box names it with `aria-describedby`. With Simple UI there are no tooltips, so the sentence stays
-under the box. The Options window lies in the browser's top layer, above everything else on the page, so while the
-mouse is over it, `js/pictures.js` moves the tooltip into the window; otherwise the window would cover it.
+under the box, as requirement 8 asks. The Options window lies
+in the browser's top layer, above everything else on the page, so while the mouse is over it, `js/pictures.js` moves
+the tooltip into the window; otherwise the window would cover it.
 
 `js/pictures.js` places it by setting the custom properties `--x` and `--y` to the pointer's position, as numbers.
 `style.css` turns them into `left` and `top`. The cursor's size is `--reach` on `.tip` in `style.css`, set next to the
-cursor pictures so the two always match; `js/pictures.js` reads it from there. This is the only way the scripts give CSS anything: plain numbers through
-custom properties, never a style of their own. The tests check this.
+cursor pictures so the two always match; `js/pictures.js` reads it from there. This is the only way the scripts give
+CSS anything: plain numbers through custom properties, never a style of their own. The tests check this.
 
 ### The civilisation icons
 
@@ -360,10 +379,10 @@ Universal** ticked so that every item is in the tree.
 ### Links to the civilisations' pages
 
 With the pictures on, each civilisation in the list, and each tile, is a link to its page on aoe2techtree.net, such as
-[https://aoe2techtree.net/#Armenians](https://aoe2techtree.net/#Armenians) for the Armenians. `js/ui.js` builds the
-address from `url` in `source` in `data.json` and the civilisation's English name, so the links follow the source if
-it ever moves. With Simple UI the civilisations are plain text and link nowhere. The tests check that Simple UI takes the
-links away and gives them back, but not where they lead.
+[https://aoe2techtree.net/#Armenians](https://aoe2techtree.net/#Armenians) for the Armenians. `js/stringbuilder.js`
+builds the address from `url` in `source` in `data.json` and the civilisation's English name, so the links follow the
+source if it ever moves. With Simple UI the civilisations are plain text and link nowhere. The tests check that Simple
+UI takes the links away and gives them back, but not where they lead.
 
 ### Civ view: list or tiles
 
@@ -393,7 +412,8 @@ detail, on the same terms as the Options button). The title "Options" sits in th
 Georgia.
 
 The window itself keeps exactly the size, padding and text it has with Simple UI, so that ticking Simple UI does not
-move its box (Rule 18; the tests check it). Everything else is drawn around it:
+move its box (Rule 18; the tests check it). Its height is fixed, `min(30rem, the window's height minus 32px)`, so
+that opening the language list never resizes it. Everything else is drawn around it:
 
 - The frame is drawn by `.options::before`, which covers the rows below the title and reaches 17 pixels past them,
   out to the window's edges. The title keeps its row, so nothing below it moves, and `translate` lifts it into the
@@ -423,6 +443,10 @@ In windows less than 588 pixels tall, there is no room for the parchment above t
 out, and the title stays in the panel, which covers the whole window. The language list, when open, lies on the
 panel with a thin `#391c1b` border instead of a background of its own.
 
+The language list closes when it is left: by Escape, by choosing a language, by a click anywhere in it or outside it
+(requirement 12), or when focus moves away. A click on its own scroll bar does not close it, so that it can still be
+scrolled; the list can take focus (`tabindex="-1"`) for that reason, though it is not in the Tab order.
+
 ### The mouse cursor
 
 With the pictures on, the mouse cursor is the sword from `assets/images/ui/cursors/` (`cursor_normal_…`), over
@@ -445,14 +469,22 @@ bottom edges the `x2` cursors turn into the usual ones.
 
 ### Simple UI
 
-**Simple UI**, a box in the Options window, turns the pictures off. The page then uses no images at all, and looks
-as it did before there were pictures, with the usual margins and the text cogwheel. The browser remembers the choice,
-and a visitor who has chosen Simple UI never downloads a picture.
+**Simple UI**, a box in the Options window, turns the pictures off. The page then uses no images at all, as
+requirement 33 asks, not even the tab icon, and looks as it did before there were pictures, with the usual margins
+and the text cogwheel. The browser remembers the choice, and a visitor who has chosen Simple UI never downloads a
+picture.
+
+The tab icon is `assets/images/favicon.ico`, named in `icons` in `data.json` as `favicon`. `index.html` gives the tab
+the empty icon `data:,`, which is no picture, and `js/optionshandler.js` swaps in `favicon.ico` once the data has
+loaded, and only while Simple UI is off. The empty icon also stops browsers from asking the server for a
+`favicon.ico` of their own.
 
 **Accessibility applies to Simple UI.** As decided on 2026-10-21, the page must meet WCAG 2.2 AAA only with Simple UI
-on, so the tests run with Simple UI on. Tests 48 to 51 turn it off. They check that the right pictures show and
+on, so the tests run with Simple UI on. Tests 45 to 48 turn it off. They check that the right pictures show and
 that the header, panes and footer stay inside the area above; the pictures of the checkboxes and the tree's icons;
-the Find box and the tooltip; and that Simple UI takes every image away and gives it back.
+the Find box and the tooltip; and that Simple UI takes every image away, the tab icon included, and gives it back.
+Requirement 0 likewise applies the requirements' UI particulars to Simple UI only; the behaviour of the tree's marks
+applies in every mode.
 
 ### Changing the pictures
 
@@ -463,10 +495,11 @@ numbers from `style.css`, so they cannot tell whether the numbers match the pict
 the Options window's parchment, see [The Options window](#the-options-window).
 
 Pictures live in `assets/images/`, in folders and files named in lower-case letters, digits and underscores, such as
-`ui/buttons/options_sd.webp`. The GitHub check of allowed files lets only WebP and PNG files with such names into that
-folder. Only `style.css` may use a picture, and only in a rule that starts with `.pictures`, so that Simple UI turns
-it off; the tests check this. The icons of the civilisations and of the tree are the exception: they are `<img>`
-elements, made from templates in `index.html` only while Simple UI is off. Fonts live in `assets/fonts/` as `.ttf` files, and `style.css` may only load them in an
+`ui/buttons/options_sd.webp`. The GitHub check of allowed files lets only WebP, PNG and ICO files with such names into
+that folder. Only `style.css` may use a picture, and only in a rule that starts with `.pictures`, so that Simple UI
+turns it off; the tests check this. The icons of the civilisations and of the tree are the exception: they are
+`<img>` elements, made from templates in `index.html` only while Simple UI is off; so is the tab icon, see
+[Simple UI](#simple-ui). Fonts live in `assets/fonts/` as `.ttf` files, and `style.css` may only load them in an
 `@font-face` rule; use them only in `.pictures` rules, so that Simple UI never downloads them.
 
 ## Opening the page on your own computer
@@ -540,40 +573,25 @@ Where you put an item matters, because marking works along the tree:
 
 - An item with no other item above it, only groups or nothing, counts as a building, such as the Barracks or the
   Watch Tower. Marking a building marks everything in it, and opens it all, so every marked row shows.
-- An item under another item counts as a unit or technology. Marking one opens its line, and passes the mark down
-  only to items that as many civilisations have: marking Militia (52 civilisations) also marks Man-at-Arms (52),
-  but not Long Swordsman (51).
-- When everything under an item is marked, the item is marked too: marking Champion marks Militia, Man-at-Arms,
-  Long Swordsman and Two-Handed Swordsman as well.
+- An item under another item counts as a unit or technology. The first unit or technology under a building or a
+  group is the **top of its line**, such as Scout Cavalry, Knight or Militia. Marking the top of a line marks the
+  whole line, whatever the counts (requirement 27): marking Militia marks Man-at-Arms, Long Swordsman, Two-Handed
+  Swordsman and Champion too, so it asks for the fully upgraded line.
+- Marking any other unit or technology passes the mark down only to items below it that as many civilisations have
+  (requirements 29 and 30): marking Man-at-Arms (52 civilisations) does not mark Long Swordsman (51).
+- A mark never passes up (requirement 30): marking Champion marks Champion only, and marking everything in a building
+  does not mark the building, which then shows a dash.
+- Marking opens the item, down to its first fork or the end of its line, and every row the mark reached.
+- Under **Filters**, a fully marked building or top-level row with something under it reads "Full", such as "Full
+  Market" or "Full Watch Tower" (requirement 24). Something with nothing under it cannot be full, so the House
+  reads "House". A unit or technology is listed by the deepest item of its line that is marked must have, such as
+  "Champion" (requirement 25).
 
-So put buildings at the top or straight into a group, and their units and technologies under them. Put an item
-under another only if needing everything below means needing the one above.
+So put buildings at the top or straight into a group, and their units and technologies under them, with the first of
+a line straight under its building: that item is the one that marks the whole line.
 
-A few items are exceptions, and say so with `"optional": true`:
-
-```json
-{"item": "Lumber Camp", "optional": true, "kids": [
-```
-
-An optional item is one that some civilisations can do without while still having everything under it. The Mill,
-Lumber Camp and Mining Camp are optional, because civilisations with a Folwark, Mule Cart or Settlement research
-the same technologies there. The Monastery is optional because Armenians research its technologies at the Fortified
-Church. Marking everything under an optional item leaves the item itself unmarked, so a
-visitor can ask, for example, for civilisations that have Two-Man Saw but no Lumber Camp.
-
-You do not have to find these cases yourself. If a game update creates a new one, the tests fail with "an item is
-optional if some civilisation has everything under it without having the item", and name the item. Add
-`"optional": true` to it, as above, and run the tests again.
-
-A building whose rows are its own upgrades says so with `"upgrades": true`, as the Stone Wall and the Watch Tower do:
-
-```json
-{"item": "Watch Tower", "upgrades": true, "kids": [
-```
-
-This only changes the building's name under **Filters** once it is fully marked. A building is normally listed as,
-for example, "Full Market". A building with upgrades is listed by its last upgrade instead, as a unit is: marking the
-Watch Tower lists Keep. If a game update adds a building like this, add the flag to it.
+Because marks never pass up, a visitor can mark a building must lack and the lines under it must have, for example
+to find the civilisations that have Two-Man Saw but no Lumber Camp: they research it at a Settlement.
 
 The tree also leaves some items out, unless a visitor ticks **Include Unique and Universal** in the page's
 **Options** window, which the cogwheel button at the top right opens:
@@ -610,7 +628,7 @@ Open the page with `?test` added to the address, for example `http://127.0.0.1:5
 
 Wait about half a minute. The tests run in the window as it is, so try a wide and a narrow window now and then. At
 the end a window says **All … tests passed**, or lists what failed first, each by its number in `TESTS.md`, such
-as "Test 67 failed". Each failure then says what is wrong and where, for example which text has too little contrast
+as "Test 64 failed". Each failure then says what is wrong and where, for example which text has too little contrast
 in which language.
 
 ### Step 7: publish
@@ -677,23 +695,40 @@ classDiagram
   class script {
     <<module>>
   }
-  class ui {
+  class optionshandler {
     <<module>>
     +start()
     +setLanguage(code)
     +setInclude(on)
+    +setRegional(on)
     +setSimple(on)
+    +tick(id, on)
+    -choose(code)
+  }
+  class nodetree {
+    <<module>>
+    +startTree()
     +setOpen(item, open)
+    +update()
+    +find()
+    +replant()
+    +dress(item)
     -toggle(item, kind)
-    -update()
-    -dress(item)
+  }
+  class stringbuilder {
+    <<module>>
+    +clone(id)
+    +simple()
+    +writeTexts()
+    +label()
+    +listCivs(marked)
+    +listFilters()
   }
   class model {
     <<module>>
     +items
     +rebuild()
     +mark(item, kind)
-    +settle()
     +fit()
     +filtersOf()
     +chipName(item, kind)
@@ -703,7 +738,7 @@ classDiagram
     +data
     +useData(raw)
     +useLanguage(code)
-    +loadLanguage(code)
+    +preferredLanguage()
     +setOf(rule)
     +civsOf(set)
     +recall(key)
@@ -727,47 +762,75 @@ classDiagram
     +openReport(title, status)
     +report(line)
   }
-  script ..> ui
+  script ..> optionshandler
+  script ..> stringbuilder
   script ..> report
   script ..> pictures
-  pictures ..> ui
-  pictures ..> datahandler
-  report ..> ui
-  report ..> datahandler
   script ..> datahandler
   script ..> tests : only with ?test
-  ui ..> model
-  ui ..> datahandler
+  optionshandler ..> nodetree
+  optionshandler ..> stringbuilder
+  optionshandler ..> model
+  optionshandler ..> datahandler
+  nodetree ..> stringbuilder
+  nodetree ..> model
+  nodetree ..> datahandler
+  stringbuilder ..> model
+  stringbuilder ..> datahandler
+  pictures ..> optionshandler
+  pictures ..> nodetree
+  pictures ..> stringbuilder
+  pictures ..> datahandler
+  report ..> stringbuilder
+  report ..> datahandler
   model ..> datahandler
-  tests ..> ui
-  tests ..> report
+  tests ..> optionshandler
+  tests ..> nodetree
+  tests ..> stringbuilder
   tests ..> pictures
+  tests ..> report
   tests ..> model
   tests ..> datahandler
   note for datahandler "reads data.json and locales/"
 ```
 
+The arrows never go round in a circle: `datahandler.js` uses no other script, `model.js` only `datahandler.js`,
+`stringbuilder.js` only those two, `nodetree.js` those three, and `optionshandler.js` those four. Keep it so: a
+script should only use scripts below it in that order.
+
 - **`script.js`**, in the main folder, starts the page. It first calls `setSimple()` with the visitor's saved choice,
-  so the pictures start loading at once, or never load with Simple UI. Then it loads `data.json` and the
-  visitor's language, and calls `start()` and then `startPictures()`. With `?test` it loads the tests, and with `?update` it calls `runUpdate()` in `js/report.js`.
+  so the pictures start loading at once, or never load with Simple UI. Then it loads `data.json` and the visitor's
+  language, and calls `start()` and then `startPictures()`. With `?test` it loads the tests, and with `?update` it
+  calls `runUpdate()` in `js/report.js`.
 - **`js/datahandler.js`** looks after the data. `useData()` reads `data.json`, and `useLanguage()` switches the text.
-  A set of civilisations is a bit mask: `setOf()` makes one from `data.json`, and `civsOf()` turns one back into
-  names. `recall()` and `remember()` keep choices in the browser. `fetchUpdate()` fetches new data for the updater.
+  `preferredLanguage()` picks the language to start in: the one in the address (`?lng=`), else the visitor's last
+  choice, else English (requirement 10). A set of civilisations is a bit mask: `setOf()` makes one from `data.json`,
+  and `civsOf()` turns one back into names. `recall()` and `remember()` keep choices in the browser.
+  `fetchUpdate()` fetches new data for the updater.
 - **`js/model.js`** looks after the tree, and never touches the screen. `rebuild()` builds the items, leaving out
-  unique and universal ones unless they are included, and regional ones while Include Regionals is unticked. `mark()` marks an item and passes the mark on, `settle()`
-  works out what else follows, `fit()` finds the civilisations that fit every mark, and `filtersOf()` and
-  `chipName()` decide what **Filters** shows.
-- **`js/ui.js`** looks after the screen. `start()` builds the page and listens for clicks and keys. A click on an
-  item runs `toggle()`, which calls `mark()`, opens the rows the mark reached, and then calls `update()` to redraw
-  the boxes, the numbers, **Filters** and the list of civilisations. `setInclude()` and `setRegional()` tick or untick
-  the two Include boxes and build the tree again. `setSimple()` ticks or unticks Simple UI, and
-  adds or removes the `pictures` class on the page, which is what shows the pictures. `dress()` gives a row of the
-  tree its icon, or takes it away with Simple UI on; the tree is built, and Simple UI switched, through it.
+  unique and universal ones unless they are included, and regional ones while Include Regionals is unticked.
+  `mark()` marks an item and passes the mark down its line, never up, `fit()` finds the civilisations that fit
+  every mark, and `filtersOf()` and `chipName()` decide what **Filters** shows.
+- **`js/stringbuilder.js`** writes the page's text. `$()` finds an element by its id, and `clone()` copies a template
+  from `index.html`. `simple()` tells whether Simple UI is on, from the `pictures` class on the page.
+  `writeFixed()` writes the texts that never change, `writeTexts()` those of the chosen language, `label()` the names
+  in the tree, `listCivs()` the list of civilisations and its count, and `listFilters()` the filter buttons.
+- **`js/nodetree.js`** looks after the tree. `startTree()` builds it and listens for clicks, touch and keys. A click
+  on an item runs `toggle()`, which calls `mark()`, opens the rows the mark reached, and then calls `update()` to
+  redraw the boxes, the numbers, **Filters** and the list of civilisations. `setOpen()` opens or closes a row,
+  `find()` runs Find, `dress()` gives a row its icon, or takes it away with Simple UI on, and `replant()` builds the
+  tree again, keeping marks and open rows.
+- **`js/optionshandler.js`** looks after the Options window. `start()` applies the visitor's saved choices, builds
+  the page and shows it. `setLanguage()` switches the language, the language menu's clicks and keys go through
+  `choose()`, and `setInclude()` and `setRegional()` tick or untick the two Include boxes and build the tree again.
+  `setSimple()` ticks or unticks Simple UI: it adds or removes the `pictures` class on the page, which is what shows
+  the pictures, and sets the tab icon.
 - **`js/pictures.js`** looks after what only the pictures need. `setView()` switches the list of civilisations
   between list and tiles and remembers the choice, and the tooltip follows the mouse. `startPictures()` sets both up.
 - **`js/report.js`** shows the report window: `runUpdate()` for the updater, and `openReport()` and `report()`,
   which the tests use too.
-- **`js/tests/`** holds the tests. `runTests()` in `js/tests/run.js` runs them, in three rounds (see below).
+- **`js/tests/`** holds the tests. `runTests()` in `js/tests/run.js` runs them, in three rounds (see below). The
+  tests of the pictures are in `js/tests/pictures.js`.
 
 ## Keeping to the project's rules
 
@@ -776,15 +839,19 @@ check most of them.
 
 - All facts and all text live in `data.json` and the language files in `locales`. All structure lives in
   `index.html`, all looks in `style.css`, all behaviour in `script.js` and `js/`: the start in `script.js`, data
-  handling in `js/datahandler.js`, everything on the screen in `js/ui.js` and `js/pictures.js`, the report window
-  in `js/report.js`, and the tests in `js/tests/`. No file is over 400 lines of code, no function over 60, and no
-  line over 120 characters; blank lines do not count. No folder holds more than 7 files, apart from `assets/` and
-  `locales/`.
+  handling in `js/datahandler.js`, the tree's rules in `js/model.js`, the page's text in `js/stringbuilder.js`, the
+  tree on the screen in `js/nodetree.js`, the Options window in `js/optionshandler.js`, what only the pictures need
+  in `js/pictures.js`, the report window in `js/report.js`, and the tests in `js/tests/`. No file is over 400 lines
+  of code, no function over 60, and no line of a script over 120 characters; blank lines do not count. No folder
+  holds more than 7 files, apart from `assets/` and `locales/`, and the main folder 8.
 - No comments in the code. Explanations belong in this guide.
 - A blank line before and after every function, so that each one stands on its own. A function that opens or closes
   its block needs none on that side.
-- No images, apart from the tab icon `favicon.ico` and the pictures in `assets/images/`, which Simple UI turns off. No sounds
-  or animations, and no extra libraries, build steps or other programming languages.
+- No images but the pictures in `assets/images/`, the tab icon among them, and Simple UI turns them all off. No
+  sounds or animations, and no extra libraries, build steps or other programming languages.
+- The page looks and behaves as `REQUIREMENTS.md` says. Its rules for how the tree marks items apply in every mode;
+  its rules for how the page looks apply with Simple UI on (requirement 0). Only the chief developer changes that
+  file; if a change to the page needs a requirement changed, ask first.
 - With Simple UI on, the page must meet WCAG 2.2 at level AAA, the strictest level of the web's accessibility
   guidelines. Among other things, that means text contrast of at least 7 to 1, every control at least 44 by 44
   pixels, everything usable by keyboard alone, and a page that still works when zoomed to 400%. With the background

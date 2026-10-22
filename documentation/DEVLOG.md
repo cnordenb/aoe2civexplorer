@@ -1479,3 +1479,283 @@ All of this applies with the pictures on. Simple UI is unchanged.
   320 by 256 window in step 6.
 
 Currently: big refactor time, focussing on getting project compliant with rules 23-26. Hard stop on new features until this is under wraps.
+
+## 2026-10-22: compliance with RULES.md and REQUIREMENTS.md, and js/ui.js split in three
+
+As asked: make the project compliant with `RULES.md` and `REQUIREMENTS.md`, with every test passing, without stopping
+for questions, and with `js/ui.js` split into `js/nodetree.js`, `js/stringbuilder.js` and `js/optionshandler.js`.
+Nothing was committed. Questions are at the end of this entry.
+
+### What changed: the code (Rules 23 to 26)
+
+- **`js/ui.js` is now three scripts**, as suggested. `js/ui.js` had 400 lines of code, the limit.
+  - `js/stringbuilder.js` (68 lines of code) writes the page's text: the fixed texts, the texts of the chosen
+    language, the tree's names, the list of civilisations and **Filters**. It also holds `$()` and `clone()`.
+  - `js/nodetree.js` (221) looks after the tree: drawing its rows, opening them, their counts, marking with clicks,
+    touch and keys, Find, and the buttons above it.
+  - `js/optionshandler.js` (142) looks after the Options window: the language menu, the Include boxes, Simple UI and
+    the tab icon, and starts the page with the visitor's saved choices.
+  - The scripts use each other in one direction only: `datahandler.js`, then `model.js`, `stringbuilder.js`,
+    `nodetree.js` and `optionshandler.js`, each using only those before it. So that the lower scripts need not ask
+    `optionshandler.js` whether Simple UI is on, the variable `simple` became the function `simple()`, which reads
+    the `pictures` class on the page, the one switch that already shows the pictures.
+  - The rule test that kept page code in `ui.js`, `report.js` and `pictures.js` now checks the other way round:
+    `script.js`, `datahandler.js` and `model.js` never touch the page. A new script that does is then allowed
+    without changing the test.
+- **No function over 60 lines of code (Rule 23).** `wireTree()` (90) became a handler per kind of event and
+  `startTree()`. `pictureTests()` (127) became eleven functions, and moved with them into a new
+  `js/tests/pictures.js`, as `js/tests/interface.js` would otherwise have passed 400 lines of code. `audit()` (73)
+  became one function per group of checks. `refresh()` in the updater (60, at the limit) became `gather()`,
+  `translate()`, `compare()` and `refresh()`, and `runTests()` (59) became `prepare()`, `rounds()`, `restore()` and
+  `runTests()`.
+- **No line of a script over 120 characters (Rule 24).** 165 lines were wrapped or rewritten, in every script.
+  The three long lines of `.github/workflows/tests.yml` were wrapped too, as its steps are code.
+- **Folders (Rule 26).** `js/` and `js/tests/` hold 7 files each, the most allowed. `favicon.ico` moved into
+  `assets/images/` (see Req. 33 below), so the main folder holds 7 files instead of 8.
+- **The updater is unchanged in what it does.** Its output was checked twice: run against aoe2techtree.net before and
+  after, it wrote byte for byte the same 17 files; and the old and new `refresh()` were run side by side on changed
+  data (a civilisation added and one removed, changed availability, a new icon, renamed items, an item left out of
+  the tree, missing texts, a duplicate and an unknown item), giving the same messages and files.
+
+### What changed: requirements
+
+`REQUIREMENTS.md` describes the page without exceptions for the pictures, and Rule 20 makes it the definition of
+the page. Several things decided for the pictures on 2026-10-21 differed from it, and so did a few things in Simple
+UI. They now follow `REQUIREMENTS.md`. Each one can be put back from commit `fa11988` if `REQUIREMENTS.md` is changed
+to allow it.
+
+- **Req. 2, the title.** With the pictures on, the title was "Civ Explorer". It is now the full sentence in every
+  mode, on two balanced lines in the title frame. Below 720 pixels wide the frame is too small for it, so there the
+  title stands on the parchment without its frame. `titleShort` is gone from all 17 languages.
+- **Req. 3, the tree pane.** With the pictures on, the Find box came first, its "Find" label was hidden and the
+  legend was left out. The order is now as Req. 3 lists it in every mode: title and buttons, Find with its label, the
+  legend, the tree. The Find box is still 325 pixels wide where the pane allows.
+- **Req. 8, the description of Include.** With the pictures on, it only showed as a tooltip. It now shows under the
+  box in every mode, and the tooltip stays. The Options window is 32rem tall instead of 30rem, so that the bold
+  Georgia text fits without a scroll bar.
+- **Req. 14, 23 and 26, the marks.** The checkbox pictures have a red tick and a gold cross, and Simple UI drew a
+  white tick on a green box, a white cross on a red box and a black dash on a white box. The requirements ask for a
+  green tick, a red x and a white dash. `style.css` now draws them in every mode: a green tick and a red cross on
+  the box, and a white dash on a dark box (`--dash`) with Simple UI. With the pictures on, they are drawn over the
+  sheet's empty row with a thin black edge; the sheet's ticked and crossed rows are no longer used. Contrast stays
+  above 3:1 in light and dark colours.
+- **Req. 20, yellow.** Find's highlight was a dark olive (`#3d3400`) in dark colours and amber with the pictures. It
+  is now `#fff0a0` in both colour schemes, and a clear yellow with the pictures. In dark colours a found row takes
+  the light colours, so its text, count, box and focus ring keep their contrast on yellow; the audit passes with
+  Find on in both schemes.
+- **Req. 10, English by default.** On a first visit the page chose the browser's language. It now starts in English
+  unless the address (`?lng=`) or an earlier choice says otherwise. This also answers question 5 of 2026-10-18.
+- **Req. 12, the language list closes on a click.** A click between two languages, in the list's gaps, left it
+  open. Any click in it or outside it now closes it. A click on its own scroll bar does not, so that it can still be
+  scrolled: Chrome sends a click for that too. The list can now take focus (`tabindex="-1"`, not in the Tab order);
+  before, a click on its scroll bar moved focus away and closed it at once.
+- **Req. 24, "Full".** A fully marked building with nothing under it read just its name, and Stone Wall and Watch
+  Tower read "Fortified Wall" and "Keep" through the `upgrades` flag. Every root and building node now reads "Full",
+  such as "Full House" and "Full Watch Tower". The `upgrades` flag is gone from `data.json`, `js/model.js`, the tests
+  and `MAINTAINER.md`.
+- **Req. 27 with Req. 30, must lack on a line's last item.** X on the last item of a line marked only that item. It
+  now also marks the items above it in the line that have as many civilisations, and X again clears them. X on Elite
+  Champi Warrior marks the whole Champi line (4 civilisations each); X on Champion still marks only Champion (39,
+  where Two-Handed Swordsman has 49). Must have is unchanged.
+- **Req. 33, no images with Simple UI.** The tab icon is an image, and it was used with Simple UI too.
+  `index.html` now gives the tab the empty icon `data:,`, and `js/optionshandler.js` puts the real icon in only while
+  Simple UI is off, as for every other picture. The icon moved to `assets/images/favicon.ico`, named in `icons` in
+  `data.json`, and the check of allowed files now lets ICO files into `assets/images/`.
+- **Rule 18, Find.** Find scrolled the first match into view with `scrollIntoView()`, which also scrolls everything
+  around the tree. In short windows, where the content scrolls as a whole, it moved the very box being typed in. Find
+  now scrolls only the tree's own list (`reveal()`), and nothing in that layout.
+
+### Tests
+
+- Still 97, numbered as before. New checks went into existing tests, and each was shown to fail when the old
+  behaviour is put back in a copy of the project:
+  - Test 10 checks the white dash, green tick and red cross (fails with the old white tick or the black dash);
+  - Test 13 checks "Full" on a building heading a line and on one with nothing under it (fails with the old naming);
+  - Test 17 checks must lack on the last item of a line of equal counts (fails without it);
+  - Test 32 checks that Find's highlight is yellow (fails with olive), and Test 50 the same with the pictures (fails
+    with amber);
+  - Test 35 checks that a click in the language list closes it (fails with the old handler);
+  - Test 37 checks English as the default with a German browser (fails with the old language choice);
+  - Test 48 checks the full title and the tab icon with the pictures (fails with the short title);
+  - Test 49 checks the drawn marks on every box with the pictures (fails with the sheet's red tick row);
+  - Test 50 checks the tree pane's order, the legend, the Find label and the description under Include (each fails
+    when hidden or reordered as before);
+  - Tests 51 and 73 check that Simple UI uses no tab icon (both fail with the icon left on);
+  - Test 84 checks that `index.html` starts with the empty tab icon and that the icon lives in `assets/images/`.
+- Test 83 now reads "script.js, datahandler.js and model.js never touch the page", and Test 87 no longer knows the
+  `upgrades` flag.
+- The picture tests now take fresh sample items: the tree is rebuilt when Include changes, and items picked before
+  that are no longer on the page.
+- **Checked.** All 97 tests pass in Chrome 155 on Windows, in light and dark colours, with the four window sizes of
+  the GitHub check (1920 by 1080, 1280 by 800, 800 by 1100 and 500 by 900, which headless Chrome on Windows shows as
+  1904 by 929, 1264 by 649, 784 by 949 and 500 by 749). Both repository checks of the workflow were run on the file
+  list as it will be committed: no file is refused and no folder is too full. They have not run on GitHub's Ubuntu.
+
+### Documents
+
+- `TESTS.md`: the new wording of Tests 10, 13, 17, 32, 35, 37, 48 to 51, 73, 83, 84 and 87, and the files and lines
+  of every test, worked out from the code. No field is over 120 characters.
+- `MAINTAINER.md`: the new scripts and what each does, the diagram (drawn with Mermaid 10.9.1 to check it), the
+  title, the checkboxes and their marks, the tree pane's order, the Find box, the tooltip over Include, the Options
+  window and its language list, the tab icon, the marking rules of Step 4 without `upgrades`, and that `js/` and
+  `js/tests/` are full.
+- `code_docu.pdf`, rebuilt in its old form: it was last built on 19 October and still described `js/ui.js`, test
+  frames and a page without pictures. It now has 35 pages and 19 chapters, one per file, covering all 259 functions
+  of the current scripts, each in at most 240 characters, with page numbers and a clickable outline. A script
+  checked that every function in the code has a text and every text a function. As before, the page it is printed
+  from is not kept in the project.
+- `REQUIREMENTS.md` and `RULES.md` were not touched.
+
+### How the rules were read
+
+- **Rule 18** cannot be read word for word: opening a branch moves the rows below it (Req. 18, 19, 20, 28), and
+  switching Simple UI rearranges the page (Req. 32). As before, it is read as: a control must not move away from
+  under the user while they use it. The Options window keeps its size, the Simple UI box and the Find box stay put,
+  and Find no longer scrolls the page (above).
+- **Rules 24 and 25** count lines of code. `data.json`, the language files and the documents are data and text, not
+  code, as decided on 2026-10-21. `data.json` has 2,244 lines, 62 of them over 120 characters, and splitting it would
+  break Rule 1. HTML and CSS are exempt from Rule 24 by the rule itself; `style.css` has 398 lines of code.
+- **Req. 26**, "multiple assigned values", is read as before: unmarked counts as a value, so a branch with one marked
+  and one unmarked item shows the dash.
+- **Req. 25**, "the deepest descendant node", is read as before: the deepest item of the line that is marked must
+  have, so marking Militia alone is not listed as Champion.
+- **Req. 24**, "building node", is read as before: an item with no item above it. The `kind` in `pictures`, from
+  aoe2techtree.net, would also call the Fortified Wall, Guard Tower, Keep and Fish Trap buildings.
+- **Req. 13**, "the checkbox in the Options window", is Include Unique and Universal, the one Req. 8 names. Include
+  Regionals and Tooltips start ticked; they are not in `REQUIREMENTS.md`.
+
+### Questions for the chief developer
+
+1. **The look with the pictures.** The title, the order of the tree pane, the hidden legend and label, the
+   description as a tooltip only, and the sheet's red tick were all decided on 2026-10-21, but differ from
+   requirements 2, 3, 8, 14, 23 and 26, which now win. If the earlier look is wanted, the requirements need an
+   exception for the pictures, and the old CSS can come back from commit `fa11988`.
+2. **The checkbox sheet.** A version of `checkboxes_sd.webp` and `checkboxes_4k.webp` with a green tick and a red
+   cross would let the sheet's own marks be used again, instead of the drawn ones.
+3. **Req. 27 against Req. 30, for must have.** Marking Champion (39 civilisations) marks the whole Militia line,
+   though Militia has 52, as was decided on 2026-10-19 (Req. 27). Read word for word, Req. 30 forbids that, as the
+   counts differ. The mark changes no result, since every civilisation with Champion has the whole line. Should
+   Req. 30 say that it applies to marks passed down?
+4. **"Full House".** Req. 24 makes a fully marked building with nothing under it read "Full House" or "Full Gate".
+   Is that wanted, or should Req. 24 apply only to buildings with something under them?
+5. **Rule 26.** `js/` and `js/tests/` are full at 7 files. The next script will need a merge or a folder such as
+   `js/screen/`. Should the rule leave room, or name a preferred layout?
+6. **Include Regionals, Civ view and Tooltips** are in the Options window but not in `REQUIREMENTS.md`.
+7. **The updater's order.** The updater would write the Dock's items further down in `data.json` and the language
+   files, following the tree since the Dock moved on 2026-10-19. That only reorders lines, so it was left for the
+   next update, as before.
+
+### Obstacles met, and how they were solved
+
+- **Chrome sends a click when a list's scroll bar is clicked.** Found when closing the language list on any click.
+  Clicks whose position falls on the list's own scroll bar are ignored, and the list takes focus so that the click
+  does not move focus out of the menu.
+- **The tests kept items from before the tree was rebuilt.** The picture tests marked items picked at the start,
+  which Include had since replaced, so the marks went nowhere. They now pick their items when they start.
+- **`code_docu.pdf` is printed by Chrome from a page that is not kept in the project**, and its text is stored as
+  glyphs. Its text was read back with pdf.js in a scratch page, outside the project, to rebuild it in the same form.
+
+## 2026-10-22: the chief developer's answers to the questions above
+
+Decided by the chief developer, recorded before any work on them:
+
+1. **The look with the pictures (question 1).** `REQUIREMENTS.md` now has an exception for the pictures. Pictures
+   mode goes back to how it was before the previous entry: the unedited checkbox sprites (the sheet's own tick and
+   cross rows), no legend under the search bar with the pictures (Simple UI keeps it), the buttons back under the
+   search bar, and the title "Civ Explorer" with the pictures.
+2. **"Full House" (question 4).** There is no such thing: a node without child nodes cannot be "full". Only nodes
+   with something under them read "Full".
+3. **Req. 27 against Req. 30 (question 3).** Req. 27 has been clarified: it is about the top parent node only, such
+   as Scout Cavalry for the Scout line, Knight for the Knight line and Militia for the Militia line. Req. 30 does not
+   apply to top parent nodes.
+
+## 2026-10-22: the chief developer's decisions carried out
+
+The three decisions above are in place. Nothing was committed, and `REQUIREMENTS.md` and `RULES.md` were not touched.
+
+### Decision 1: the pictures as before
+
+- With the pictures on, the page looks as in commit `fa11988` again: the title "Civ Explorer", the Find box first with
+  its label hidden and the buttons under it, no legend, the checkbox sheets' own ticked and crossed rows with a black
+  dash, Include's description only as a tooltip, and Find's matches in amber. The pictures' rules in `style.css`
+  are those of `fa11988`, but for two that keep that look over the new Simple UI rules: the black dash's width, and
+  the text colour of found rows. `index.html` holds both titles again, `titleShort` is back in `data.json`, and the
+  language files are as in `fa11988`. The Options window is 30rem tall again in both modes: measured at the four window
+  sizes, its contents fit without a scroll bar, with the pictures and with Simple UI.
+- With Simple UI, what the entry above changed stays, as requirement 0 now limits the look to Simple UI: the green
+  tick, red cross and white dash on a dark box, Find's yellow in both colour schemes, the tree pane in the order of
+  requirement 3 with Find's label and the legend, and Include's description under its box.
+- In every mode, as in the entry above: English by default (Req. 10), the language list closing on a click
+  (Req. 12), the empty tab icon with Simple UI and the icon from `assets/images/` otherwise (Req. 33), and Find
+  scrolling only the tree (Rule 18).
+- Question 2 above, a checkbox sheet with a green tick and a red cross, is no longer needed.
+
+### Decision 2: "Full" only with something under it
+
+- A fully marked building, top-level row or group reads "Full" only when it has something under it, such as "Full
+  Market" or "Full Watch Tower". The House, with nothing under it, reads "House" (`chipName()` in `js/model.js`).
+
+### Decision 3: the top of a line
+
+- Marking the top of a line, the first unit or technology under a building or a group, such as Militia, Scout
+  Cavalry or Knight, marks the whole line down to its end, whatever the counts, must have or must lack (Req. 27).
+  Marking Militia now asks for the whole line up to Champion, so 39 civilisations fit instead of 52.
+- Marking any other unit or technology passes the mark down only while the items below have as many civilisations
+  (Req. 29, 30): marking Man-at-Arms (52) does not mark Long Swordsman (51).
+- A mark never passes up. That ends three ways the page had of marking upwards: marking the last item of a line
+  marked the line above it (the old reading of Req. 27); X on a line's last item marked the items above it at the
+  same count (added in the entry above); and an item counted as marked when everything under it was. Now marking
+  Champion marks only Champion, and marking everything in the Lumber Camp leaves the Lumber Camp unmarked, with a
+  dash.
+- The `optional` flag only kept the Mill, Lumber Camp, Mining Camp and Monastery from being marked through what is
+  under them, so it is gone from `data.json` and the code. Asking for civilisations with Two-Man Saw but no Lumber
+  Camp still works: mark the Lumber Camp must lack and Two-Man Saw must have, and Muisca and Tupi remain.
+- In `js/model.js`, `settle()`, `sameCount()` and `sameAbove()` are gone, and `isTop()` and `passedTo()` are new. An
+  item keeps only the mark it was given or passed down (`self`); nothing is worked out from the marks below any more.
+
+### How the requirements were read
+
+- **Never up.** Requirements 27 and 29 pass a mark only to items below the one marked, and requirement 30 forbids
+  passing one from a unit or technology to an item with another count. No requirement passes a mark up, so nothing
+  does.
+- **The top of a line** is a unit or technology straight under a building or a group, as in the examples of decision
+  3. A line ends where an item has more than one item under it.
+
+### Tests
+
+- 93 instead of 97. Four tested the marks that passed up and the `optional` flag, and went with them: old Test 20 (an
+  optional item stays unmarked), 22 (no item stays unmarked when all under it is marked), 23 (marking every leaf
+  marks every item but optional ones) and 88 (items a civilisation can do without are optional).
+- Rewritten: Test 13 ("Full" only with something under it), 17 (the top of a line marks the whole line whatever the
+  counts, must have and must lack, and clears it again), 18 (a line's end marks only itself), 19 (a mark never passes
+  up), 20 (old 21: a building must lack over must-have items, without the flag), 22 (old 25: below the top, a mark
+  passes down only at the same count, never up) and 84 (old 87: the tree uses only `item`, `group`, `kids` and
+  `unique`, so a leftover `optional` or `upgrades` is caught). Test 11 now marks the second item of a line before
+  its top, as the top marks the whole line.
+- The picture tests, 45 to 47 (old 48 to 50), check the look of `fa11988` again, without the title or the tree pane's
+  order; Test 45 still checks the tab icon. Test 46 checks the sheet's row for each state, and that no mark is drawn
+  but the black dash. Chrome reports the borders of a `::before` or `::after` that draws nothing (`content: none`),
+  so `drawn()` now leaves those out.
+- Numbers: Tests 1 to 19 keep theirs, old 21 is now 20, old 24 and 25 are 21 and 22, old 26 to 87 are 23 to 84, and
+  old 89 to 97 are 85 to 93. The numbers in the entry above are the old ones. `TESTS.md` was written again with the
+  new numbers, files and lines.
+- Each decision was undone in a scratch copy, to show that the tests notice: without the whole line from the top,
+  Tests 11, 17 and 20 fail; with marks passing up, Tests 5, 11, 12, 17 to 20, 22, 40 and 50; with "Full House",
+  Test 13; and with marks drawn over the pictures, Test 46.
+- **Checked.** All 93 tests pass in Chrome 155 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. No script breaks Rules 23 to 26.
+
+### Documents
+
+- `MAINTAINER.md`: the title, checkboxes, tree pane, tooltips and Options window with the pictures as before, beside
+  what Simple UI shows; Step 4's marking rules (the top of a line, the same count below it, never up, and "Full" only
+  with something under it) without the section on `optional`; the test numbers; `settle()` out of the diagram and
+  the description of `js/model.js`; and the rule on `REQUIREMENTS.md`, which now says what requirement 0 says.
+- `code_docu.pdf` rebuilt: 35 pages, 258 functions. `isTop()` and `prune()` in `js/model.js`, and `onTop()` in the
+  tests, are used only in their own scripts, so they are no longer exported; `prune()` was exported for the test
+  of the `optional` flag.
+
+### Questions still open
+
+Questions 5, 6 and 7 of the entry above: room in `js/` and `js/tests/` (Rule 26), the options that
+`REQUIREMENTS.md` does not mention, and the order the updater writes the Dock's items in.
