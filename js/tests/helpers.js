@@ -249,6 +249,7 @@ export function fixtures() {
     loose: items.find((item) => building(item) && item.kids.length && size(without(item)) > 0),
     headed: items.find((item) => building(item) && item.kids.length === 1 && lineEnd(item)),
     lone: items.find((item) => building(item) && !item.kids.length),
+    rival: items.find((item) => item.excludes && item.rivals.length),
     walled: lines().find((item) => item.parent?.group && itemAbove(item) && lineOf(item).length > 1 && plainLine(item)
       && size(item.kids[0].set) !== size(item.set)),
   };

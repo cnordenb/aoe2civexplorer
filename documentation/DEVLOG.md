@@ -2070,3 +2070,79 @@ Asked by the chief developer: in the footer, "Civ Explorer" links to https://git
 - **Checked.** All 96 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
   800 by 1100 and 500 by 900.
 - **Documents.** `MAINTAINER.md`: `source` in The data. `TESTS.md`: Test 39. `code_docu.pdf` was not rebuilt.
+
+## 2026-10-23: the Xolotl Warrior, which excludes the Stable
+
+Asked by the chief developer: a new regional unit under the Stable, the Xolotl Warrior, for the Aztecs, Mayans, Incas,
+Muisca, Mapuche and Tupi. As an edge case, when the Xolotl Warrior is enabled the Stable is disabled, and when the
+Stable is enabled the Xolotl Warrior is disabled. As in the tree's tooltip, "Left-click to enable, right-click to
+disable", enabled is read as must have and disabled as must lack.
+
+### Carried out
+
+- **Not in the source data.** aoe2techtree.net knows the unit (number 1570, its name is string 5040), but gives it to
+  no civilisation, and none of its civilisations' trees has it. Put in the tree alone, it would have stopped the
+  updater with "In the tree, but not in the source data". So `data.json` has a new part, `extras`, edited by hand,
+  with the Xolotl Warrior's kind, icon number, reach, name number and civilisations. The updater takes the items in
+  `extras` from there instead of from the source (`addExtras()` and `fromExtra()` in `js/datahandler.js`), writes
+  their availability, icon and names in every language like any other item's, and says "In the source data now, so it
+  can be taken out of extras" once aoe2techtree.net has one of them. Run against today's data from aoe2techtree.net,
+  the updater reports nothing and writes the same Xolotl Warrior as `data.json` holds.
+- **The data.** The availability, the icon and the names in all 17 languages were written with the updater's own
+  writer, right after the Stable, so the files are as the updater writes them. The names are the game's string 5040,
+  such as Xolotl-Krieger, Guerrier de Xolotl and ショロトルの戦士. In Polish and Russian the game calls it only Xolotl
+  and Шолотль.
+- **The icon.** aoe2techtree's repository has no icon for the unit. `assets/images/icons/nodes/unit/1570.png` is the
+  game's icon from the Age of Empires wiki, `Xolotlicon.png` at 256 by 256, made 48 by 48 on black like the others and
+  numbered after the unit. Its outline has the colour of a regional unit.
+- **`excludes` in the tree.** The entry reads `{"item": "Xolotl Warrior", "excludes": "Stable"}`, and `js/model.js`
+  pairs the two as each other's `rivals` while both are shown.
+  - Must have on either marks the other must lack. On the Xolotl Warrior, the Stable and everything in it become
+    must lack, as a right-click on the Stable does. On the Stable, everything in it becomes must have and the Xolotl
+    Warrior must lack; Filters then reads "Full Stable" and "Xolotl Warrior".
+  - Clicking the same item again clears both, the other only if it is still must lack. Without this, unticking the
+    Stable left the Xolotl Warrior crossed.
+  - Otherwise the Xolotl Warrior is not part of the Stable: marking the Stable must lack or clearing it leaves the
+    Xolotl Warrior alone, and the Stable's box and "Full Stable" leave it out. Counted in, must have on the Stable gave
+    a dash and a filter button for every line in it, and must lack on the Stable fitted no civilisation, since every
+    civilisation has either. The groups above the Stable still count it, and **Clear** clears it.
+- **First under the Stable.** Marking the Xolotl Warrior opens everything in the Stable that it marks (Req. 31). After
+  the other units, that pushed its own row down while it was being clicked (Rule 18), so it is the Stable's first row.
+- `toggle()` in `js/nodetree.js` now stops at the top of the tree when it opens the rows a mark reached, as a mark can
+  now reach an item above the one clicked.
+
+### Tests: 97
+
+- **New Test 21** takes the first item in the tree that excludes another. Must have on it must mark the other must
+  lack without its row moving, show everything marked, list the civilisations that have it and lack the other, and
+  give both filter buttons. Must have on the other must turn this round without its row moving; a second click must
+  clear both; and X on the other must leave the first alone. With no item that excludes another, it fails and says so.
+- **Test 87** allows `excludes` in the tree, on an item only, naming another item in the tree.
+- **Test 88** also checks `extras`: each is an item in the tree, with a whole `nameId`, naming only known
+  civilisations, and `availability` and `pictures` agree with it, worked out with the updater's own `fromExtra()`.
+- Tests 21 to 96 are now 22 to 97.
+- **Undone in a scratch copy**, each of these fails Test 21 and nothing else: the Xolotl Warrior after the Steppe Lancer
+  instead of first, as its row then moves; must have no longer marking the other item; and the Stable's box counting
+  the Xolotl Warrior. "Maya" for "Mayans" in `extras` fails Test 88 and nothing else.
+- **Checked.** All 97 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. No script breaks Rules 23 to 26.
+
+### Documents
+
+- `MAINTAINER.md`: the updater's new message in step 4; `excludes` and `extras` in The data, with how to add an item
+  that aoe2techtree.net gives to no civilisation; the rule in How marking works; and where the icon comes from in
+  Assets.
+- `TESTS.md`: Test 21, Tests 87 and 88, the renumbering, and the lines of the tests in `js/tests/behaviour.js` and
+  `js/tests/static.js`.
+- `code_docu.pdf` was not rebuilt. It does not describe `pair()`, `current()`, `put()` and `reached()` in
+  `js/model.js`, `fromExtra()` and `addExtras()` in `js/datahandler.js`, `badExtras()` in `js/tests/static.js` or
+  `rivals()` in `js/tests/behaviour.js`.
+
+### How the rules were read
+
+- **"The Stable is disabled"** is read as what a right-click on the Stable does, everything in it must lack, apart from
+  the Xolotl Warrior. Must lack on the Stable alone would have shown it with a dash.
+- **Rule 18 and Req. 31** together decide the Xolotl Warrior's place: opening the rows its mark reaches must not move
+  it, so nothing that opens may be above it.
+- **Req. 24**, "Full", is read as before for the Stable: everything in it must have, and the Xolotl Warrior, not part
+  of it, must lack.

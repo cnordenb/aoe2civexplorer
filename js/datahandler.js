@@ -161,6 +161,12 @@ const isLower = (char) => !!char && char !== char.toUpperCase() && char === char
 
 const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
+export const fromExtra = (name, extra) => ({
+  node: { name, name_string_id: extra.nameId, use_type: capitalise(extra.kind), node_type: capitalise(extra.reach) },
+  owners: new Set(extra.has),
+  counts: new Map([[extra.picture, 1]]),
+});
+
 export function joinLines(text, settings) {
   let joined = "";
   for (const part of text.split("<br>").map((piece) => piece.trim())) {
@@ -227,6 +233,16 @@ function gather(civs, trees) {
   return { nodes, owners, pictures };
 }
 
+function addExtras(extras, { nodes, owners, pictures }, say) {
+  for (const [name, extra] of Object.entries(extras)) {
+    if (nodes.has(name)) say("sourced", { name });
+    const added = fromExtra(name, extra);
+    nodes.set(name, added.node);
+    owners.set(name, added.owners);
+    pictures.set(name, added.counts);
+  }
+}
+
 function translate(current, fresh, { keys, nodes, techtree, strings }) {
   Object.entries(current.languages).forEach(([code, settings], i) => {
     const overrides = current.overrides[code] ?? {};
@@ -270,6 +286,7 @@ function refresh(current, techtree, trees, strings) {
 
   const civs = Object.keys(techtree.civs).sort();
   const { nodes, owners, pictures } = gather(civs, trees);
+  addExtras(current.extras, { nodes, owners, pictures }, say);
   const keys = treeKeys(current.tree, "item");
   const duplicates = [...new Set(keys.filter((key, i) => keys.indexOf(key) !== i))].sort();
   const unknown = keys.filter((key) => !nodes.has(key));

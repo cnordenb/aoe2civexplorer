@@ -1,5 +1,6 @@
 import {
-  data, load, setOf, civsOf, pack, unpack, addLanguage, localeFile, toJson, availabilityOf, joinLines, missingText,
+  data, load, setOf, civsOf, pack, unpack, addLanguage, localeFile, toJson, availabilityOf, pictureOf, fromExtra,
+  joinLines, missingText,
 } from "../datahandler.js";
 import { TAG, check, expect, same, codes, keys } from "./helpers.js";
 
@@ -238,7 +239,23 @@ export function tagTests() {
     codes().filter((code) => !data.languages[code].name || !TAG.test(data.languages[code].tag)));
 }
 
-const KNOWN = ["item", "group", "kids", "unique", "lines"];
+const KNOWN = ["item", "group", "kids", "unique", "lines", "excludes"];
+
+const alike = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+function badExtras(all) {
+  if (!data.extras || typeof data.extras !== "object") return ["extras"];
+
+  const kept = (key, extra) => {
+    const { node, owners, counts } = fromExtra(key, extra);
+    return alike(availabilityOf(owners, data.civs), data.availability[key])
+      && alike(pictureOf(node, counts), data.pictures[key]);
+  };
+
+  return Object.entries(data.extras).filter(([key, extra]) => !all.includes(key) || !Number.isInteger(extra.nameId)
+    || !Array.isArray(extra.has) || extra.has.some((civ) => !data.civs.includes(civ)) || !kept(key, extra))
+    .map(([key]) => `extras: ${key}`);
+}
 
 function treeTests(all) {
   expect("data: each item is in the tree once", all.filter((key, i) => all.indexOf(key) !== i));
@@ -246,18 +263,20 @@ function treeTests(all) {
   const nodes = (list) => list.flatMap((node) => [node, ...nodes(node.kids ?? [])]);
 
   const odd = (node) => Object.keys(node).some((key) => !KNOWN.includes(key))
-    || ["unique", "lines"].some((flag) => flag in node && (node[flag] !== true || !node.group));
+    || ["unique", "lines"].some((flag) => flag in node && (node[flag] !== true || !node.group))
+    || ("excludes" in node && (!node.item || node.excludes === node.item || !all.includes(node.excludes)));
 
-  expect("data: the tree uses only item, group, kids, unique and lines, and only groups are unique or lines, marked "
-    + "with true",
+  expect("data: the tree uses only item, group, kids, unique, lines and excludes, only groups are unique or lines, "
+    + "marked with true, and an item excludes another item",
     nodes(data.tree).filter(odd).map((node) => node.item ?? node.group));
-  expect("data: each item says which civilisations have it, naming only known ones, and which icon it has",
-    all.filter((key) => {
-      const rule = data.availability[key];
-      const { kind, picture, reach } = data.pictures[key] ?? {};
-      return !rule || (rule !== "all" && (rule.has ?? rule.lacks ?? [null]).some((civ) => !data.civs.includes(civ)))
-        || !kind || !Number.isInteger(picture) || !reach;
-    }));
+  const undescribed = all.filter((key) => {
+    const rule = data.availability[key];
+    const { kind, picture, reach } = data.pictures[key] ?? {};
+    return !rule || (rule !== "all" && (rule.has ?? rule.lacks ?? [null]).some((civ) => !data.civs.includes(civ)))
+      || !kind || !Number.isInteger(picture) || !reach;
+  });
+  expect("data: each item says which civilisations have it, naming only known ones, and which icon it has, as "
+    + "extras says for the items added by hand", [...undescribed, ...badExtras(all)]);
 }
 
 function textDataTests(all) {

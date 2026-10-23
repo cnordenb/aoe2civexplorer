@@ -110,7 +110,7 @@ export function update() {
 }
 
 function toggle(item, kind) {
-  for (const each of mark(item, kind)) for (let p = each.parent; p !== item.parent; p = p.parent) setOpen(p, true);
+  for (const each of mark(item, kind)) for (let p = each.parent; p && p !== item.parent; p = p.parent) setOpen(p, true);
   update();
 }
 

@@ -1,5 +1,5 @@
 import { ALL, fill, size, words, numbers, nameOf, plural, plain } from "../datahandler.js";
-import { items, roots, state, lineOf, lineEnd, chipName } from "../model.js";
+import { items, roots, state, lineOf, lineEnd, chipName, isUnitOrTech } from "../model.js";
 import { $ } from "../stringbuilder.js";
 import { isOpen, setOpen, shown } from "../nodetree.js";
 import {
@@ -199,6 +199,40 @@ function parents({ branch, loose, without }) {
   $("clear").click();
 }
 
+function rivals({ rival }) {
+  reset();
+  const name = "marking: of two items where one excludes the other, must have on either marks the other must lack "
+    + "without moving the row, clicking it again clears both, and must lack leaves the other alone";
+  const other = rival?.rivals[0];
+  if (!other) {
+    check(name, false, "no item in data.json excludes another");
+    return;
+  }
+
+  const now = (item) => (isUnitOrTech(item) ? item.self : state(item));
+
+  const still = (item, act) => {
+    const top = item.node.getBoundingClientRect().top;
+    act();
+    return Math.abs(item.node.getBoundingClientRect().top - top) < 0.5;
+  };
+
+  const chips = (one, two) => same(chipNames().sort(), [chipName(other, one), chipName(rival, two)].sort());
+
+  for (let p = rival.parent; p; p = p.parent) setOpen(p, true);
+  const first = still(rival, () => tap(rival.node)) && now(rival) === "has" && now(other) === "lacks"
+    && chips("lacks", "has") && items.filter((item) => item.self).every(shown)
+    && same(listed(), expected(rival.set & ~other.set & ALL));
+  const second = still(other, () => tap(other.node)) && now(other) === "has" && now(rival) === "lacks"
+    && chips("has", "lacks");
+  tap(other.node);
+  const cleared = items.every((item) => !item.self);
+  keyDown(other.node, "x");
+  check(name, first && second && cleared && now(other) === "lacks" && rival.self === null,
+    `${first}, ${second}, ${cleared}, ${now(other)}, ${rival.self}`);
+  reset();
+}
+
 function lines({ line, even, uneven }) {
   reset();
   for (let p = line.parent; p; p = p.parent) setOpen(p, true);
@@ -339,6 +373,7 @@ export async function behaviourTests(sample) {
   await gestures(sample);
   lineTops(sample);
   parents(sample);
+  rivals(sample);
   lines(sample);
   counts(sample);
   tree();

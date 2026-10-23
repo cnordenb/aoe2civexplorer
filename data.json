@@ -214,6 +214,7 @@
         {"item": "Cranequins"}
       ]},
       {"item": "Stable", "kids": [
+        {"item": "Xolotl Warrior", "excludes": "Stable"},
         {"item": "Scout Cavalry", "kids": [
           {"item": "Light Cavalry", "kids": [
             {"item": "Hussar"}
@@ -843,6 +844,7 @@
     "Parthian Tactics": {"has": ["Bulgarians", "Burmese", "Cumans", "Georgians", "Huns", "Japanese", "Khitans", "Khmer", "Magyars", "Mongols", "Persians", "Saracens", "Tatars", "Turks", "Wei"]},
     "Cranequins": {"has": ["Britons", "Danes", "Franks", "Saxons", "Sicilians", "Varangians"]},
     "Stable": {"lacks": ["Aztecs", "Incas", "Mapuche", "Mayans", "Muisca", "Tupi"]},
+    "Xolotl Warrior": {"has": ["Aztecs", "Incas", "Mapuche", "Mayans", "Muisca", "Tupi"]},
     "Scout Cavalry": {"lacks": ["Aztecs", "Incas", "Mapuche", "Mayans", "Muisca", "Tupi"]},
     "Light Cavalry": {"lacks": ["Aztecs", "Incas", "Mapuche", "Mayans", "Muisca", "Teutons", "Tupi"]},
     "Hussar": {"lacks": ["Armenians", "Aztecs", "Bengalis", "Bohemians", "Britons", "Chinese", "Danes", "Dravidians", "Franks", "Incas", "Japanese", "Lithuanians", "Malay", "Malians", "Mapuche", "Mayans", "Muisca", "Poles", "Portuguese", "Romans", "Shu", "Sicilians", "Teutons", "Tupi", "Vietnamese", "Vikings"]},
@@ -1280,6 +1282,7 @@
     "Parthian Tactics": {"kind": "tech", "picture": 111, "reach": "common"},
     "Cranequins": {"kind": "tech", "picture": 56, "reach": "regional"},
     "Stable": {"kind": "building", "picture": 23, "reach": "common"},
+    "Xolotl Warrior": {"kind": "unit", "picture": 1570, "reach": "regional"},
     "Scout Cavalry": {"kind": "unit", "picture": 64, "reach": "common"},
     "Light Cavalry": {"kind": "unit", "picture": 91, "reach": "common"},
     "Hussar": {"kind": "unit", "picture": 103, "reach": "common"},
@@ -1637,6 +1640,16 @@
     "Bombard Tower": {"kind": "building", "picture": 42, "reach": "common"}
   },
   "ignore": [],
+  "extras": {
+    "Xolotl Warrior": {"kind": "unit", "picture": 1570, "reach": "regional", "nameId": 5040, "has": [
+      "Aztecs",
+      "Incas",
+      "Mapuche",
+      "Mayans",
+      "Muisca",
+      "Tupi"
+    ]}
+  },
   "overrides": {"Heavy Demolition Ship": "Heavy Demolition Ship"},
   "tools": {
     "pass": "Test {number} passed: {name}",
@@ -1654,6 +1667,7 @@
     "duplicate": "In the tree more than once: {name}",
     "unknown": "In the tree, but not in the source data: {name}",
     "unplaced": "In the source data, but not yet in the tree: {name}",
+    "sourced": "In the source data now, so it can be taken out of extras: {name}",
     "nobody": "No civilisation has: {name}",
     "civAdded": "New civilisation: {name}",
     "civRemoved": "Civilisation no longer in the game: {name}",
@@ -1922,6 +1936,7 @@
       "Parthian Tactics": "Parthian Tactics",
       "Cranequins": "Cranequins",
       "Stable": "Stable",
+      "Xolotl Warrior": "Xolotl Warrior",
       "Scout Cavalry": "Scout Cavalry",
       "Light Cavalry": "Light Cavalry",
       "Hussar": "Hussar",

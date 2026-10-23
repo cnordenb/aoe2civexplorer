@@ -22,6 +22,7 @@ function collect(nodes, parent) {
     const item = {
       i: items.length, key, path: parent ? `${parent.path}|${key}` : key, group: !node.item, lines: !!node.lines,
       set: node.item ? setOf(data.availability[node.item]) : ALL, self: null, kids: [], parent,
+      excludes: node.excludes, rivals: [],
     };
     (parent ? parent.kids : roots).push(item);
     items.push(item);
@@ -42,22 +43,32 @@ function prune(nodes, every = false, regionals = true) {
   });
 }
 
+function pair() {
+  for (const item of items.filter((each) => each.excludes)) {
+    const rival = items.find((each) => !each.group && each.key === item.excludes);
+    if (!rival) continue;
+    item.rivals.push(rival);
+    rival.rivals.push(item);
+  }
+}
+
 export function rebuild() {
   const marks = new Map(items.map((item) => [item.path, item.self]));
   items.length = 0;
   roots.length = 0;
   collect(prune(data.tree, include, regional), null);
   items.forEach(whole);
+  pair();
   for (const item of items) item.self = marks.get(item.path) ?? null;
 }
 
-export function setMark(item, mark) {
+export function setMark(item, mark, top = item) {
   if (!item.group) item.self = mark;
-  for (const kid of item.kids) setMark(kid, mark);
+  for (const kid of item.kids) if (!kid.rivals.includes(top)) setMark(kid, mark, top);
 }
 
-export function state(item) {
-  const parts = item.kids.map(state);
+export function state(item, top = item) {
+  const parts = item.kids.filter((kid) => !kid.rivals.includes(top)).map((kid) => state(kid, top));
   if (!item.group) parts.push(item.self);
   return parts.every((part) => part === parts[0]) ? parts[0] : "mixed";
 }
@@ -75,16 +86,24 @@ function passedTo(item) {
   return line.filter((each) => size(each.set) === size(item.set));
 }
 
+const current = (item) => (isUnitOrTech(item) ? item.self : state(item));
+
+function put(item, kind) {
+  if (!isUnitOrTech(item) || !kind) return setMark(item, kind);
+  if (kind === "lacks") {
+    descendants(item).filter((each) => each.self === "has").forEach((each) => { each.self = null; });
+  }
+  passedTo(item).forEach((each) => { each.self = kind; });
+}
+
+const reached = (item) => [...chainOf(item), ...(isUnitOrTech(item) ? passedTo(item) : descendants(item))];
+
 export function mark(item, kind) {
-  const unit = isUnitOrTech(item);
-  const next = (unit ? item.self : state(item)) === kind ? null : kind;
-  if (unit && next) {
-    if (next === "lacks") {
-      descendants(item).filter((each) => each.self === "has").forEach((each) => { each.self = null; });
-    }
-    passedTo(item).forEach((each) => { each.self = next; });
-  } else setMark(item, next);
-  return next ? [...chainOf(item), ...(unit ? passedTo(item) : descendants(item))] : [];
+  const next = current(item) === kind ? null : kind;
+  const rivals = kind === "has" ? item.rivals.filter((rival) => next || current(rival) === "lacks") : [];
+  put(item, next);
+  rivals.forEach((rival) => put(rival, next && "lacks"));
+  return next ? [item, ...rivals].flatMap(reached) : [];
 }
 
 export function boxState(item) {

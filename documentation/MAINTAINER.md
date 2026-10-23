@@ -32,6 +32,8 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
    - *In the tree, but not in the source data: …* or *In the tree more than once: …* Fix the tree (step 5). The
      updater stops until you do.
    - *No civilisation has: …* It was probably removed from the game. Consider removing it from the tree.
+   - *In the source data now, so it can be taken out of extras: …* aoe2techtree.net now has an item that was added
+     by hand. Delete its entry under `extras` in `data.json` (see [The data](#the-data)) and reload the `?update` page.
    - *New icon for …: …* If the file it names is not in the project yet, copy it from the `img` folder of
      [aoe2techtree's repository](https://github.com/SiegeEngineers/aoe2techtree): `img/Unit/912.png` goes to
      `assets/images/icons/nodes/unit/912.png`, and the same for `Building` and `Tech`.
@@ -242,11 +244,13 @@ A script only uses the scripts below it in this order: `datahandler.js`, `model.
   updater uses to tidy the game's names.
 - `civs`: the civilisations, by their English names.
 - `icons`: where the icons are, the tab icon, and the civilisations whose icon has another name than theirs.
-- `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true` (see
-  [How marking works](#how-marking-works)). **Edited by hand.**
+- `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true`, and an item
+  can name an item it `"excludes"` (see [How marking works](#how-marking-works)). **Edited by hand.**
 - `availability`: which civilisations have each item. **Written by the updater; never edit it.**
 - `pictures`: each item's icon, and whether it is common, regional or unique. **Written by the updater.**
 - `ignore`: names from the game that the page leaves out. **Edited by hand.**
+- `extras`: items that aoe2techtree.net gives to no civilisation, so that the page has to be told about them, such as
+  the Xolotl Warrior. The updater takes them from here instead. **Edited by hand.**
 - `overrides`: corrections to English names. **Edited by hand.**
 - `tools`: the updater's and the tests' messages, in English only.
 - `text`: the English text: `ui` holds the page's sentences, `groups` the headings in the tree, and `civs` and `items`
@@ -270,6 +274,16 @@ To add a language, it must exist on aoe2techtree.net, as the names come from the
    with `ui` and `groups` copied from `data.json` and translated.
 3. Run the updater, download its files, and run the tests. The updater fills in all the names.
 
+To add an item that aoe2techtree.net gives to no civilisation, as the Xolotl Warrior was added:
+
+1. Put it in the tree (step 5 of the update guide).
+2. Add it to `extras`, like the Xolotl Warrior: its `kind` (`unit`, `tech` or `building`), the number of its icon as
+   `picture`, its `reach` (`common`, `regional` or `unique`), the number of its name in aoe2techtree's
+   [English names](https://aoe2techtree.net/data/locales/en/strings.json) as `nameId`, and the civilisations that
+   have it as `has`.
+3. Save its icon, a 48 by 48 PNG, in `assets/images/icons/nodes/` under its kind, named after its picture number.
+4. Run the updater, download its files, and run the tests. The updater fills in its names in every language.
+
 ### How marking works
 
 A visitor marks an item **must have** with a click and **must lack** with a right-click, a long press or X. Where an
@@ -286,6 +300,11 @@ item sits in the tree decides what else its mark reaches:
 - A mark never passes up: marking Champion marks Champion only, and marking everything in a building leaves the
   building itself unmarked, with a dash in its box.
 - Marking opens the item down to its first fork, and every row the mark reached.
+- An item can name another item that no civilisation has together with it, as the Xolotl Warrior names the Stable:
+  `{"item": "Xolotl Warrior", "excludes": "Stable"}`. Marking either one must have marks the other must lack, and
+  marking it again clears both. Otherwise the Xolotl Warrior is not part of the Stable: marking the Stable must lack
+  leaves it alone, and "Full Stable" does not count it. It is the first row under the Stable, so that marking it
+  opens only rows below it, and its box stays where it was clicked.
 - In **Filters**, a fully marked building or group with something under it reads "Full", such as "Full Market". A
   line is named after its deepest item marked must have, such as "Champion" or "Keep".
 
@@ -346,9 +365,10 @@ window in any other way drops it. With Simple UI, **Close** stays, and every cha
   `.pictures body` rule of `style.css`: each is a position in the picture, divided by its width or height. Look at
   the page to check.
 - The tree's icons are copied from aoe2techtree's repository and keep its file numbers. `pictures` in `data.json`
-  says which file each item uses. The colour of an icon's outline depends on the item's kind and reach, as
-  `colour_key.csv` says, and the same colours are copied into `style.css`: change both together. The tests compare
-  them.
+  says which file each item uses. The Xolotl Warrior's, `unit/1570.png`, is not there: it is the game's icon from
+  the Age of Empires wiki, made 48 by 48, and numbered after the unit. The colour of an icon's outline depends on the
+  item's kind and reach, as `colour_key.csv` says, and the same colours are copied into `style.css`: change both
+  together. The tests compare them.
 - The civilisations' icons are named after the civilisation in lower case. Where the file has another name, such as
   `inca.png`, `icons` in `data.json` says so.
 
