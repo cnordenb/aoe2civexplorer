@@ -304,7 +304,7 @@ item sits in the tree decides what else its mark reaches:
   `{"item": "Xolotl Warrior", "excludes": "Stable"}`. Marking either one must have marks the other must lack, and
   marking it again clears both. Otherwise the Xolotl Warrior is not part of the Stable: marking the Stable must lack
   leaves it alone, and "Full Stable" does not count it. It is the first row under the Stable, so that marking it
-  opens only rows below it, and its box stays where it was clicked.
+  opens only rows below it.
 - In **Filters**, a fully marked building or group with something under it reads "Full", such as "Full Market". A
   line is named after its deepest item marked must have, such as "Champion" or "Keep".
 

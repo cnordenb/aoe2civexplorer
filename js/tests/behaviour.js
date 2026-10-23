@@ -202,7 +202,7 @@ function parents({ branch, loose, without }) {
 function rivals({ rival }) {
   reset();
   const name = "marking: of two items where one excludes the other, must have on either marks the other must lack "
-    + "without moving the row, clicking it again clears both, and must lack leaves the other alone";
+    + "without opening rows above it, clicking it again clears both, and must lack leaves the other alone";
   const other = rival?.rivals[0];
   if (!other) {
     check(name, false, "no item in data.json excludes another");
@@ -212,9 +212,9 @@ function rivals({ rival }) {
   const now = (item) => (isUnitOrTech(item) ? item.self : state(item));
 
   const still = (item, act) => {
-    const top = item.node.getBoundingClientRect().top;
+    const at = items.filter(shown).indexOf(item);
     act();
-    return Math.abs(item.node.getBoundingClientRect().top - top) < 0.5;
+    return items.filter(shown).indexOf(item) === at;
   };
 
   const chips = (one, two) => same(chipNames().sort(), [chipName(other, one), chipName(rival, two)].sort());

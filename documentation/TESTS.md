@@ -349,7 +349,7 @@ With a building must lack and everything under it must have, the list is not emp
 Enforce the Xolotl Warrior rule: an item and the item it excludes, such as the Stable, are never both must have.
 
 ### Assertion expectation:
-Must have on either makes the other must lack without moving its row; a second click clears both; X leaves the other.
+Must have on either makes the other must lack, opening no row above it; a second click clears both; X leaves the other.
 
 ## Test 22
 

@@ -2146,3 +2146,30 @@ disable", enabled is read as must have and disabled as must lack.
   it, so nothing that opens may be above it.
 - **Req. 24**, "Full", is read as before for the Stable: everything in it must have, and the Xolotl Warrior, not part
   of it, must lack.
+
+## 2026-10-23: Test 21 on GitHub
+
+Reported by the chief developer: Test 21 passed in Chrome on Windows, by hand and in the tests, but failed on GitHub,
+only in the window of 800 by 1100, whose page is 800 by 1013 pixels.
+
+- **The cause.** At 800 pixels the tree pane is at its narrowest, 20rem. GitHub's Linux has no Segoe UI, and its
+  wider font, DejaVu Sans, wraps "Archery Range" beside its count "56–0", making the row 48 pixels high. Marking the
+  Xolotl Warrior leaves 6 civilisations, the count becomes "6–0", the name fits on one line, and the row shrinks to
+  44 pixels, so the Xolotl Warrior's row moved up by 4 pixels. Test 21 measured that row's place on the screen.
+- **Reproduced** in Chrome on Windows with DejaVu Sans, copied from Ubuntu, as the page's font in a scratch copy, in a
+  page of exactly 800 by 1013 pixels. Only Test 21 failed, and only in that size.
+- **Not the exclusion's doing.** Every mark changes the counts on every row, so the same happens above any item
+  marked, with any font that wraps a name beside a long count. Test 21 is about what the Xolotl Warrior's mark opens.
+- **The fix.** Test 21 now checks that marking either item opens no row above it: as many rows are shown above it
+  before as after. This no longer depends on fonts. With the Xolotl Warrior after the Steppe Lancer, in a scratch
+  copy, it still fails, as the lines opened above it are counted.
+- **Checked.** All 97 tests pass in Chrome 156 on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900, and with DejaVu Sans in pages of 1920 by 993, 1280 by 713, 800 by 1013 and 504 by 813,
+  as Chrome on Windows would not make it narrower.
+- **Documents.** `TESTS.md`: Test 21. `MAINTAINER.md`: How marking works no longer says the box stays where it was
+  clicked.
+
+### Not done
+
+- **A row moving when a count above it changes length** happens with any mark, as above, and was there before. Giving
+  the counts a fixed width would stop it, but changes the tree's look, so it is left to the chief developer.
