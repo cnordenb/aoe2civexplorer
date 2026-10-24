@@ -91,15 +91,17 @@ function branches({ branch, line, group, headed, lone, walled }) {
 
 function crowding() {
   reset();
+  const box = (el) => el.getBoundingClientRect();
+  const panes = document.querySelector(".panes");
+  const [tree, civs] = panes.querySelectorAll(".pane");
+  const places = () => [tree, civs].map((pane) => JSON.stringify(box(pane))).join();
+  const before = places();
   $("expandAll").click();
   const most = items.filter((item) => !item.group && !item.kids.length)
     .reduce((best, item) => (size(item.set) > size(best.set) ? item : best));
   tap(most.node);
-  const box = (el) => el.getBoundingClientRect();
-  const panes = document.querySelector(".panes");
-  const [tree, civs] = panes.querySelectorAll(".pane");
   const list = $("civScroll");
-  const rows = getComputedStyle(panes).gridTemplateRows.split(" ").map(parseFloat);
+  const fixed = getComputedStyle(panes).display === "grid";
 
   const scrolls = (el) => el.scrollHeight > el.clientHeight + 1;
 
@@ -115,13 +117,15 @@ function crowding() {
       ? [] : ["the panes overlap"]),
     ...(!scrolls(list) || (list.scrollTop > 0 && box(civs).top === top)
       ? [] : ["the list does not scroll in its pane"]),
-    ...(rows.length === 5 && scrolls(tree.querySelector(".scroll")) && scrolls(list) && Math.abs(rows[1] - rows[4]) > 1
-      ? [`stacked lists of ${rows[1]} and ${rows[4]} pixels`] : []),
+    ...(!fixed || Math.abs(box(tree).height - box(civs).height) <= 0.5
+      ? [] : [`panes of ${box(tree).height} and ${box(civs).height} pixels`]),
+    ...(!fixed || places() === before ? [] : ["a pane moved or changed its size"]),
   ];
   list.scrollTop = 0;
   reset();
   expect("layout: with everything open and the most civilisations listed, the page does not scroll, the panes keep "
-    + "their headers and do not overlap, the list scrolls in its pane, and stacked panes share the height", problems);
+    + "their headers and do not overlap, the list scrolls in its pane, and the panes are the same height and keep "
+    + "their size and place", problems);
 }
 
 function filterFocus({ other, third }) {

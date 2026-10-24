@@ -2173,3 +2173,37 @@ only in the window of 800 by 1100, whose page is 800 by 1013 pixels.
 
 - **A row moving when a count above it changes length** happens with any mark, as above, and was there before. Giving
   the counts a fixed width would stop it, but changes the tree's look, so it is left to the chief developer.
+
+## 2026-10-24: phone panes of equal, fixed height (requirement 35, rule 18)
+
+Reported by the chief developer: on a phone, with nothing marked, marking the Watch Tower made the civilisations
+pane much taller and moved it, breaking rule 18 and requirement 35. Both panes should be the same size on phones.
+
+- **The cause.** The phone layout of 2026-10-21 gave each pane the height of its contents: a grid of five rows, the
+  tree's header and list and the civilisations' header, filters and list, with the lists sharing what was left. Marking
+  opens the tree and shows **Filters**, so the rows changed. Measured at 390 by 844: the tree pane went from 419 to
+  335 pixels, the civilisations pane from 296 to 380, and its top moved up 85 pixels.
+- **The fix.** In the phone layout, `.panes` is now two rows of `minmax(0, 1fr)`. Each pane takes half the height
+  and keeps it, whatever is marked or open. The subgrid rules, and the scrolling of the panes together, are gone.
+  The tree's header no longer spills out of its half at 360 by 640, as it did on the first try at halves on
+  2026-10-21, because the footer is now hidden on phones.
+- **Many filters.** In a half-height pane, enough filters could push the list of civilisations out of its pane. As
+  everywhere else, the filters row now shrinks and scrolls by itself when there is no room, and the list keeps its
+  44 pixels. Its padding is 2 pixels larger and its margin 2 pixels smaller, so the filter buttons stay where they
+  were, and their focus ring is not cut off.
+- **Measured.** At 390 by 844 both panes are 378 pixels with Simple UI and 357 with the pictures, before and after
+  marking. At 360 by 640 they are 276 and 262 pixels; the tree's list then shows less than two rows with Simple UI,
+  and scrolls inside its pane. The page never scrolls.
+- **Test 15** now also checks, wherever the panes are in a grid, that the two panes are the same height and that
+  opening everything and marking an item does not move or resize either. With the old layout put back it failed at
+  500 by 900 ("panes of 394.75 and 305.25 pixels; a pane moved or changed its size"), and it was the only test that
+  failed. The check that stacked lists share the height is gone, as the lists no longer do: the headers differ.
+- **Checked.** All 97 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 15, and the new lines of the tests after it in `js/tests/behaviour.js`.
+
+### Not done
+
+- **Short windows.** Below 640 pixels high on a narrow screen, or below 500 high on any screen, such as a phone
+  held sideways or at 400% zoom, the panes still stack and the whole content scrolls, so a pane grows as the tree
+  opens. Two fixed halves do not fit there, so this is left to the chief developer.

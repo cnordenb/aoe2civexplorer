@@ -34,3 +34,4 @@
 32. Options window will contain a "Simple UI" checkbox.
 33. The page will not use any images upon the user enabling the Simple UI checkbox.
 34. A prerequisite node must be automatically enabled if a descendant node is enabled.
+35. Input panel or output panelwith not resize upon user interaction - such as node being assigned value - other than resizing the window.

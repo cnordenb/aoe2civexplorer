@@ -150,14 +150,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 }
 .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--line); }
 @media (width < 720px) and (height > 639px) {
-  .panes {
-    grid-template-rows: max-content minmax(var(--target), max-content) max-content max-content minmax(var(--target), auto); overflow-y: auto;
-    scrollbar-gutter: stable;
-  }
-  .pane { display: grid; grid-row: span 2; grid-template-columns: minmax(0, 1fr); grid-template-rows: subgrid; row-gap: 0; }
-  .pane:last-child { grid-row: span 3; }
-  .ticked { grid-row: 2; }
-  .scroll { grid-row: -2; }
+  .panes { grid-template-rows: repeat(2, minmax(0, 1fr)); }
   .foot { display: none; }
 }
 .pane-head {
@@ -352,8 +345,8 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 :is(.twisty, .node):focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
 
 .ticked {
-  position: relative; display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 8px 4px; padding: 4px 4px 12px;
-  border-bottom: 1px solid var(--line);
+  position: relative; display: flex; flex: 0 1 auto; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 0; margin: 6px 6px 4px;
+  padding: 6px 6px 12px; overflow-y: auto; overscroll-behavior: contain; border-bottom: 1px solid var(--line);
 }
 .ticked ul { display: contents; list-style: none; }
 .chip {
