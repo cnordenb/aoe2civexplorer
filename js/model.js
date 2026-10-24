@@ -191,11 +191,11 @@ export function share() {
 
 export function chipName(item, kind) {
   const unit = isUnitOrTech(item);
-  const named = (kind === "has" && unit && lineOf(item).findLast((each) => each.self === "has")) || item;
+  const named = (kind === "has" && lineOf(item).findLast((each) => each.self === "has")) || item;
   const name = shared.has(nameOf(named)) && named.parent
     ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) })
     : nameOf(named);
-  return !unit && item.kids.length && state(item) === "has" ? fill(words.ui.full, { name }) : name;
+  return !unit && item.kids.length > 1 && state(item) === "has" ? fill(words.ui.full, { name }) : name;
 }
 
 export function unmarkLine(item, kind) {

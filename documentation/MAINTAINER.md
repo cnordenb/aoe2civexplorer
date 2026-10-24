@@ -314,8 +314,9 @@ item sits in the tree decides what else its mark reaches:
   both places: marking Devotion under either marks it under both, with one entry in **Filters**, and opens nothing
   under the other (requirement 31 allows this). While either building is marked must have, the other is greyed
   out and closed, and cannot be marked or opened until the mark is cleared.
-- In **Filters**, a fully marked building or group with something under it reads "Full", such as "Full Market". A
-  line is named after its deepest item marked must have, such as "Champion" or "Keep".
+- In **Filters**, a fully marked building or group with more than one row under it reads "Full", such as "Full
+  Blacksmith" (requirement 24). A line is named after its deepest item marked must have, such as "Champion" or
+  "Keep", and so is a building at the top of a single line: a fully marked Lumber Camp reads "Two-Man Saw".
 
 Some items are left out of the tree unless the visitor ticks **Include Unique and Universal** in Options: the groups
 marked `"unique": true` (Unique Units, Unique Technologies and Unique Buildings), and the items that all

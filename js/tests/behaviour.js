@@ -71,9 +71,10 @@ function branches({ branch, line, group, headed, lone, walled }) {
   if (walled) tap(walled.node);
   const alone = walled?.self === "has" && walled.kids[0].self === null;
   walls.forEach((item) => item.self === "has" || tap(item.node));
-  check("filters: a fully marked building is named Full, also at the top of a line, but not with nothing under it, "
-    + "nor in a group of lines, where a mark passes down only at the same count and the line takes its deepest name",
-    same(named.flat(), [fullName(headed), nameOf(lone)]) && alone && same(chipNames(), [nameOf(walls.at(-1))]),
+  check("filters: a fully marked building at the top of a single line, like a line in a group of lines, is named "
+    + "after its deepest item, not Full, and a building with nothing under it plainly; in a group of lines a mark "
+    + "passes down only at the same count", same(named.flat(), [nameOf(lineEnd(headed)), nameOf(lone)]) && alone
+    && same(chipNames(), [nameOf(walls.at(-1))]),
     walled ? [...named.flat(), ...chipNames()].join(", ") : "no line in a group marked lines in data.json");
   $("clear").click();
   $("collapseAll").click();

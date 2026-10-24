@@ -28,7 +28,7 @@ Functional completeness & correctness tests:
 - [Test 10](#test-10): A partly marked branch shows a white dash, must have a green tick and must lack a red cross
 - [Test 11](#test-11): A line's filter is named after its deepest mark
 - [Test 12](#test-12): A line's filter button clears only its own kind of mark
-- [Test 13](#test-13): A fully marked building reads Full, also heading a line, but not with nothing under it nor in Fortifications
+- [Test 13](#test-13): A building heading a single line is named after its deepest item, not Full, as in Fortifications
 - [Test 14](#test-14): Marking a top-level group marks and shows all in it
 - [Test 15](#test-15): Everything open and a long civ list fit the screen, on phones too, panes the same size and staying put
 - [Test 16](#test-16): A long press marks must lack, and a right-click clears it
@@ -256,18 +256,18 @@ With the line's last item must lack, the must-have filter button clears all othe
 ## Test 13
 
 ### File residence:
-`js/tests/behaviour.js`, lines 64-77
+`js/tests/behaviour.js`, lines 64-78
 
 ### Purpose:
-Verify Req. 24, 25 and 30: "Full <name>" only with something under it; Fortifications' lines act as units.
+Verify Req. 24, 25 and 30: a building heading a single line is named like a line, as Fortifications' lines are.
 
 ### Assertion expectation:
-"Full <name>" heading a line; just the name with nothing under it; a wall or tower line is named after its end.
+A building heading a line is named after its end, not Full; plain with nothing under it; a wall line after its end.
 
 ## Test 14
 
 ### File residence:
-`js/tests/behaviour.js`, lines 83-84
+`js/tests/behaviour.js`, lines 84-85
 
 ### Purpose:
 Verify that a top-level group passes its mark to everything in it, and shows it all (Req. 31).
@@ -278,7 +278,7 @@ From closed, clicking the group makes its state "has", while it holds no mark it
 ## Test 15
 
 ### File residence:
-`js/tests/behaviour.js`, lines 87-124
+`js/tests/behaviour.js`, lines 88-125
 
 ### Purpose:
 Verify that a full tree and civ list never stretch the page, and that marking never resizes a pane (Req. 35, rule 18).
@@ -289,7 +289,7 @@ No page scroll; headers inside panes; no overlap; list scrolls in place; panes e
 ## Test 16
 
 ### File residence:
-`js/tests/behaviour.js`, lines 141-142
+`js/tests/behaviour.js`, lines 142-143
 
 ### Purpose:
 Verify marking by long press and right-click (Req. 3).
@@ -300,7 +300,7 @@ A 600 ms touch press marks the item "lacks"; a right-click on it then clears it.
 ## Test 17
 
 ### File residence:
-`js/tests/behaviour.js`, lines 147-162
+`js/tests/behaviour.js`, lines 148-163
 
 ### Purpose:
 Verify Req. 29 and 30 at the top of a line, which Req. 27 no longer exempts: a mark passes down only at equal counts.
@@ -311,7 +311,7 @@ A click on a line's top marks it and its equal counts "has", X "lacks", with the
 ## Test 18
 
 ### File residence:
-`js/tests/behaviour.js`, lines 163-165
+`js/tests/behaviour.js`, lines 164-166
 
 ### Purpose:
 Verify Req. 30: a mark on a line's last item passes to no other item.
@@ -322,7 +322,7 @@ After a click on a line's end, it alone is "has"; the items above stay unmarked;
 ## Test 19
 
 ### File residence:
-`js/tests/behaviour.js`, lines 170-174
+`js/tests/behaviour.js`, lines 171-175
 
 ### Purpose:
 Verify Req. 30: marking everything at the ends of a building marks nothing above them.
@@ -333,7 +333,7 @@ After clicks on every leaf in a building, only the leaves are "has"; the buildin
 ## Test 20
 
 ### File residence:
-`js/tests/behaviour.js`, lines 176-179
+`js/tests/behaviour.js`, lines 177-180
 
 ### Purpose:
 Allow searching for civs that get a building's contents elsewhere, such as Two-Man Saw without a Lumber Camp.
@@ -344,7 +344,7 @@ With a building must lack and everything under it must have, the list is not emp
 ## Test 21
 
 ### File residence:
-`js/tests/behaviour.js`, lines 183-215
+`js/tests/behaviour.js`, lines 184-216
 
 ### Purpose:
 Enforce the Xolotl Warrior rule: must have on it clears the Stable, and a full Stable clears it, never must lack.
@@ -355,7 +355,7 @@ Must have on either clears the other and all in it, not must lack, opening no ro
 ## Test 22
 
 ### File residence:
-`js/tests/behaviour.js`, lines 217-259
+`js/tests/behaviour.js`, lines 218-260
 
 ### Purpose:
 Verify that the Fortified Church holds the Monastery's items, and that marking either greys out and closes the other.
@@ -366,7 +366,7 @@ Same rows under both, one mark and filter; the other is greyed, closed, cannot b
 ## Test 23
 
 ### File residence:
-`js/tests/behaviour.js`, lines 263-267
+`js/tests/behaviour.js`, lines 264-268
 
 ### Purpose:
 Verify Req. 28 and 31: marking a unit or technology opens it, showing every item marked with it.
@@ -377,7 +377,7 @@ Clicking a closed line item opens it down to the end of its line, so every item 
 ## Test 24
 
 ### File residence:
-`js/tests/behaviour.js`, lines 269-278
+`js/tests/behaviour.js`, lines 270-279
 
 ### Purpose:
 Verify Req. 29 and 30: below a line's top, a mark passes down only to items held by as many civilisations.
@@ -399,7 +399,7 @@ Closed items with contents show "own–all" counts and other items their own cou
 ## Test 26
 
 ### File residence:
-`js/tests/behaviour.js`, lines 304-305
+`js/tests/behaviour.js`, lines 305-306
 
 ### Purpose:
 Verify that a closed upgrade line shows the range from its first item to its last upgrade.
@@ -421,7 +421,7 @@ After Expand all, every item shows only its own count.
 ## Test 28
 
 ### File residence:
-`js/tests/behaviour.js`, lines 312-313
+`js/tests/behaviour.js`, lines 313-314
 
 ### Purpose:
 Verify that the counts follow the active filters (Req. 3).
@@ -432,7 +432,7 @@ With a must-have and a must-lack mark, open and closed items count only the civs
 ## Test 29
 
 ### File residence:
-`js/tests/behaviour.js`, lines 326-327
+`js/tests/behaviour.js`, lines 327-328
 
 ### Purpose:
 Verify Req. 18 and 19, and each branch's arrow.
@@ -443,7 +443,7 @@ Expand all opens every branch, Collapse all closes every branch, and a branch's 
 ## Test 30
 
 ### File residence:
-`js/tests/behaviour.js`, lines 328-333
+`js/tests/behaviour.js`, lines 329-334
 
 ### Purpose:
 Save clicks by opening a line of only children in one step.
@@ -454,7 +454,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour.js`, lines 341-345
+`js/tests/behaviour.js`, lines 342-346
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them and counts them.
@@ -465,7 +465,7 @@ Exactly the matches are highlighted in yellow and shown; the number shows on one
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour.js`, lines 349-350
+`js/tests/behaviour.js`, lines 350-351
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).

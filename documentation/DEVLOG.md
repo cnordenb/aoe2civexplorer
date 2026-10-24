@@ -2369,3 +2369,25 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 - **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
   800 by 1100 and 500 by 900.
 - **Documents.** `TESTS.md`: Test 21. `MAINTAINER.md`: How marking works.
+
+## 2026-10-24: a building heading a single line is named after its deepest item
+
+### What changed
+
+- **Requirement 24, as amended by the chief developer,** gives "Full" only to roots and buildings with more than one
+  row under them. A building whose only row starts a single line is now named in **Filters** like a line
+  (requirement 25): after its deepest item marked must have. A fully marked Lumber Camp reads "Two-Man Saw", not
+  "Full Lumber Camp", and with Two-Man Saw unmarked again, "Bow Saw".
+- **Which buildings.** It follows the tree as shown. By default these are the Mill (Crop Rotation), the Lumber Camp
+  (Two-Man Saw) and the Market (Guilds). With Include Unique and Universal ticked, the Market has more rows again and
+  reads "Full Market"; the Lumber Camp still reads "Two-Man Saw".
+- **Unchanged.** Must lack on such a building still reads its own name, as for lines. Buildings with more than one
+  row, such as the Blacksmith, still read "Full".
+- **How.** `chipName()` in `js/model.js`: any item marked must have takes the name of the deepest item marked must
+  have in its line, which for a building with no single line is the building itself; "Full" needs more than one row
+  under the item.
+- **Tests.** Test 13 now expects the building at the top of a single line to be named after the line's end. With the
+  old naming put back it fails ("Full Mill").
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. The names above were checked in Chrome.
+- **Documents.** `TESTS.md`: Test 13, and the new lines of the tests after it. `MAINTAINER.md`: How marking works.
