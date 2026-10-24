@@ -2419,3 +2419,45 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 - **Documents.** `TESTS.md`: Tests 18, 19 and 24. The places of the tests after them in `js/tests/behaviour.js`
   are updated, and so are the places of Tests 6, 7, 9, 25 and 27, which were out of date, and Test 59, which moved
   to `js/tests/interface.js` before. `MAINTAINER.md`: How marking works.
+
+## 2026-10-24: the drop-off site variants hold what they replace, as the Fortified Church does
+
+### What changed
+
+- **The Mule Cart, the Settlement and the Folwark** now work as the Fortified Church does for the Monastery. In
+  `data.json`, the Mule Cart replaces the Lumber Camp and the Mining Camp, the Settlement the Mill, the Lumber Camp
+  and the Mining Camp, and the Folwark the Mill. Each is held by exactly the civilisations that lack what it
+  replaces. Under each, the page shows the rows of what it replaces, in that order: under the Mule Cart, the
+  Double-Bit Axe, Gold Mining and Stone Mining lines.
+- **Same items.** These rows are shared: marking Two-Man Saw under the Mule Cart marks it under the Lumber Camp and
+  the Settlement too, with one entry in **Filters**, and opens nothing elsewhere.
+- **Greyed out.** While the Mule Cart is marked must have, the Lumber Camp and the Mining Camp are greyed out and
+  closed; while the Lumber Camp is, the Mule Cart and the Settlement are. The Folwark is unique, so it shows only
+  with Include Unique and Universal ticked.
+- **`replaces` takes a list.** It names one item, as before, or a list of items. `variants()` and `pair()` in
+  `js/model.js` read both through the new `named()`.
+- **An item marked must have is never greyed out.** The Economy group holds both the Lumber Camp and the Mule
+  Cart, so marking it marked both, greyed out both, and left neither clickable. Now `barred()` leaves an item alone
+  while it is marked must have itself, so the group marks everything as before, and clearing one of the two greys
+  it out. The Monastery and the Fortified Church are both at the top, so this could not happen with them.
+- **Full.** A fully marked Mule Cart lists no civilisation: neither the Armenians nor the Georgians have Two-Man Saw.
+  This is what "Full" means, as for any building.
+- **Pasture** stands in for the Farm for the Khitans, but it is not a drop-off site and neither has anything under
+  it, so it is left as it was.
+- **Tests.** Test 22 now picks the Mule Cart, checks a row with nothing under it, so that the filter is named after
+  it, and checks that every item that replaces others holds exactly their rows. Test 14 checks that marking a group
+  greys out nothing in it. Test 24 counts each shared row once. Test 88 accepts a list. With the old `model.js`,
+  Test 22 fails; with the old `barred()`, Test 14 fails.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. The Mule Cart, the Settlement, the Lumber Camp, the Mill, the Economy group and, with
+  Include ticked, the Folwark were checked by hand in Chrome.
+- **Documents.** `TESTS.md`: Tests 14, 22 and 88, and the places of the tests after Test 14. `MAINTAINER.md`: How
+  marking works.
+
+Variants still to be resolved:
+- farm v pasture
+- harbor v dock (also harbor needs to be root node)
+- donjon v watch tower
+- variant v variant (settlement - mule cart)
+- unit variants (shock infantry, siege elephant v siege ram, champi v militia)
+- tech variants (cranqequins v parthian tactics)

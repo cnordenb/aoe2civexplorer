@@ -81,8 +81,9 @@ function branches({ branch, line, group, headed, lone, walled }) {
   const inGroup = items.filter((item) => below(item, group));
   const groupHidden = inGroup.every((item) => !shown(item));
   tap(group.node);
-  check("marking: marking a top-level group marks and shows everything in it", groupHidden && state(group) === "has"
-    && group.self === null && inGroup.every(shown));
+  check("marking: marking a top-level group marks and shows everything in it, greying out nothing in it",
+    groupHidden && state(group) === "has" && group.self === null && inGroup.every(shown)
+    && inGroup.every((item) => !item.entry.classList.contains("barred")));
 }
 
 function crowding() {
@@ -219,8 +220,8 @@ function rivals({ rival }) {
 
 function standIns() {
   reset();
-  const name = "marking: an item that replaces another also holds everything in it outside its unique groups, as the "
-    + "same items: marking one there marks both, with one filter, opening nothing in the other; must have on either "
+  const name = "marking: an item that replaces others also holds everything in them outside their unique groups, as "
+    + "the same items: marking one there marks both, with one filter, opening nothing in the other; must have on one "
     + "greys out the other and closes it, and it cannot be marked or opened until the mark is cleared";
   const item = items.find((each) => each.replaces && each.alternatives.length);
   const other = item?.alternatives[0];
@@ -246,16 +247,17 @@ function standIns() {
 
   for (const each of [item, other]) for (let p = each.parent; p; p = p.parent) setOpen(p, true);
   setOpen(item, true);
-  const copy = items.find((each) => each.original && below(each, item));
+  const copy = items.find((each) => each.original && below(each, item) && !each.kids.length);
   if (copy) tap(copy.node);
   const one = copy?.original.self === "has" && !isOpen(other) && same(chipNames(), [nameOf(copy)]);
-  if (copy) tap(copy.node);
+  $("clear").click();
   const first = shut(other, item);
   tap(item.node);
   const freed = item.self === null && !greyed(other);
   const second = shut(item, other);
   tap(other.node);
-  const held = inside(other).length > 0 && same(inside(item), inside(other));
+  const held = items.filter((each) => each.replaces).every((each) => inside(each).length > 0
+    && same(inside(each), each.alternatives.flatMap(inside)));
   check(name, held && one && first && freed && second && !greyed(item),
     `${held}, ${one}, ${first}, ${freed}, ${second}`);
   reset();
@@ -273,13 +275,13 @@ function lines({ line, even, uneven }) {
   const before = lineOf(even).slice(0, lineOf(even).indexOf(even)).filter(isUnitOrTech);
   tap(even.node);
   const passed = run.length > 1 && before.length > 0 && [...before, ...run].every((item) => item.self === "has")
-    && items.filter((item) => item.self).length === before.length + run.length;
+    && items.filter((item) => item.self && !item.original).length === before.length + run.length;
   $("clear").click();
   keyDown(uneven.node, "x");
   check("marking: below the top of a line, a mark passes down only to items with as many civilisations, and only "
     + "must have passes up, to every item before it",
     passed && lacking.every((item) => item.self === "lacks")
-    && items.filter((item) => item.self).length === lacking.length
+    && items.filter((item) => item.self && !item.original).length === lacking.length
     && same(listed(), expected(lacking.reduce((s, item) => s & ~item.set, ALL))), `${run.length} passed: ${passed}`);
   $("clear").click();
 }

@@ -264,11 +264,11 @@ function treeTests(all) {
 
   const odd = (node) => Object.keys(node).some((key) => !KNOWN.includes(key))
     || ["unique", "lines"].some((flag) => flag in node && (node[flag] !== true || !node.group))
-    || ["excludes", "replaces"].some((link) => link in node
-      && (!node.item || node[link] === node.item || !all.includes(node[link])));
+    || ["excludes", "replaces"].some((link) => link in node && (!node.item || ![node[link]].flat().length
+      || [node[link]].flat().some((key) => key === node.item || !all.includes(key))));
 
   expect("data: the tree uses only item, group, kids, unique, lines, excludes and replaces, only groups are unique or "
-    + "lines, marked with true, and an item excludes or replaces another item",
+    + "lines, marked with true, and an item excludes or replaces other items, by name or in a list of names",
     nodes(data.tree).filter(odd).map((node) => node.item ?? node.group));
   const undescribed = all.filter((key) => {
     const rule = data.availability[key];

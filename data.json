@@ -87,8 +87,8 @@
       ]},
       {"item": "Farm"},
       {"item": "Pasture"},
-      {"item": "Mule Cart"},
-      {"item": "Settlement"},
+      {"item": "Mule Cart", "replaces": ["Lumber Camp", "Mining Camp"]},
+      {"item": "Settlement", "replaces": ["Mill", "Lumber Camp", "Mining Camp"]},
       {"item": "Market", "kids": [
         {"item": "Trade Cart"},
         {"item": "Caravan"},
@@ -101,7 +101,7 @@
       {"item": "Wonder"},
       {"group": "uniqueBuildings", "unique": true, "kids": [
         {"item": "Feitoria"},
-        {"item": "Folwark"},
+        {"item": "Folwark", "replaces": "Mill"},
         {"item": "Harbor"}
       ]}
     ]},

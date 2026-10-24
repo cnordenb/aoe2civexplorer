@@ -245,8 +245,8 @@ A script only uses the scripts below it in this order: `datahandler.js`, `model.
 - `civs`: the civilisations, by their English names.
 - `icons`: where the icons are, the tab icon, and the civilisations whose icon has another name than theirs.
 - `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true`, and an item
-  can name an item it `"excludes"` or `"replaces"` (see [How marking works](#how-marking-works)). **Edited by
-  hand.**
+  can name an item it `"excludes"`, or the items it `"replaces"` (see [How marking works](#how-marking-works)).
+  **Edited by hand.**
 - `availability`: which civilisations have each item. **Written by the updater; never edit it.**
 - `pictures`: each item's icon, and whether it is common, regional or unique. **Written by the updater.**
 - `ignore`: names from the game that the page leaves out. **Edited by hand.**
@@ -310,13 +310,18 @@ item sits in the tree decides what else its mark reaches:
   Xolotl Warrior. Must lack on either leaves the other alone. Otherwise the Xolotl Warrior is not part of the
   Stable: marking the Stable must lack leaves it alone, and "Full Stable" does not count it. It is the first row
   under the Stable, so that marking it opens only rows below it.
-- An item can name another item that it stands in for, as the Fortified Church names the Monastery:
-  `{"item": "Fortified Church", "replaces": "Monastery"}`. The page then also shows, under it, everything in the
-  other outside its unique groups, so the Monastery's technologies are listed only once in `data.json`, but the
-  Missionary stays the Monastery's, and the Warrior Priest the Fortified Church's. Such rows are the same items in
-  both places: marking Devotion under either marks it under both, with one entry in **Filters**, and opens nothing
-  under the other (requirement 31 allows this). While either building is marked must have, the other is greyed
-  out and closed, and cannot be marked or opened until the mark is cleared.
+- An item can name the items it stands in for, one by name or several in a list. The Fortified Church names the
+  Monastery, the Folwark the Mill, and the Mule Cart and the Settlement the drop-off sites their civilisations lack:
+  `{"item": "Fortified Church", "replaces": "Monastery"}`
+  `{"item": "Mule Cart", "replaces": ["Lumber Camp", "Mining Camp"]}`
+  The page then also shows, under it, everything in those items outside their unique groups, in the order named,
+  so their technologies are listed only once in `data.json`, but the Missionary stays the Monastery's, and the
+  Warrior Priest the Fortified Church's. Such rows are the same items in every place: marking Two-Man Saw under the
+  Mule Cart marks it under the Lumber Camp and the Settlement too, with one entry in **Filters**, and opens nothing
+  elsewhere (requirement 31 allows this). While an item is marked must have, the items it names, or that name it,
+  are greyed out and closed, and cannot be marked or opened until the mark is cleared. An item that is marked must
+  have itself is never greyed out: marking the Economy group marks the Lumber Camp and the Mule Cart alike, and
+  either can still be cleared.
 - In **Filters**, a fully marked building or group with more than one row under it reads "Full", such as "Full
   Blacksmith" (requirement 24). A line is named after its deepest item marked must have, such as "Champion" or
   "Keep", and so is a building at the top of a single line: a fully marked Lumber Camp reads "Two-Man Saw".

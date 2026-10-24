@@ -53,10 +53,11 @@ function nodeOf(nodes, key) {
 
 const common = (node) => ({ ...node, copy: true, kids: (node.kids ?? []).filter((kid) => !kid.unique).map(common) });
 
+const named = (link) => [link ?? []].flat();
+
 const variants = (nodes) => nodes.map((node) => {
-  const kids = variants(node.kids ?? []);
-  const original = node.replaces && nodeOf(data.tree, node.replaces);
-  return { ...node, kids: original ? [...kids, ...common(original).kids] : kids };
+  const originals = named(node.replaces).map((key) => nodeOf(data.tree, key)).filter(Boolean);
+  return { ...node, kids: [...variants(node.kids ?? []), ...originals.flatMap((original) => common(original).kids)] };
 });
 
 function twin() {
@@ -69,8 +70,8 @@ function twin() {
 }
 
 function pair(link, list) {
-  for (const item of items.filter((each) => each[link])) {
-    const other = items.find((each) => !each.group && each.key === item[link]);
+  for (const item of items) for (const key of named(item[link])) {
+    const other = items.find((each) => !each.group && each.key === key);
     if (!other) continue;
     item[list].push(other);
     other[list].push(item);
@@ -89,7 +90,7 @@ export function rebuild() {
   twin();
 }
 
-export const barred = (item) => item.alternatives.some((other) => other.self === "has");
+export const barred = (item) => item.self !== "has" && item.alternatives.some((other) => other.self === "has");
 
 export function setMark(item, mark, top = item) {
   if (!item.group) item.self = mark;
