@@ -245,7 +245,8 @@ A script only uses the scripts below it in this order: `datahandler.js`, `model.
 - `civs`: the civilisations, by their English names.
 - `icons`: where the icons are, the tab icon, and the civilisations whose icon has another name than theirs.
 - `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true`, and an item
-  can name an item it `"excludes"` (see [How marking works](#how-marking-works)). **Edited by hand.**
+  can name an item it `"excludes"` or `"replaces"` (see [How marking works](#how-marking-works)). **Edited by
+  hand.**
 - `availability`: which civilisations have each item. **Written by the updater; never edit it.**
 - `pictures`: each item's icon, and whether it is common, regional or unique. **Written by the updater.**
 - `ignore`: names from the game that the page leaves out. **Edited by hand.**
@@ -305,6 +306,13 @@ item sits in the tree decides what else its mark reaches:
   marking it again clears both. Otherwise the Xolotl Warrior is not part of the Stable: marking the Stable must lack
   leaves it alone, and "Full Stable" does not count it. It is the first row under the Stable, so that marking it
   opens only rows below it.
+- An item can name another item that it stands in for, as the Fortified Church names the Monastery:
+  `{"item": "Fortified Church", "replaces": "Monastery"}`. The page then also shows, under it, everything in the
+  other outside its unique groups, so the Monastery's technologies are listed only once in `data.json`, but the
+  Missionary stays the Monastery's, and the Warrior Priest the Fortified Church's. Such rows are the same items in
+  both places: marking Devotion under either marks it under both, with one entry in **Filters**, and opens nothing
+  under the other (requirement 31 allows this). While either building is marked must have, the other is greyed
+  out and closed, and cannot be marked or opened until the mark is cleared.
 - In **Filters**, a fully marked building or group with something under it reads "Full", such as "Full Market". A
   line is named after its deepest item marked must have, such as "Champion" or "Keep".
 
@@ -384,8 +392,8 @@ file names and that no folder holds too many files.
 | --- | --- |
 | `run.js` | Runs the rounds, shows the report, and checks that there are at most 100 tests. |
 | `helpers.js` | No tests: shared helpers, and the sample items the tests use, picked from the data so that the tests survive game updates. |
-| `behaviour.js` | Marking, **Filters**, counts, opening and closing, the keyboard, and **Find**. |
-| `interface.js` | The language menu, every language, the Options window, and the runs of the accessibility audit. |
+| `behaviour.js` | Marking, **Filters**, counts, opening and closing, and **Find**. |
+| `interface.js` | The keyboard, the language menu, every language, the Options window, and the runs of the accessibility audit. |
 | `pictures.js` | The pictures, with Simple UI off. |
 | `audit.js` | The accessibility audit (contrast, focus, sizes, names and more), which the other files run in many states. |
 | `static.js` | The files themselves: the rules for the code, and mistakes in `data.json` and the language files. |

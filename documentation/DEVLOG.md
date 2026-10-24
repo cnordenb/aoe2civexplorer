@@ -2230,3 +2230,119 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 - **Checked.** All 97 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
   800 by 1100 and 500 by 900.
 - **Documents.** `TESTS.md`: Test 42. `MAINTAINER.md`: which items Include Unique and Universal brings back.
+
+## 2026-10-24: the Monastery is a top-level row
+
+### What changed
+
+- **The Monastery and its whole branch moved,** as asked by the chief developer. They left the Economy group and are
+  now a top-level row between Blacksmith and University, the order aoe2techtree.net uses. The Fortified Church, the
+  Monastery of the Armenians and the Georgians, stays in Economy.
+- **How.** As with the Dock, the JSON writer in `js/datahandler.js` made the move, after confirming that it
+  reproduces `data.json` exactly, so nothing else in the file changed.
+- **Tests.** All 97 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+
+## 2026-10-24: the Fortified Church is a top-level row, and it and the Monastery hide each other
+
+### What changed
+
+- **The Fortified Church moved,** as asked by the chief developer. It left the Economy group and is now a top-level
+  row right after the Monastery, which the Armenians and the Georgians have instead. The JSON writer in
+  `js/datahandler.js` made the move, as for the Dock and the Monastery.
+- **Marking either hides the other.** While the Monastery is marked must have, the Fortified Church is hidden, and
+  while the Fortified Church is, the Monastery is. Must lack hides nothing, nor does a mark on something inside
+  either. In `data.json` the Fortified Church says `"replaces": "Monastery"`, and the pairing goes both ways, like
+  `"excludes"`, so other pairs can be added by hand the same way.
+- **Rule 18.** Whichever is above, hiding it would move the row clicked below it. As decided by the chief developer,
+  a hidden row keeps its room (`visibility: hidden`), so no row moves; the tree shows an empty row there. A hidden
+  row cannot be clicked, reached with the keyboard or found with **Find**, and **Expand all** leaves it closed, so
+  that the gap stays one row high.
+- **Code.** `js/model.js`: `pair()` now pairs both `excludes` and `replaces`, and `veiled()` says whether an item is
+  hidden. `js/nodetree.js`: hidden rows get the class `veiled`, and are left out of `shown()`, **Find** and
+  **Expand all**. `style.css`: `.tree .veiled`.
+- **Tests.** New Test 22 marks the Fortified Church, then the Monastery, and checks that the other is hidden, keeps
+  its room, cannot be focused or found, that no row above the clicked one goes, and that clearing the mark shows it
+  again. With `display: none` instead of keeping the room, it fails. Test 88 now also accepts `replaces`. There are
+  98 tests; Tests 22 to 97 are now 23 to 98 in `TESTS.md`.
+- **Rule 25.** The new test took `js/tests/behaviour.js` over 400 lines, so the keyboard tests of the tree (Tests 54
+  to 60) moved to `js/tests/interface.js`, which already tests the keyboard in the menus. They run in the same place
+  and keep their numbers. `chainOf()`, which both files use, moved to `js/tests/helpers.js`.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 22, Test 88, the new numbers and the new places of the tests. `MAINTAINER.md`:
+  `"replaces"`, and the keyboard tests in `interface.js`.
+
+## 2026-10-24: the Fortified Church holds the Monastery's rows
+
+### What changed
+
+- **The Fortified Church is a Monastery.** As asked by the chief developer, everything under the Monastery outside
+  its unique groups is now also under the Fortified Church: the Monk, Devotion and Faith, Redemption, Atonement,
+  Herbal Medicine, Heresy, Sanctity, Fervor, Illumination, Block Printing and Theocracy. The Missionary, in the
+  Monastery's Unique Units, is not; the Warrior Priest stays the Fortified Church's own, first under it, and is
+  not under the Monastery.
+- **How.** `data.json` lists each item once, as Test 87 and the updater require, so the rows are not copied there.
+  `variants()` in `js/model.js` adds them when the tree is built, to every item that `"replaces"` another. A new
+  Monastery technology in a game update is then added in one place only. The copies have the same civilisations as
+  the originals, so marking either filters the same way, and **Filters** names their building, such as "Redemption
+  (Fortified Church)", through the existing `inParent` text.
+- **Tests.** Test 22 now also checks that the Fortified Church holds the same rows as the Monastery, and fails
+  without `variants()`. `shownKeys()` in `js/tests/helpers.js` lists each item once, so Tests 42 to 44 still
+  compare the tree with `data.json`. With Include Unique and Universal ticked, the rows under each were checked in
+  Chrome: the Missionary only under the Monastery, the Warrior Priest only under the Fortified Church.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 22, and the new lines of the tests after it. `MAINTAINER.md`: what `"replaces"`
+  does.
+
+## 2026-10-24: one Devotion, not two
+
+### What changed
+
+- **The rows the Fortified Church takes from the Monastery are the same items,** as the chief developer pointed out:
+  there is only one Devotion. Marking Devotion under either building now marks it under both, in the same way, with
+  one entry in **Filters**, plainly "Devotion". The same goes for every row the two share. Marking it under one
+  opens nothing under the other: requirement 31, amended by the chief developer, allows this exception.
+- **How.** In `js/model.js`, `twin()` links each copy to its original, and the copy reads and writes the original's
+  mark, so the two can never differ, whatever sets them: a click, a key, **Clear**, a filter button or a building
+  marked whole. `filtersOf()` lists only originals, and leaves an item out when its building on either side is
+  marked whole, so "Full Fortified Church" stays one entry. `share()` no longer counts the copies, so their names
+  need no building after them.
+- **Checked in Chrome.** Devotion under the Fortified Church: one filter, "Devotion", both boxes ticked, the
+  Monastery closed with a dash. Marking it again clears both. "Full Fortified Church" and "Full Monastery" are one
+  entry each. X marks both must lack.
+- **Tests.** Test 22 also opens the Fortified Church, marks its first shared row, and checks that the Monastery's
+  is marked too, that there is one filter, named plainly, and that the Monastery stays closed. Without `twin()` it
+  fails.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 22, and the new lines of the tests after it. `MAINTAINER.md`: what `"replaces"`
+  does.
+
+## 2026-10-24: greyed out instead of hidden
+
+### What changed
+
+- **Greyed out, not hidden.** As asked by the chief developer, while the Monastery is marked must have the Fortified
+  Church is greyed out instead of hidden, and the other way round. If it was open, it closes. A greyed-out row cannot
+  be marked or opened, by a click, a key or a long press, until the mark on the other is cleared. **Expand all**
+  leaves it closed, and **Find** does not open it to reach what is inside it, but finds the row itself.
+- **How it looks.** The row is drawn at half strength (`opacity: 0.5`), and with the pictures its icon is grey too. It
+  takes no pointer, so it has no hover colour or tooltip. Its box still shows its own mark, such as the Monastery's
+  dash when the Fortified Church's shared rows are marked.
+- **Accessibility.** The row's checkbox and arrow say `aria-disabled="true"`, and stay in the keyboard order, so a
+  screen reader can still find and announce them. WCAG 1.4.3 and 1.4.6 set no contrast for inactive controls, so the
+  fainter text is allowed with Simple UI on.
+- **Code.** `js/model.js`: `barred()` replaces `veiled()`, and looks only at the item itself. `js/nodetree.js`:
+  `update()` closes barred rows, `toggle()` and `expand()` ignore them, `paint()` sets the class `barred` and
+  `aria-disabled`, and `shown()` is as it was. `style.css`: `.tree .barred > .row`, and the grey icon.
+- **Rule 18.** Closing an open Monastery above the Fortified Church, when the Fortified Church is marked, moves the
+  Fortified Church and the rows below it up, as asked. A closed Monastery, as after **Collapse all**, moves nothing.
+- **Tests.** Test 22 now checks that marking either building greys out and closes the other, that the other cannot
+  then be marked by a click or X, nor opened by its arrow, and that clearing the mark lifts all this. It fails
+  without the closing, and without the block on marking.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. Screenshots checked with and without Simple UI.
+- **Documents.** `TESTS.md`: Test 22, and the new lines of the tests after it. `MAINTAINER.md`: what `"replaces"`
+  does.

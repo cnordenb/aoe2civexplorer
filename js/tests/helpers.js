@@ -181,6 +181,12 @@ export const itemAbove = (item) => {
   return false;
 };
 
+export const chainOf = (item) => {
+  const chain = [item];
+  while (chain.at(-1).kids.length === 1) chain.push(chain.at(-1).kids[0]);
+  return chain.filter((each) => each.twisty);
+};
+
 const KINDS = { unit: "unit", building: "building", technology: "tech" };
 
 const hex = (code) => `rgb(${[0, 2, 4].map((at) => parseInt(code.slice(at, at + 2), 16)).join(", ")})`;
@@ -192,7 +198,7 @@ export async function edges() {
     .map((code, i) => [`${KINDS[head[i + 1]]} ${reach}`, hex(code)])));
 }
 
-export const shownKeys = () => items.filter((item) => !item.group).map((item) => item.key);
+export const shownKeys = () => [...new Set(items.filter((item) => !item.group).map((item) => item.key))];
 
 export const uniqueKeys = () => {
   const under = (nodes, inside) => nodes.flatMap((node) => [

@@ -6,8 +6,8 @@ import { view, setView, tips, setTips } from "../pictures.js";
 import { openReport, report } from "../report.js";
 import { root, results, check, codes, pick, reset, fixtures } from "./helpers.js";
 import { scripts, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static.js";
-import { behaviourTests, keyboardTests } from "./behaviour.js";
-import { menuTests, languageTests, optionTests, accessibilityTests, reportTests } from "./interface.js";
+import { behaviourTests } from "./behaviour.js";
+import { menuTests, languageTests, optionTests, keyboardTests, accessibilityTests, reportTests } from "./interface.js";
 import { pictureTests } from "./pictures.js";
 
 const LIMIT = 100;

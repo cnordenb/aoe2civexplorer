@@ -4,13 +4,8 @@ import { $ } from "../stringbuilder.js";
 import { isOpen, setOpen, shown } from "../nodetree.js";
 import {
   root, check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below, drawn, marks, yellow,
+  chainOf,
 } from "./helpers.js";
-
-const chainOf = (item) => {
-  const chain = [item];
-  while (chain.at(-1).kids.length === 1) chain.push(chain.at(-1).kids[0]);
-  return chain.filter((each) => each.twisty);
-};
 
 const sameCount = (item) => {
   const line = [item];
@@ -128,24 +123,6 @@ function crowding() {
     + "their size and place", problems);
 }
 
-function filterFocus({ other, third }) {
-  reset();
-  keyDown(other.node, "x");
-  keyDown(third.node, "x");
-  const firstChip = $("chips").querySelector(".chip");
-  const cleared = items[firstChip.dataset.i];
-  const left = cleared === other ? third : other;
-  firstChip.click();
-  check("filters: a filter button clears its item and moves focus to the next", cleared.self === null
-    && document.activeElement === $("chips").querySelector(".chip")
-    && Number(document.activeElement.dataset.i) === left.i);
-  document.activeElement.click();
-  check("filters: clearing the last filter moves focus to the civilisations heading and shows the hint",
-    left.self === null && document.activeElement === $("civTitle") && !listed().length && !$("none").hidden
-    && $("none").textContent === words.ui.start && $("ticked").hidden);
-  reset();
-}
-
 async function gestures({ third }) {
   reset();
   const node = third.node;
@@ -237,6 +214,50 @@ function rivals({ rival }) {
   reset();
 }
 
+function standIns() {
+  reset();
+  const name = "marking: an item that replaces another also holds everything in it outside its unique groups, as the "
+    + "same items: marking one there marks both, with one filter, opening nothing in the other; must have on either "
+    + "greys out the other and closes it, and it cannot be marked or opened until the mark is cleared";
+  const item = items.find((each) => each.replaces && each.alternatives.length);
+  const other = item?.alternatives[0];
+  if (!other) {
+    check(name, false, "no item in data.json replaces another");
+    return;
+  }
+
+  const greyed = (each) => each.node.getAttribute("aria-disabled") === "true"
+    && Number(getComputedStyle(each.node.parentElement).opacity) < 1;
+
+  const inside = (top) => items.filter((each) => below(each, top)).map((each) => each.key);
+
+  const shut = (each, by) => {
+    setOpen(each, true);
+    tap(by.node);
+    const closed = !isOpen(each);
+    tap(each.node);
+    keyDown(each.node, "x");
+    each.twisty?.click();
+    return closed && by.self === "has" && greyed(each) && !greyed(by) && !isOpen(each) && each.self === null;
+  };
+
+  for (const each of [item, other]) for (let p = each.parent; p; p = p.parent) setOpen(p, true);
+  setOpen(item, true);
+  const copy = items.find((each) => each.original && below(each, item));
+  if (copy) tap(copy.node);
+  const one = copy?.original.self === "has" && !isOpen(other) && same(chipNames(), [nameOf(copy)]);
+  if (copy) tap(copy.node);
+  const first = shut(other, item);
+  tap(item.node);
+  const freed = item.self === null && !greyed(other);
+  const second = shut(item, other);
+  tap(other.node);
+  const held = inside(other).length > 0 && same(inside(item), inside(other));
+  check(name, held && one && first && freed && second && !greyed(item),
+    `${held}, ${one}, ${first}, ${freed}, ${second}`);
+  reset();
+}
+
 function lines({ line, even, uneven }) {
   reset();
   for (let p = line.parent; p; p = p.parent) setOpen(p, true);
@@ -313,37 +334,6 @@ function tree() {
   $("collapseAll").click();
 }
 
-function keyboard({ line }) {
-  reset();
-  keyDown(line.node, "ArrowRight");
-  check("keyboard: Right opens a line all the way down", chainOf(line).length > 1
-    && items.every((each) => isOpen(each) === chainOf(line).includes(each)));
-  $("collapseAll").click();
-  roots[0].node.focus();
-  keyDown(roots[0].node, "ArrowUp");
-  const top = document.activeElement === roots[0].node;
-  keyDown(roots[0].node, "ArrowDown");
-  const down = top && document.activeElement === roots[1].node;
-  keyDown(roots[1].node, "ArrowRight");
-  const opens = isOpen(roots[1]);
-  keyDown(roots[1].node, "ArrowRight");
-  const into = document.activeElement === roots[1].kids[0].node;
-  keyDown(roots[1].kids[0].node, "ArrowLeft");
-  const back = document.activeElement === roots[1].node;
-  keyDown(roots[1].node, "ArrowLeft");
-  check("keyboard: Right opens a branch and goes into it, and Left goes back out and closes it",
-    opens && into && back && !isOpen(roots[1]));
-  keyDown(roots[1].node, "End");
-  const end = document.activeElement === roots[roots.length - 1].node;
-  keyDown(document.activeElement, "Home");
-  check("keyboard: Down and Up step between items, stopping at the top, and End and Home go to the last and first",
-    down && end && document.activeElement === roots[0].node);
-  roots[0].twisty.focus();
-  keyDown(roots[0].twisty, "ArrowDown");
-  check("keyboard: on an arrow, Down goes to the next arrow", document.activeElement === roots[1].twisty);
-  document.activeElement.blur();
-}
-
 function finding({ partial }) {
   reset();
   type(nameOf(partial));
@@ -361,15 +351,6 @@ function finding({ partial }) {
   reset();
 }
 
-function findKey({ partial }) {
-  reset();
-  type(nameOf(partial));
-  keyDown($("find"), "Enter");
-  check("find: Enter goes to the first match", document.activeElement
-    === items.find((item) => plain(nameOf(item)).includes(plain(nameOf(partial)))).node);
-  reset();
-}
-
 export async function behaviourTests(sample) {
   marking(sample);
   branches(sample);
@@ -378,14 +359,9 @@ export async function behaviourTests(sample) {
   lineTops(sample);
   parents(sample);
   rivals(sample);
+  standIns();
   lines(sample);
   counts(sample);
   tree();
   finding(sample);
-}
-
-export function keyboardTests(sample) {
-  filterFocus(sample);
-  keyboard(sample);
-  findKey(sample);
 }

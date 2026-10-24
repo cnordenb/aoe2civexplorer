@@ -1,14 +1,16 @@
 import {
-  data, ALL, size, fill, attempt, recall, remember, params, language, nameOf, preferredLanguage,
+  data, ALL, size, fill, attempt, recall, remember, params, language, nameOf, preferredLanguage, words, plain,
 } from "../datahandler.js";
-import { items } from "../model.js";
+import { items, roots } from "../model.js";
 import { $ } from "../stringbuilder.js";
+import { isOpen } from "../nodetree.js";
 import { options, setInclude, setSimple } from "../optionshandler.js";
 import { openReport, report } from "../report.js";
 import { audit } from "./audit.js";
 import {
   root, check, expect, same, tidy, codes, keys, describe, everything, nameFor, visibleTexts, keyDown, tap, pick,
   reset, listed, expected, fixtures, shownKeys, uniqueKeys, regionalKeys, outside, keptPath, byPath, spans, ui, box,
+  chainOf, type,
 } from "./helpers.js";
 
 function englishFirst() {
@@ -215,6 +217,70 @@ function optionAudits() {
   audit("accessibility (everything included, all open)", { focus: false });
   reset();
   setInclude(false);
+}
+
+function filterFocus({ other, third }) {
+  reset();
+  keyDown(other.node, "x");
+  keyDown(third.node, "x");
+  const firstChip = $("chips").querySelector(".chip");
+  const cleared = items[firstChip.dataset.i];
+  const left = cleared === other ? third : other;
+  firstChip.click();
+  check("filters: a filter button clears its item and moves focus to the next", cleared.self === null
+    && document.activeElement === $("chips").querySelector(".chip")
+    && Number(document.activeElement.dataset.i) === left.i);
+  document.activeElement.click();
+  check("filters: clearing the last filter moves focus to the civilisations heading and shows the hint",
+    left.self === null && document.activeElement === $("civTitle") && !listed().length && !$("none").hidden
+    && $("none").textContent === words.ui.start && $("ticked").hidden);
+  reset();
+}
+
+function keyboard({ line }) {
+  reset();
+  keyDown(line.node, "ArrowRight");
+  check("keyboard: Right opens a line all the way down", chainOf(line).length > 1
+    && items.every((each) => isOpen(each) === chainOf(line).includes(each)));
+  $("collapseAll").click();
+  roots[0].node.focus();
+  keyDown(roots[0].node, "ArrowUp");
+  const top = document.activeElement === roots[0].node;
+  keyDown(roots[0].node, "ArrowDown");
+  const down = top && document.activeElement === roots[1].node;
+  keyDown(roots[1].node, "ArrowRight");
+  const opens = isOpen(roots[1]);
+  keyDown(roots[1].node, "ArrowRight");
+  const into = document.activeElement === roots[1].kids[0].node;
+  keyDown(roots[1].kids[0].node, "ArrowLeft");
+  const back = document.activeElement === roots[1].node;
+  keyDown(roots[1].node, "ArrowLeft");
+  check("keyboard: Right opens a branch and goes into it, and Left goes back out and closes it",
+    opens && into && back && !isOpen(roots[1]));
+  keyDown(roots[1].node, "End");
+  const end = document.activeElement === roots[roots.length - 1].node;
+  keyDown(document.activeElement, "Home");
+  check("keyboard: Down and Up step between items, stopping at the top, and End and Home go to the last and first",
+    down && end && document.activeElement === roots[0].node);
+  roots[0].twisty.focus();
+  keyDown(roots[0].twisty, "ArrowDown");
+  check("keyboard: on an arrow, Down goes to the next arrow", document.activeElement === roots[1].twisty);
+  document.activeElement.blur();
+}
+
+function findKey({ partial }) {
+  reset();
+  type(nameOf(partial));
+  keyDown($("find"), "Enter");
+  check("find: Enter goes to the first match", document.activeElement
+    === items.find((item) => plain(nameOf(item)).includes(plain(nameOf(partial)))).node);
+  reset();
+}
+
+export function keyboardTests(sample) {
+  filterFocus(sample);
+  keyboard(sample);
+  findKey(sample);
 }
 
 export function accessibilityTests(sample) {

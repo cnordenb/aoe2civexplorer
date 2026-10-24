@@ -1,5 +1,5 @@
 import { data, words, numbers, size, plural, fill, nameOf, plain, iconFile } from "./datahandler.js";
-import { items, roots, matching, rebuild, setMark, boxState, mark, fit, unmarkLine, chainOf } from "./model.js";
+import { items, roots, matching, rebuild, setMark, boxState, mark, fit, unmarkLine, chainOf, barred } from "./model.js";
 import { $, clone, simple, compose, label, listCivs, listFilters } from "./stringbuilder.js";
 
 let found = [];
@@ -10,6 +10,8 @@ let swallowClick = false;
 export const isOpen = (item) => item.twisty?.getAttribute("aria-expanded") === "true";
 
 export const shown = (item) => !item.parent || (isOpen(item.parent) && shown(item.parent));
+
+const behind = (item) => !!item.parent && (barred(item.parent) || behind(item.parent));
 
 export const itemAt = (target) => items[target.closest?.(".node")?.dataset.i];
 
@@ -26,6 +28,7 @@ function build(list, ul) {
     const li = clone("itemTemplate");
     const twisty = li.querySelector(".twisty");
     const kids = li.querySelector("ul");
+    item.entry = li;
     item.node = li.querySelector(".node");
     item.label = li.querySelector(".name");
     item.lacking = li.querySelector(".lacking");
@@ -89,7 +92,9 @@ export function setOpen(item, open) {
   count(item);
 }
 
-const expand = (item) => chainOf(item).forEach((each) => setOpen(each, true));
+const expand = (item) => {
+  if (!barred(item)) chainOf(item).forEach((each) => setOpen(each, true));
+};
 
 function paint() {
   for (const item of items) {
@@ -98,11 +103,15 @@ function paint() {
     item.node.setAttribute("aria-checked", s === "has" ? "true" : s === "mixed" ? "mixed" : "false");
     item.lacking.textContent = s === "lacks" ? words.ui.lacking : "";
     item.node.classList.toggle("self", !!item.self);
+    const shut = barred(item);
+    item.entry.classList.toggle("barred", shut);
+    for (const el of [item.node, item.twisty]) if (el) el.ariaDisabled = shut ? "true" : null;
   }
 }
 
 export function update() {
   const marked = fit();
+  items.filter(barred).forEach((item) => setOpen(item, false));
   paint();
   listCivs(marked.length > 0);
   items.forEach(count);
@@ -110,6 +119,7 @@ export function update() {
 }
 
 function toggle(item, kind) {
+  if (barred(item)) return;
   for (const each of mark(item, kind)) for (let p = each.parent; p && p !== item.parent; p = p.parent) setOpen(p, true);
   update();
 }
@@ -123,7 +133,7 @@ function reveal(node) {
 
 export function find() {
   const text = plain($("find").value);
-  found = text ? items.filter((item) => plain(nameOf(item)).includes(text)) : [];
+  found = text ? items.filter((item) => !behind(item) && plain(nameOf(item)).includes(text)) : [];
   for (const item of items) item.node.classList.toggle("found", found.includes(item));
   $("found").textContent = !text ? "" : found.length ? plural("found", found.length) : words.ui.noneFound;
   if (!found.length) return;
@@ -214,7 +224,7 @@ function onChip(e) {
 function wireTools() {
   const swap = (from, to, open) => $(from).addEventListener("click", () => {
     const focused = document.activeElement === $(from);
-    items.forEach((item) => setOpen(item, open));
+    items.filter((item) => !open || !barred(item)).forEach((item) => setOpen(item, open));
     if (focused && !simple()) $(to).focus();
   });
 

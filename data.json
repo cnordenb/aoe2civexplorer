@@ -98,29 +98,6 @@
         {"item": "Guilds"}
       ]},
       {"item": "Caravanserai"},
-      {"item": "Monastery", "kids": [
-        {"item": "Monk"},
-        {"group": "uniqueUnits", "unique": true, "kids": [
-          {"item": "Missionary"}
-        ]},
-        {"item": "Devotion", "kids": [
-          {"item": "Faith"}
-        ]},
-        {"item": "Redemption"},
-        {"item": "Atonement"},
-        {"item": "Herbal Medicine"},
-        {"item": "Heresy"},
-        {"item": "Sanctity"},
-        {"item": "Fervor"},
-        {"item": "Illumination"},
-        {"item": "Block Printing"},
-        {"item": "Theocracy"}
-      ]},
-      {"item": "Fortified Church", "kids": [
-        {"group": "uniqueUnits", "unique": true, "kids": [
-          {"item": "Warrior Priest"}
-        ]}
-      ]},
       {"item": "Wonder"},
       {"group": "uniqueBuildings", "unique": true, "kids": [
         {"item": "Feitoria"},
@@ -655,6 +632,29 @@
         {"item": "Chain Mail Armor", "kids": [
           {"item": "Plate Mail Armor"}
         ]}
+      ]}
+    ]},
+    {"item": "Monastery", "kids": [
+      {"item": "Monk"},
+      {"group": "uniqueUnits", "unique": true, "kids": [
+        {"item": "Missionary"}
+      ]},
+      {"item": "Devotion", "kids": [
+        {"item": "Faith"}
+      ]},
+      {"item": "Redemption"},
+      {"item": "Atonement"},
+      {"item": "Herbal Medicine"},
+      {"item": "Heresy"},
+      {"item": "Sanctity"},
+      {"item": "Fervor"},
+      {"item": "Illumination"},
+      {"item": "Block Printing"},
+      {"item": "Theocracy"}
+    ]},
+    {"item": "Fortified Church", "replaces": "Monastery", "kids": [
+      {"group": "uniqueUnits", "unique": true, "kids": [
+        {"item": "Warrior Priest"}
       ]}
     ]},
     {"item": "University", "kids": [
