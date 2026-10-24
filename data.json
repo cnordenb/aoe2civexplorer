@@ -1710,7 +1710,7 @@
       "source": "Data from {source}, {date}.",
       "options": "Options",
       "includeAll": "Include Unique and Universal",
-      "includeHint": "Also shows unique units, technologies and buildings, things every civilisation has, and things only one civilisation has.",
+      "includeHint": "Also shows unique units, technologies and buildings, things all civilisations or all but one have, and things only one civilisation has.",
       "includeRegional": "Include Regionals",
       "simple": "Simple UI",
       "civView": "Civ view:",

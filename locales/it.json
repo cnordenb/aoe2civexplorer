@@ -32,7 +32,7 @@
       "source": "Dati da {source}, {date}.",
       "options": "Opzioni",
       "includeAll": "Includi elementi riservati e universali",
-      "includeHint": "Mostra anche unità, tecnologie ed edifici riservati, ciò che hanno tutte le civiltà e ciò che ha una sola civiltà.",
+      "includeHint": "Mostra anche unità, tecnologie ed edifici riservati, ciò che hanno tutte le civiltà o che manca a una sola, e ciò che ha una sola civiltà.",
       "includeRegional": "Includi elementi regionali",
       "simple": "Interfaccia semplice",
       "civView": "Vista civiltà:",

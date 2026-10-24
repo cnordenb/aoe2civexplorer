@@ -32,7 +32,7 @@
       "source": "데이터 출처: {source}, {date}.",
       "options": "옵션",
       "includeAll": "특수 및 공통 항목 포함",
-      "includeHint": "특수 유닛, 기술, 건물과 함께 모든 문명이 가진 항목과 한 문명만 가진 항목도 표시합니다.",
+      "includeHint": "특수 유닛, 기술, 건물과 함께 모든 문명 또는 한 문명을 제외한 모든 문명이 가진 항목과 한 문명만 가진 항목도 표시합니다.",
       "includeRegional": "지역 항목 포함",
       "simple": "간단한 UI",
       "civView": "문명 보기:",

@@ -32,7 +32,7 @@
       "source": "Data daripada {source}, {date}.",
       "options": "Pilihan",
       "includeAll": "Sertakan Unik dan Universal",
-      "includeHint": "Turut memaparkan unit, teknologi dan bangunan unik, perkara yang dimiliki semua tamadun dan perkara yang dimiliki satu tamadun sahaja.",
+      "includeHint": "Turut memaparkan unit, teknologi dan bangunan unik, perkara yang dimiliki semua tamadun atau semua kecuali satu, dan perkara yang dimiliki satu tamadun sahaja.",
       "includeRegional": "Sertakan Serantau",
       "simple": "UI Ringkas",
       "civView": "Paparan tamadun:",

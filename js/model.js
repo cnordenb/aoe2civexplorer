@@ -38,7 +38,7 @@ function prune(nodes, every = false, regionals = true) {
     const kids = prune(node.kids ?? [], every, regionals);
     const rule = node.item && data.availability[node.item];
     const civs = rule ? size(setOf(rule)) : 0;
-    if (!kids.length && (node.group || (!every && (civs === 1 || civs === data.civs.length)))) return [];
+    if (!kids.length && (node.group || (!every && (civs === 1 || civs >= data.civs.length - 1)))) return [];
     return [{ ...node, kids }];
   });
 }

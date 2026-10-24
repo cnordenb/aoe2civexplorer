@@ -36,7 +36,7 @@
       "source": "Daten von {source}, {date}.",
       "options": "Optionen",
       "includeAll": "Spezielles und Allgemeines einbeziehen",
-      "includeHint": "Zeigt auch Spezialeinheiten, -technologien und -gebäude, was alle Völker haben und was nur ein Volk hat.",
+      "includeHint": "Zeigt auch Spezialeinheiten, -technologien und -gebäude, was alle Völker haben oder nur einem Volk fehlt, und was nur ein Volk hat.",
       "includeRegional": "Regionales einbeziehen",
       "simple": "Einfache Oberfläche",
       "civView": "Völkeransicht:",

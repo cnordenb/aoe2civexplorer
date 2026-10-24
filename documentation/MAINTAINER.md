@@ -309,9 +309,10 @@ item sits in the tree decides what else its mark reaches:
   line is named after its deepest item marked must have, such as "Champion" or "Keep".
 
 Some items are left out of the tree unless the visitor ticks **Include Unique and Universal** in Options: the groups
-marked `"unique": true` (Unique Units, Unique Technologies and Unique Buildings), and the items that every
-civilisation has or only one has, which the page works out by itself. Unticking **Include Regionals** also leaves out
-the items aoe2techtree calls regional, such as the Eagle Scout.
+marked `"unique": true` (Unique Units, Unique Technologies and Unique Buildings), and the items that all
+civilisations, all but one, or only one has, such as the House, which only the Huns lack. The page works these out by
+itself, and keeps such an item when something under it is shown, such as the Watch Tower above the Guard Tower.
+Unticking **Include Regionals** also leaves out the items aoe2techtree calls regional, such as the Eagle Scout.
 
 ### Simple UI and the pictures
 

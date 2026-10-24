@@ -32,7 +32,7 @@
       "source": "数据来自 {source}，{date}。",
       "options": "选项",
       "includeAll": "包括独特和通用项目",
-      "includeHint": "同时显示独特单位、科技和建筑，所有文明都拥有的项目，以及只有一个文明拥有的项目。",
+      "includeHint": "同时显示独特单位、科技和建筑，所有文明或除一个文明外的所有文明都拥有的项目，以及只有一个文明拥有的项目。",
       "includeRegional": "包括区域项目",
       "simple": "简易界面",
       "civView": "文明视图：",

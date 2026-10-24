@@ -32,7 +32,7 @@
       "source": "Dữ liệu từ {source}, {date}.",
       "options": "Tùy chọn",
       "includeAll": "Bao gồm mục chuyên biệt và phổ biến",
-      "includeHint": "Hiển thị cả đơn vị, công nghệ và công trình chuyên biệt, những gì mọi nền văn minh đều có và những gì chỉ một nền văn minh có.",
+      "includeHint": "Hiển thị cả đơn vị, công nghệ và công trình chuyên biệt, những gì mọi nền văn minh hoặc tất cả trừ một nền văn minh đều có và những gì chỉ một nền văn minh có.",
       "includeRegional": "Bao gồm mục khu vực",
       "simple": "Giao diện đơn giản",
       "civView": "Chế độ xem nền văn minh:",

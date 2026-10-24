@@ -2207,3 +2207,26 @@ pane much taller and moved it, breaking rule 18 and requirement 35. Both panes s
 - **Short windows.** Below 640 pixels high on a narrow screen, or below 500 high on any screen, such as a phone
   held sideways or at 400% zoom, the panes still stack and the whole content scrolls, so a pane grows as the tree
   opens. Two fixed halves do not fit there, so this is left to the chief developer.
+
+## 2026-10-24: items all civilisations but one have count as universal
+
+Asked by the chief developer: items 55 of the 56 civilisations have, such as the Farm and the House, are now left
+out of the tree with the unique and universal ones, unless **Include Unique and Universal** is ticked.
+
+- **The rule.** `prune()` in `js/model.js` leaves out an item with nothing shown under it when one civilisation has
+  it, or all but one, or all: `civs === 1 || civs >= data.civs.length - 1`. It follows the number of civilisations in
+  `data.json`, so it needs no change when one is added.
+- **What it hides.** 11 items are missing from one civilisation. Those with nothing shown under them are now left
+  out: the House (not the Huns), the Farm (not the Khitans) and the Elite Skirmisher (not the Turks). The Skirmisher,
+  which all have, goes with them, as nothing is left under it. The tree shows 163 items by default instead of 167.
+  Items with something shown under them stay, as the Town Center does: the Watch Tower above the Guard Tower, the
+  Horse Collar and Heavy Plow above Crop Rotation, the Scorpion, Iron Casting, Chain Mail Armor, Leather Archer
+  Armor and Clinker Construction.
+- **The Include description,** in all 17 languages, now also names what all but one civilisation has, so that it
+  stays true (requirement 15). In English: "things all civilisations or all but one have". The other 16 are new
+  text and, like the rest of the page's own text, should be checked by native speakers.
+- **Test 42** now expects every shown item with nothing under it to be held by more than one civilisation and
+  missing from more than one. With the old rule put back it fails, and it is the only test that does.
+- **Checked.** All 97 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 42. `MAINTAINER.md`: which items Include Unique and Universal brings back.

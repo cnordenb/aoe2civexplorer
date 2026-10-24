@@ -580,7 +580,7 @@ With a must-have and a must-lack mark, the list holds the right civs' names, sor
 Verify Req. 13 and 15: by default the tree leaves out unique and universal items, and shows regional ones.
 
 ### Assertion expectation:
-No item from a unique group is shown, some regional one is, and every shown leaf is held by more than one civ, not all.
+No unique-group item shown, some regional one is; every shown leaf is held by, and missing from, more than one civ.
 
 ## Test 43
 

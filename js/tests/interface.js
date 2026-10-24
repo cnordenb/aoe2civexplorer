@@ -99,10 +99,10 @@ export function optionTests() {
   const all = keys();
   const unique = uniqueKeys();
   const regional = regionalKeys();
-  check("options: by default, unique items, and items every civilisation or only one has, are left out, and regional "
-    + "items are in", shownKeys().length < all.length && shownKeys().every((key) => !unique.has(key))
-    && shownKeys().some((key) => regional.has(key))
-    && items.every((item) => item.kids.length > 0 || (!item.group && ![1, data.civs.length].includes(size(item.set)))));
+  check("options: by default, unique items, and items all civilisations, all but one or only one has, are left out, "
+    + "and regional items are in", shownKeys().length < all.length && shownKeys().every((key) => !unique.has(key))
+    && shownKeys().some((key) => regional.has(key)) && items.every((item) => item.kids.length > 0
+      || (!item.group && size(item.set) > 1 && size(item.set) < data.civs.length - 1)));
   const path = keptPath();
   tap(byPath(path).node);
   const listedBefore = listed();

@@ -32,7 +32,7 @@
       "source": "Veriler: {source}, {date}.",
       "options": "Seçenekler",
       "includeAll": "Özgün ve Evrensel Olanları Dahil Et",
-      "includeHint": "Özgün birimleri, teknolojileri ve binaları, tüm medeniyetlerin sahip olduklarını ve yalnızca bir medeniyetin sahip olduklarını da gösterir.",
+      "includeHint": "Özgün birimleri, teknolojileri ve binaları, tüm medeniyetlerin ya da biri hariç tümünün sahip olduklarını ve yalnızca bir medeniyetin sahip olduklarını da gösterir.",
       "includeRegional": "Bölgesel Olanları Dahil Et",
       "simple": "Basit Arayüz",
       "civView": "Medeniyet görünümü:",
