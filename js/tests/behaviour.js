@@ -182,8 +182,8 @@ function parents({ branch, loose, without }) {
 
 function rivals({ rival }) {
   reset();
-  const name = "marking: of two items where one excludes the other, must have on either marks the other must lack "
-    + "without opening rows above it, clicking it again clears both, and must lack leaves the other alone";
+  const name = "marking: of two items where one excludes the other, must have on either clears the other, and "
+    + "everything in it, without marking it must lack or opening rows above it, and must lack leaves the other alone";
   const other = rival?.rivals[0];
   if (!other) {
     check(name, false, "no item in data.json excludes another");
@@ -198,19 +198,19 @@ function rivals({ rival }) {
     return items.filter(shown).indexOf(item) === at;
   };
 
-  const chips = (one, two) => same(chipNames().sort(), [chipName(other, one), chipName(rival, two)].sort());
+  const marked = () => items.filter((item) => item.self);
 
   for (let p = rival.parent; p; p = p.parent) setOpen(p, true);
-  const first = still(rival, () => tap(rival.node)) && now(rival) === "has" && now(other) === "lacks"
-    && chips("lacks", "has") && items.filter((item) => item.self).every(shown)
-    && same(listed(), expected(rival.set & ~other.set & ALL));
-  const second = still(other, () => tap(other.node)) && now(other) === "has" && now(rival) === "lacks"
-    && chips("has", "lacks");
   tap(other.node);
-  const cleared = items.every((item) => !item.self);
+  const first = still(rival, () => tap(rival.node)) && now(rival) === "has" && now(other) === null
+    && same(marked(), [rival]) && same(chipNames(), [chipName(rival, "has")]) && same(listed(), expected(rival.set));
+  const second = still(other, () => tap(other.node)) && now(other) === "has" && rival.self === null
+    && same(chipNames(), [chipName(other, "has")]);
+  tap(other.node);
+  keyDown(rival.node, "x");
   keyDown(other.node, "x");
-  check(name, first && second && cleared && now(other) === "lacks" && rival.self === null,
-    `${first}, ${second}, ${cleared}, ${now(other)}, ${rival.self}`);
+  check(name, first && second && rival.self === "lacks" && now(other) === "lacks",
+    `${first}, ${second}, ${rival.self}, ${now(other)}`);
   reset();
 }
 

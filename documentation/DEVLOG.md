@@ -2346,3 +2346,26 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
   800 by 1100 and 500 by 900. Screenshots checked with and without Simple UI.
 - **Documents.** `TESTS.md`: Test 22, and the new lines of the tests after it. `MAINTAINER.md`: what `"replaces"`
   does.
+
+## 2026-10-24: the Xolotl Warrior clears the Stable
+
+### What changed
+
+- **New rule for the Xolotl Warrior,** as asked by the chief developer. Marking the Xolotl Warrior must have now
+  clears the Stable and everything in it, instead of marking them must lack, and marking the whole Stable must have
+  ("Full Stable") clears the Xolotl Warrior, instead of marking it must lack. Neither is greyed out or blocked: the
+  cleared one can be marked again at once, which in turn clears the first. Must lack on either still leaves the
+  other alone.
+- **Read literally.** A full Stable clears the Xolotl Warrior whatever its mark, also must lack. Marking a single
+  item in the Stable, such as the Knight, leaves the Xolotl Warrior alone; marking the Xolotl Warrior clears it.
+- **How.** `mark()` in `js/model.js`: on must have, each item it `"excludes"`, or that excludes it, is cleared with
+  `put(rival, null)`. As nothing is marked in the cleared one, no rows are opened there. Clicking a marked item again
+  no longer touches the other.
+- **Checked in Chrome.** Knight must have, then Xolotl Warrior must have: one filter, "Xolotl Warrior", the Stable and
+  the Knight cleared, 6 civilisations. Then Full Stable: one filter, "Full Stable", the Xolotl Warrior cleared.
+- **Tests.** Test 21 now marks the Stable whole, then the Xolotl Warrior, and checks that only the Xolotl Warrior is
+  marked, with one filter; then the Stable, and checks that the Xolotl Warrior is cleared; neither moves a row above
+  the clicked one; and X on each leaves the other alone. With the old must-lack rule put back, it fails.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 21. `MAINTAINER.md`: How marking works.

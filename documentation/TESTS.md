@@ -36,7 +36,7 @@ Functional completeness & correctness tests:
 - [Test 18](#test-18): Marking a line's end marks only that item
 - [Test 19](#test-19): A mark never passes up
 - [Test 20](#test-20): An item can be must lack while everything under it is must have
-- [Test 21](#test-21): Must have on an item makes the item it excludes must lack, and the other way round
+- [Test 21](#test-21): Must have on an item clears the item it excludes, and the other way round
 - [Test 22](#test-22): An item that replaces another holds the same items, and must have on either greys out the other
 - [Test 23](#test-23): Marking a unit or technology opens its line
 - [Test 24](#test-24): Below the top of a line, a mark passes down only at the same count
@@ -344,13 +344,13 @@ With a building must lack and everything under it must have, the list is not emp
 ## Test 21
 
 ### File residence:
-`js/tests/behaviour.js`, lines 183-216
+`js/tests/behaviour.js`, lines 183-215
 
 ### Purpose:
-Enforce the Xolotl Warrior rule: an item and the item it excludes, such as the Stable, are never both must have.
+Enforce the Xolotl Warrior rule: must have on it clears the Stable, and a full Stable clears it, never must lack.
 
 ### Assertion expectation:
-Must have on either makes the other must lack, opening no row above it; a second click clears both; X leaves the other.
+Must have on either clears the other and all in it, not must lack, opening no row above it; X leaves the other.
 
 ## Test 22
 

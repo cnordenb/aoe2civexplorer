@@ -129,10 +129,9 @@ const reached = (item) => [...chainOf(item), ...(isUnitOrTech(item) ? passedTo(i
 
 export function mark(item, kind) {
   const next = current(item) === kind ? null : kind;
-  const rivals = kind === "has" ? item.rivals.filter((rival) => next || current(rival) === "lacks") : [];
   put(item, next);
-  rivals.forEach((rival) => put(rival, next && "lacks"));
-  return next ? [item, ...rivals].flatMap(reached) : [];
+  if (next === "has") item.rivals.forEach((rival) => put(rival, null));
+  return next ? reached(item) : [];
 }
 
 export function boxState(item) {

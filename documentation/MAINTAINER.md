@@ -302,10 +302,11 @@ item sits in the tree decides what else its mark reaches:
   building itself unmarked, with a dash in its box.
 - Marking opens the item down to its first fork, and every row the mark reached.
 - An item can name another item that no civilisation has together with it, as the Xolotl Warrior names the Stable:
-  `{"item": "Xolotl Warrior", "excludes": "Stable"}`. Marking either one must have marks the other must lack, and
-  marking it again clears both. Otherwise the Xolotl Warrior is not part of the Stable: marking the Stable must lack
-  leaves it alone, and "Full Stable" does not count it. It is the first row under the Stable, so that marking it
-  opens only rows below it.
+  `{"item": "Xolotl Warrior", "excludes": "Stable"}`. Marking either one must have clears the other, and everything
+  in it, without marking it must lack: marking the Xolotl Warrior clears the Stable, and a full Stable clears the
+  Xolotl Warrior. Must lack on either leaves the other alone. Otherwise the Xolotl Warrior is not part of the
+  Stable: marking the Stable must lack leaves it alone, and "Full Stable" does not count it. It is the first row
+  under the Stable, so that marking it opens only rows below it.
 - An item can name another item that it stands in for, as the Fortified Church names the Monastery:
   `{"item": "Fortified Church", "replaces": "Monastery"}`. The page then also shows, under it, everything in the
   other outside its unique groups, so the Monastery's technologies are listed only once in `data.json`, but the
