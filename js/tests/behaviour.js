@@ -162,17 +162,19 @@ function lineTops({ line }) {
     + "have or must lack, and marking it again clears it", marked && cleared && lacking && run.length < chain.length
     && chain.every((item) => item.self === null), `${run.length}/${chain.length}, ${marked}, ${cleared}, ${lacking}`);
   tap(lineEnd(line).node);
-  check("marking: marking the last item of a line marks only that item", lineEnd(line).self === "has"
-    && chain.slice(0, -1).every((item) => item.self === null) && same(listed(), expected(lineEnd(line).set)));
+  check("marking: marking the last item of a line marks every item before it too, with one filter named after the "
+    + "last, and lists the civs that have the last", chain.every((item) => item.self === "has")
+    && chipNames().join() === nameOf(lineEnd(line)) && same(listed(), expected(lineEnd(line).set)));
 }
 
 function parents({ branch, loose, without }) {
   reset();
   const inside = items.filter((item) => !item.group && below(item, branch));
   inside.filter((item) => !item.kids.length).forEach((leaf) => tap(leaf.node));
-  check("marking: a mark never passes up: marking everything at the ends of a building leaves the rest unmarked, "
-    + "and the building shows a dash", inside.every((item) => item.self === (item.kids.length ? null : "has"))
-    && branch.self === null && branch.node.getAttribute("aria-checked") === "mixed");
+  check("marking: must have passes up to the items before it but not to a building: marking everything at the ends "
+    + "of a building marks all in it but the building, which shows a dash", inside.every((item) => item.self === "has")
+    && inside.some((item) => item.kids.length) && branch.self === null
+    && branch.node.getAttribute("aria-checked") === "mixed");
   $("clear").click();
   keyDown(loose.node, "x");
   items.filter((item) => !item.group && below(item, loose)).forEach((item) => item.self === "has" || tap(item.node));
@@ -268,12 +270,14 @@ function lines({ line, even, uneven }) {
     closed && lineOf(line).every((item) => shown(item) && (!item.twisty || isOpen(item))));
   $("clear").click();
   const [run, lacking] = [sameCount(even), sameCount(uneven)];
+  const before = lineOf(even).slice(0, lineOf(even).indexOf(even)).filter(isUnitOrTech);
   tap(even.node);
-  const passed = run.length > 1 && run.every((item) => item.self === "has")
-    && items.filter((item) => item.self).length === run.length;
+  const passed = run.length > 1 && before.length > 0 && [...before, ...run].every((item) => item.self === "has")
+    && items.filter((item) => item.self).length === before.length + run.length;
   $("clear").click();
   keyDown(uneven.node, "x");
-  check("marking: below the top of a line, a mark passes down only to items with as many civilisations, never up",
+  check("marking: below the top of a line, a mark passes down only to items with as many civilisations, and only "
+    + "must have passes up, to every item before it",
     passed && lacking.every((item) => item.self === "lacks")
     && items.filter((item) => item.self).length === lacking.length
     && same(listed(), expected(lacking.reduce((s, item) => s & ~item.set, ALL))), `${run.length} passed: ${passed}`);

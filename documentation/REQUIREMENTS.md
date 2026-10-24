@@ -33,5 +33,5 @@
 31. A node will be expanded to if it is automatically assigned a value. This requirement may be flouted for building variant edge cases where the same node has to occur multiple times in several branches.
 32. Options window will contain a "Simple UI" checkbox.
 33. The page will not use any images upon the user enabling the Simple UI checkbox.
-34. A prerequisite node will be automatically enabled if a descendant node is enabled. This requirement does not apply to building nodes.
+34. A prerequisite node will be automatically enabled if a descendant node is enabled. This requirement does not apply to building nodes nor to root nodes.
 35. Input panel or output panel will not resize upon user interaction - such as node being assigned value - other than resizing the window.

@@ -298,8 +298,11 @@ item sits in the tree decides what else its mark reaches:
 - The items in a group marked `"lines": true` count as units and technologies too. That group is Fortifications,
   whose walls and towers are lines of upgrades (requirements 24, 25 and 30): marking the Watch Tower (55) does not
   mark the Guard Tower (51).
-- A mark never passes up: marking Champion marks Champion only, and marking everything in a building leaves the
-  building itself unmarked, with a dash in its box.
+- Must have also passes up, to every unit and technology above the item, which are its prerequisites, but never to
+  a building (requirement 34): marking Two-Man Saw marks Bow Saw and Double-Bit Axe too, but not the Lumber Camp,
+  and marking the Keep marks the Guard Tower and the Watch Tower. So Double-Bit Axe cannot lose must have while
+  Two-Man Saw keeps it: clearing it, or marking it must lack, clears Two-Man Saw too. Marking everything in a
+  building marks all in it but the building itself, which shows a dash. Must lack never passes up.
 - Marking opens the item down to its first fork, and every row the mark reached.
 - An item can name another item that no civilisation has together with it, as the Xolotl Warrior names the Stable:
   `{"item": "Xolotl Warrior", "excludes": "Stable"}`. Marking either one must have clears the other, and everything

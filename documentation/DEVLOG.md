@@ -2391,3 +2391,31 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 - **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
   800 by 1100 and 500 by 900. The names above were checked in Chrome.
 - **Documents.** `TESTS.md`: Test 13, and the new lines of the tests after it. `MAINTAINER.md`: How marking works.
+
+## 2026-10-24: must have passes up to an item's prerequisites (requirement 34)
+
+### What changed
+
+- **Requirement 34.** Marking a unit or technology must have now also marks every unit and technology above it,
+  its prerequisites, but never a building. Marking Two-Man Saw marks Bow Saw and Double-Bit Axe too, but not the
+  Lumber Camp; marking Champion marks the whole Militia line, but not the Barracks. So Double-Bit Axe can no longer
+  be without must have while Two-Man Saw has it: clearing Double-Bit Axe, or marking it must lack, already clears
+  Two-Man Saw. **Filters** still shows one entry, named after the deepest item ("Two-Man Saw").
+- **The civilisations listed do not change.** Inside every line of units or technologies in `data.json`, each item's
+  civilisations are among those of the item above it, so marking the prerequisites too narrows nothing.
+- **Fortifications.** Its lines count as units and technologies, as for requirements 25 and 30, so marking the Keep
+  marks the Guard Tower and the Watch Tower too.
+- **Shared rows.** Marking Faith under the Fortified Church marks Devotion there, and so under the Monastery too,
+  with one entry in **Filters**.
+- **Must lack** never passes up, as before.
+- **How.** `mark()` in `js/model.js` marks the item's prerequisites must have, found by the new `prerequisites()`,
+  and clears what they exclude as it does for the item itself.
+- **Tests.** Tests 18, 19 and 24 said a mark never passes up; they now check that must have passes up to the items
+  before it, but not to a building, with one filter named after the last item. With the prerequisites left unmarked,
+  exactly these three fail.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800,
+  800 by 1100 and 500 by 900. Two-Man Saw, Champion, the Keep, Imperial Age and Faith under the Fortified Church
+  were checked by hand in Chrome.
+- **Documents.** `TESTS.md`: Tests 18, 19 and 24. The places of the tests after them in `js/tests/behaviour.js`
+  are updated, and so are the places of Tests 6, 7, 9, 25 and 27, which were out of date, and Test 59, which moved
+  to `js/tests/interface.js` before. `MAINTAINER.md`: How marking works.

@@ -33,13 +33,13 @@ Functional completeness & correctness tests:
 - [Test 15](#test-15): Everything open and a long civ list fit the screen, on phones too, panes the same size and staying put
 - [Test 16](#test-16): A long press marks must lack, and a right-click clears it
 - [Test 17](#test-17): Marking the top of a line passes the mark down only at the same count
-- [Test 18](#test-18): Marking a line's end marks only that item
-- [Test 19](#test-19): A mark never passes up
+- [Test 18](#test-18): Marking a line's end marks every item before it too, with one filter
+- [Test 19](#test-19): Must have passes up to every item before it, but not to a building
 - [Test 20](#test-20): An item can be must lack while everything under it is must have
 - [Test 21](#test-21): Must have on an item clears the item it excludes, and the other way round
 - [Test 22](#test-22): An item that replaces another holds the same items, and must have on either greys out the other
 - [Test 23](#test-23): Marking a unit or technology opens its line
-- [Test 24](#test-24): Below the top of a line, a mark passes down only at the same count
+- [Test 24](#test-24): Below the top of a line, a mark passes down only at the same count, and must have passes up
 - [Test 25](#test-25): A closed item shows its own and its full count
 - [Test 26](#test-26): A closed line shows its first and last counts
 - [Test 27](#test-27): An open item shows only its own count
@@ -179,7 +179,7 @@ Item is "lacks", reads ", must lack", and the civs that have it leave the list.
 ## Test 6
 
 ### File residence:
-`js/tests/behaviour.js`, line 39
+`js/tests/behaviour.js`, lines 32-34
 
 ### Purpose:
 Verify that the menu key and right-click mark must lack (Req. 3).
@@ -190,7 +190,7 @@ After a contextmenu event the item is "lacks" and the browser's own menu is supp
 ## Test 7
 
 ### File residence:
-`js/tests/behaviour.js`, line 41
+`js/tests/behaviour.js`, lines 35-36
 
 ### Purpose:
 Verify that Space clears a mark from the keyboard (Req. 3, WCAG 2.1.1).
@@ -212,7 +212,7 @@ From closed, clicking a building makes it "has", and every item below it "has" a
 ## Test 9
 
 ### File residence:
-`js/tests/behaviour.js`, line 52
+`js/tests/behaviour.js`, line 47
 
 ### Purpose:
 Verify Req. 24: a fully marked branch is listed as "Full <name>" in Filters.
@@ -311,29 +311,29 @@ A click on a line's top marks it and its equal counts "has", X "lacks", with the
 ## Test 18
 
 ### File residence:
-`js/tests/behaviour.js`, lines 164-166
+`js/tests/behaviour.js`, lines 164-167
 
 ### Purpose:
-Verify Req. 30: a mark on a line's last item passes to no other item.
+Verify Req. 34: must have on a line's last item also marks every item before it, its prerequisites.
 
 ### Assertion expectation:
-After a click on a line's end, it alone is "has"; the items above stay unmarked; the list fits the end alone.
+After a click on a line's end, the whole line is "has", with one filter named after the end; the list fits the end.
 
 ## Test 19
 
 ### File residence:
-`js/tests/behaviour.js`, lines 171-175
+`js/tests/behaviour.js`, lines 172-177
 
 ### Purpose:
-Verify Req. 30: marking everything at the ends of a building marks nothing above them.
+Verify Req. 34 and its exception: must have passes up to the prerequisites, never to the building above them.
 
 ### Assertion expectation:
-After clicks on every leaf in a building, only the leaves are "has"; the building is unmarked and shows a dash.
+After clicks on every leaf in a building, everything in it is "has"; the building is unmarked and shows a dash.
 
 ## Test 20
 
 ### File residence:
-`js/tests/behaviour.js`, lines 177-180
+`js/tests/behaviour.js`, lines 179-182
 
 ### Purpose:
 Allow searching for civs that get a building's contents elsewhere, such as Two-Man Saw without a Lumber Camp.
@@ -344,7 +344,7 @@ With a building must lack and everything under it must have, the list is not emp
 ## Test 21
 
 ### File residence:
-`js/tests/behaviour.js`, lines 184-216
+`js/tests/behaviour.js`, lines 186-218
 
 ### Purpose:
 Enforce the Xolotl Warrior rule: must have on it clears the Stable, and a full Stable clears it, never must lack.
@@ -355,7 +355,7 @@ Must have on either clears the other and all in it, not must lack, opening no ro
 ## Test 22
 
 ### File residence:
-`js/tests/behaviour.js`, lines 218-260
+`js/tests/behaviour.js`, lines 220-262
 
 ### Purpose:
 Verify that the Fortified Church holds the Monastery's items, and that marking either greys out and closes the other.
@@ -366,7 +366,7 @@ Same rows under both, one mark and filter; the other is greyed, closed, cannot b
 ## Test 23
 
 ### File residence:
-`js/tests/behaviour.js`, lines 264-268
+`js/tests/behaviour.js`, lines 266-270
 
 ### Purpose:
 Verify Req. 28 and 31: marking a unit or technology opens it, showing every item marked with it.
@@ -377,18 +377,18 @@ Clicking a closed line item opens it down to the end of its line, so every item 
 ## Test 24
 
 ### File residence:
-`js/tests/behaviour.js`, lines 270-279
+`js/tests/behaviour.js`, lines 272-283
 
 ### Purpose:
-Verify Req. 29 and 30: below a line's top, a mark passes down only to items held by as many civilisations.
+Verify Req. 29, 30 and 34: below a line's top, a mark passes down only at equal counts; must have also passes up.
 
 ### Assertion expectation:
-A click marks only the items below with equal counts; X skips other counts; nothing above is marked.
+A click marks the items below with equal counts and every item above; X skips other counts and marks nothing above.
 
 ## Test 25
 
 ### File residence:
-`js/tests/behaviour.js`, line 278
+`js/tests/behaviour.js`, line 308
 
 ### Purpose:
 Verify each item's compatible civilisations count (Req. 3).
@@ -399,7 +399,7 @@ Closed items with contents show "own–all" counts and other items their own cou
 ## Test 26
 
 ### File residence:
-`js/tests/behaviour.js`, lines 305-306
+`js/tests/behaviour.js`, lines 309-310
 
 ### Purpose:
 Verify that a closed upgrade line shows the range from its first item to its last upgrade.
@@ -410,7 +410,7 @@ The line's count reads its first item's civ count, then its last item's civ coun
 ## Test 27
 
 ### File residence:
-`js/tests/behaviour.js`, line 282
+`js/tests/behaviour.js`, lines 311-312
 
 ### Purpose:
 Avoid a misleading range once an item's contents are visible.
@@ -421,7 +421,7 @@ After Expand all, every item shows only its own count.
 ## Test 28
 
 ### File residence:
-`js/tests/behaviour.js`, lines 313-314
+`js/tests/behaviour.js`, lines 313-318
 
 ### Purpose:
 Verify that the counts follow the active filters (Req. 3).
@@ -432,7 +432,7 @@ With a must-have and a must-lack mark, open and closed items count only the civs
 ## Test 29
 
 ### File residence:
-`js/tests/behaviour.js`, lines 327-328
+`js/tests/behaviour.js`, lines 331-332
 
 ### Purpose:
 Verify Req. 18 and 19, and each branch's arrow.
@@ -443,7 +443,7 @@ Expand all opens every branch, Collapse all closes every branch, and a branch's 
 ## Test 30
 
 ### File residence:
-`js/tests/behaviour.js`, lines 329-334
+`js/tests/behaviour.js`, lines 333-338
 
 ### Purpose:
 Save clicks by opening a line of only children in one step.
@@ -454,7 +454,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour.js`, lines 342-346
+`js/tests/behaviour.js`, lines 346-350
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them and counts them.
@@ -465,7 +465,7 @@ Exactly the matches are highlighted in yellow and shown; the number shows on one
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour.js`, lines 350-351
+`js/tests/behaviour.js`, lines 354-355
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).
@@ -762,7 +762,7 @@ Up on the first item stays put, Down moves to the next, End focuses the last top
 ## Test 59
 
 ### File residence:
-`js/tests/behaviour.js`, line 339
+`js/tests/interface.js`, lines 265-267
 
 ### Purpose:
 Let keyboard users move between branch arrows directly.

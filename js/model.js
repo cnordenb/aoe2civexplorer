@@ -109,6 +109,12 @@ export const isUnitOrTech = (item) => {
 
 const descendants = (item) => item.kids.flatMap((kid) => [kid, ...descendants(kid)]);
 
+function prerequisites(item) {
+  const above = [];
+  for (let p = item.parent; p && isUnitOrTech(p); p = p.parent) above.push(p);
+  return above;
+}
+
 function passedTo(item) {
   const line = [item];
   while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group) line.push(line.at(-1).kids[0]);
@@ -130,8 +136,11 @@ const reached = (item) => [...chainOf(item), ...(isUnitOrTech(item) ? passedTo(i
 export function mark(item, kind) {
   const next = current(item) === kind ? null : kind;
   put(item, next);
-  if (next === "has") item.rivals.forEach((rival) => put(rival, null));
-  return next ? reached(item) : [];
+  if (next !== "has") return next ? reached(item) : [];
+  const above = prerequisites(item);
+  above.forEach((each) => { each.self = "has"; });
+  [item, ...above].forEach((each) => each.rivals.forEach((rival) => put(rival, null)));
+  return reached(item);
 }
 
 export function boxState(item) {
